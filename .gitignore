@@ -16,22 +16,8 @@
 *.gch
 *.pch
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
 
 # Executables
-*.exe
-*.out
-*.app
 *.i*86
 *.x86_64
 *.hex
@@ -50,3 +36,9 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+/.vscode
+cmake_install.cmake
+CMakeCache.txt
+/CMakeFiles
+/src/CMakeFiles
+Makefile
