@@ -73,9 +73,35 @@ typedef struct gameData{
     int deck_ptr;
 
 } gameData;
+typedef struct gameState{
+    char turn_of;
+    
+    card_group market;
+    card_group hand_plA;
+    card_group hand_plB;
+    player_score playerA;
+    player_score playerB;
+    struct{
+        int diamond;
+        int gold;
+        int silver;
+        int spice;
+        int cloth;
+        int leather;
+
+        int bonus_3;
+        int bonus_4;
+        int bonus_5;
+
+    } remaining_tokens;
+
+    int cards_in_deck;
+
+} gameState;
 
 void set_seed(gameData *game);
 void initialize_gameData(gameData* game);
+void set_gameState_from_gameData(gameData* game_data, gameState* game_state);
 void initialize_game(gameData *game);
 void initialize_round(gameData *game);
 void print_game_state(gameData *game);
