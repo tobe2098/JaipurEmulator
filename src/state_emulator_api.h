@@ -29,7 +29,6 @@ typedef struct gameState{
 
 } gameState;
 
-void initialize_static_gameData(gameData* game);
 void set_gameState_from_gameData(gameData* game_data, gameState* game_state);
 
 

@@ -78,7 +78,7 @@ void set_seed(gameData *game);
 void init_card_group(card_group* group);
 void init_player_score(player_score* score);
 
-
+void initialize_gameData(gameData* game);
 void initialize_game(gameData *game);
 void initialize_round(gameData *game);
 void print_game_state(gameData *game);

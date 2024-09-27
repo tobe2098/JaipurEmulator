@@ -22,11 +22,18 @@ void set_seed(gameData *game) {
   }
   randomize_index_array(game->deck,DECK_SIZE);
 }
+
 void init_card_group(card_group *group){
-   
+   group->camels=0;
+   group->diamonds=0;
+   group->silvers=0;
+   group->golds=0;
+   group->leathers=0;
+   group->cloths=0;
+   group->spices=0;
 }
-void initialize_gameData(gameData *game)
-{
+
+void initialize_gameData(gameData *game){
     if (game->was_initialized == 1)
         return;
     card_group template = {0, 0, 0, 0, 0, 0, 0};
@@ -130,12 +137,12 @@ void print_game_state(gameData *game) {
   printf("<Player B> Points:%i, Camels:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", playerB->points, playerB->camels,
          playerB->seals, playerB->no_bonus_tokens, playerB->no_goods_tokens);
   printf("\n");
-  print_array_goods("diamonds", diamond_tokens, diamond_t_size, game->diamond_ptr);
-  print_array_goods("gold", gold_tokens, gold_t_size, game->gold_ptr);
-  print_array_goods("silver", silver_tokens, silver_t_size, game->silver_ptr);
-  print_array_goods("spice", spice_tokens, spice_t_size, game->spice_ptr);
-  print_array_goods("cloth", cloth_tokens, cloth_t_size, game->cloth_ptr);
-  print_array_goods("leather", leather_tokens, leather_t_size, game->leather_ptr);
+  print_array_goods("diamonds", diamond_tokens, DIAMOND_T_SIZE, game->diamond_ptr);
+  print_array_goods("gold", gold_tokens, GOLD_T_SIZE, game->gold_ptr);
+  print_array_goods("silver", silver_tokens, SILVER_T_SIZE, game->silver_ptr);
+  print_array_goods("spice", spice_tokens, SPICE_T_SIZE, game->spice_ptr);
+  print_array_goods("cloth", cloth_tokens, CLOTH_T_SIZE, game->cloth_ptr);
+  print_array_goods("leather", leather_tokens, LEATHER_T_SIZE, game->leather_ptr);
   printf("\n");
   printf("<Bonus> Remaining 3 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS - game->tokens_state.bonus_3_ptr);
   printf("<Bonus> Remaining 4 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS - game->tokens_state.bonus_4_ptr);
@@ -147,44 +154,44 @@ void print_game_state(gameData *game) {
   printf("\n");
 }
 int check_data_integrity(gameData *game) {
-  if (playerA->camels + playerB->camels > camels_total || playerA->camels < 0 || playerB->camels < 0) {
+  if (playerA->camels + playerB->camels > CAMELS_TOTAL || playerA->camels < 0 || playerB->camels < 0) {
     return -1;
   }
   if (game->tokens_state.bonus_3_ptr > MAX_BONUS_TOKENS || game->tokens_state.bonus_3_ptr < 0 || game->tokens_state.bonus_4_ptr > MAX_BONUS_TOKENS || game->tokens_state.bonus_5_ptr < 0 ||
       game->tokens_state.bonus_5_ptr > MAX_BONUS_TOKENS || game->tokens_state.bonus_5_ptr < 0) {
     return -1;
   }
-  if (game->cloth_ptr > cloth_t_size || game->cloth_ptr < 0 || game->spice_ptr > spice_t_size || game->spice_ptr < 0 ||
-      game->leather_ptr > leather_t_size || game->leather_ptr < 0 || game->silver_ptr > silver_t_size || game->silver_ptr < 0 ||
-      game->gold_ptr > gold_t_size || game->gold_ptr < 0 || game->diamond_ptr > diamond_t_size || game->diamond_ptr < 0) {
+  if (game->cloth_ptr > CLOTH_T_SIZE || game->cloth_ptr < 0 || game->spice_ptr > SPICE_T_SIZE || game->spice_ptr < 0 ||
+      game->leather_ptr > LEATHER_T_SIZE || game->leather_ptr < 0 || game->silver_ptr > SILVER_T_SIZE || game->silver_ptr < 0 ||
+      game->gold_ptr > GOLD_T_SIZE || game->gold_ptr < 0 || game->diamond_ptr > DIAMOND_T_SIZE || game->diamond_ptr < 0) {
     return -1;
   }
   if ((game->turn_of != 'A' && game->turn_of != 'B')) {
     return -1;
   }
-  if (game->finished_counter > finished_goods_limit || game->finished_counter < 0) {
+  if (game->finished_counter > FINISHED_GOODS_LIMIT || game->finished_counter < 0) {
     return -1;
   }
   return 0;
 }
 void set_finished_resources(gameData *game) {
   game->finished_counter = 0;
-  if (game->leather_ptr == leather_t_size) {
+  if (game->leather_ptr == LEATHER_T_SIZE) {
     game->finished_counter++;
   }
-  if (game->cloth_ptr == cloth_t_size) {
+  if (game->cloth_ptr == CLOTH_T_SIZE) {
     game->finished_counter++;
   }
-  if (game->spice_ptr == spice_t_size) {
+  if (game->spice_ptr == SPICE_T_SIZE) {
     game->finished_counter++;
   }
-  if (game->silver_ptr == silver_t_size) {
+  if (game->silver_ptr == SILVER_T_SIZE) {
     game->finished_counter++;
   }
-  if (game->gold_ptr == gold_t_size) {
+  if (game->gold_ptr == GOLD_T_SIZE) {
     game->finished_counter++;
   }
-  if (game->diamond_ptr == diamond_t_size) {
+  if (game->diamond_ptr == DIAMOND_T_SIZE) {
     game->finished_counter++;
   }
 }
@@ -385,42 +392,42 @@ void process_arguments(gameData *game, int argc, char *argv[]) {
 
 void card_sale(player_score *player, gameData *game, char card_type[], int no_cards) {
   if (strncmp(card_type, "diamonds", 8) == 0) {
-    int end = min(no_cards + game->diamond_ptr, diamond_t_size);
+    int end = min(no_cards + game->diamond_ptr, DIAMOND_T_SIZE);
     for (int i = game->diamond_ptr; i < end; i++) {
       player->points += diamond_tokens[i];
     }
     player->no_goods_tokens += end - game->diamond_ptr;
     game->diamond_ptr = end;
   } else if (strncmp(card_type, "gold", 4) == 0) {
-    int end = min(no_cards + game->gold_ptr, gold_t_size);
+    int end = min(no_cards + game->gold_ptr, GOLD_T_SIZE);
     for (int i = game->gold_ptr; i < end; i++) {
       player->points += gold_tokens[i];
     }
     player->no_goods_tokens += end - game->gold_ptr;
     game->gold_ptr = end;
   } else if (strncmp(card_type, "silver", 6) == 0) {
-    int end = min(no_cards + game->silver_ptr, silver_t_size);
+    int end = min(no_cards + game->silver_ptr, SILVER_T_SIZE);
     for (int i = game->silver_ptr; i < end; i++) {
       player->points += silver_tokens[i];
     }
     player->no_goods_tokens += end - game->silver_ptr;
     game->silver_ptr = end;
   } else if (strncmp(card_type, "spice", 5) == 0) {
-    int end = min(no_cards + game->spice_ptr, spice_t_size);
+    int end = min(no_cards + game->spice_ptr, SPICE_T_SIZE);
     for (int i = game->spice_ptr; i < end; i++) {
       player->points += spice_tokens[i];
     }
     player->no_goods_tokens += end - game->spice_ptr;
     game->spice_ptr = end;
   } else if (strncmp(card_type, "cloth", 5) == 0) {
-    int end = min(no_cards + game->cloth_ptr, cloth_t_size);
+    int end = min(no_cards + game->cloth_ptr, CLOTH_T_SIZE);
     for (int i = game->cloth_ptr; i < end; i++) {
       player->points += cloth_tokens[i];
     }
     player->no_goods_tokens += end - game->cloth_ptr;
     game->cloth_ptr = end;
   } else if (strncmp(card_type, "leather", 7) == 0) {
-    int end = min(no_cards + game->leather_ptr, leather_t_size);
+    int end = min(no_cards + game->leather_ptr, LEATHER_T_SIZE);
     for (int i = game->leather_ptr; i < end; i++) {
       player->points += leather_tokens[i];
     }
@@ -443,7 +450,7 @@ void card_sale(player_score *player, gameData *game, char card_type[], int no_ca
 }
 
 int is_game_over(player_score *playerA, player_score *playerB) {
-  if (playerA->seals == winning_seals || playerB->seals == winning_seals) {
+  if (playerA->seals == SEALS_TO_WIN || playerB->seals == SEALS_TO_WIN) {
     return 1;
   } else {
     return 0;
@@ -452,7 +459,7 @@ int is_game_over(player_score *playerA, player_score *playerB) {
 
 int is_round_over(gameData *game) {
   set_finished_resources(game);
-  if (game->finished_counter == finished_goods_limit) {
+  if (game->finished_counter == FINISHED_GOODS_LIMIT) {
     return 1;
   } else {
     return 0;
@@ -460,18 +467,18 @@ int is_round_over(gameData *game) {
 }
 
 void game_over(player_score *playerA, player_score *playerB) {
-  if (playerA->seals == winning_seals) {
+  if (playerA->seals == SEALS_TO_WIN) {
     print_winning_trophy('A');
-  } else if (playerB->seals == winning_seals) {
+  } else if (playerB->seals == SEALS_TO_WIN) {
     print_winning_trophy('B');
   }
 }
 
 void round_over(gameData *game) {
   if (playerA->camels > playerB->camels) {
-    playerA->points += camel_token;
+    playerA->points += CAMEL_TOKEN_VAL;
   } else if (playerB->camels > playerA->camels) {
-    playerB->camels += camel_token;
+    playerB->camels += CAMEL_TOKEN_VAL;
   }
   if (playerA->points > playerB->points) {
     playerA->seals++;
