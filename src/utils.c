@@ -10,8 +10,9 @@ void randomize_index_array(int arr[], int size) {
   }
 }
 
-void print_array_goods(char* name, const int* array, int size, int cutoff) {
+void print_array_goods(char* name, const int* array, int size, int remaining) {
   printf("<Goods> Remaining %s tokens:  \t", name);
+  int cutoff=size-remaining;
   for (int i = 0; i < size; i++) {
     if (i < cutoff) {
       printf(" * ");  // Three spaces

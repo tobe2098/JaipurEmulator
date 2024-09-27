@@ -20,6 +20,7 @@
 #include <unistd.h>
 #endif
 
+
 typedef struct PlayerScore{
     int points;
     int no_bonus_tokens;
@@ -40,7 +41,7 @@ typedef struct CardGroup{
 
 typedef struct GameData{
     int was_initialized;
-    int seed;
+    unsigned int seed;
 
     char turn_of;
 
@@ -67,31 +68,72 @@ typedef struct GameData{
         int bonus_5_arr[MAX_BONUS_TOKENS];
 
         int finished_counter;
-    } tokens_state;
+    } tokens;
 
     int deck[DECK_SIZE];
     int deck_ptr;
 
 } GameData;
 
+typedef struct GameState{
+    char turn_of;
+    
+    CardGroup market;
+    CardGroup hand_plA;
+    CardGroup hand_plB;
+    PlayerScore playerA;
+    PlayerScore playerB;
+    struct{
+        int diamond;
+        int gold;
+        int silver;
+        int spice;
+        int cloth;
+        int leather;
+
+        int bonus_3;
+        int bonus_4;
+        int bonus_5;
+
+    } remaining_tokens;
+
+    int cards_in_deck;
+
+} GameState;
+
+
 void setSeed(GameData *game);
+
 void initCardGroup(CardGroup* group);
 void initPlayerScore(PlayerScore* score);
-
 void initGameData(GameData* game);
+void resetGameData(GameData* game);
 void initializeGame(GameData *game);
 void initializeRound(GameData *game);
-void printGameState(GameData *game);
+void set_GameState_from_GameData(GameData* game_data, GameState* game_state);
+
 int  checkDataIntegrity(GameData *game);
+
 void set_finished_resources(GameData *game);
+int sum_cards_player(CardGroup* group);
+int sum_cards_market(CardGroup* group);
 int  load_game_state(GameData *game);
 void save_game_state(const GameData *game);
-void print_help();
+
 void process_arguments(GameData *game, int argc, char *argv[]);
-void card_sale(PlayerScore *player, GameData *game, char card_type[], int no_cards);
+void draw_cards_from_deck(CardGroup* group,GameData* game,int cards);
+void card_sale(GameData *game, char card_type[], int no_cards);
+
 int  is_game_over(PlayerScore *playerA, PlayerScore *playerB);
 int  is_round_over(GameData *game);
 void game_over(PlayerScore *playerA, PlayerScore *playerB);
 void round_over(GameData *game);
+
+
+void printGameState(GameData *game);
+void print_help();
+
+
+GameState interfaceJaipurEmulator();
 
 #endif
