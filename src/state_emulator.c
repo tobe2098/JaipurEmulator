@@ -9,8 +9,8 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  player_score playerA, playerB;
-  gameData   game;
+  PlayerScore playerA, playerB;
+  GameData   game;
   game.was_initialized = 0;
   // Load the previous game state from the JSON file
   if (load_game_state(&playerA, &playerB, &game) == -1) {

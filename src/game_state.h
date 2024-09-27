@@ -3,14 +3,14 @@
 
 #include "game_data.h"
 
-typedef struct gameState{
+typedef struct GameState{
     char turn_of;
     
-    card_group market;
-    card_group hand_plA;
-    card_group hand_plB;
-    player_score playerA;
-    player_score playerB;
+    CardGroup market;
+    CardGroup hand_plA;
+    CardGroup hand_plB;
+    PlayerScore playerA;
+    PlayerScore playerB;
     struct{
         int diamond;
         int gold;
@@ -27,9 +27,9 @@ typedef struct gameState{
 
     int cards_in_deck;
 
-} gameState;
+} GameState;
 
-void set_gameState_from_gameData(gameData* game_data, gameState* game_state);
-
+void set_GameState_from_GameData(GameData* game_data, GameState* game_state);
+GameState interfaceJaipurEmulator();
 
 #endif

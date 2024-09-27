@@ -20,14 +20,14 @@
 #include <unistd.h>
 #endif
 
-typedef struct player_score{
+typedef struct PlayerScore{
     int points;
     int no_bonus_tokens;
     int no_goods_tokens;
     int seals;
-} player_score;
+} PlayerScore;
 
-typedef struct card_group{
+typedef struct CardGroup{
     int diamonds;
     int golds;
     int silvers;
@@ -36,20 +36,20 @@ typedef struct card_group{
     int leathers;
     int camels; //Not in enforced hand-size
 
-} card_group;
+} CardGroup;
 
-typedef struct gameData{
+typedef struct GameData{
     int was_initialized;
     int seed;
 
     char turn_of;
 
     
-    card_group market;
-    card_group hand_plA;
-    card_group hand_plB;
-    player_score playerA;
-    player_score playerB;
+    CardGroup market;
+    CardGroup hand_plA;
+    CardGroup hand_plB;
+    PlayerScore playerA;
+    PlayerScore playerB;
     struct{
         int diamond_ptr;
         int gold_ptr;
@@ -72,26 +72,26 @@ typedef struct gameData{
     int deck[DECK_SIZE];
     int deck_ptr;
 
-} gameData;
+} GameData;
 
-void set_seed(gameData *game);
-void init_card_group(card_group* group);
-void init_player_score(player_score* score);
+void setSeed(GameData *game);
+void initCardGroup(CardGroup* group);
+void initPlayerScore(PlayerScore* score);
 
-void initialize_gameData(gameData* game);
-void initialize_game(gameData *game);
-void initialize_round(gameData *game);
-void print_game_state(gameData *game);
-int  check_data_integrity(gameData *game);
-void set_finished_resources(gameData *game);
-int  load_game_state(gameData *game);
-void save_game_state(const gameData *game);
+void initGameData(GameData* game);
+void initializeGame(GameData *game);
+void initializeRound(GameData *game);
+void printGameState(GameData *game);
+int  checkDataIntegrity(GameData *game);
+void set_finished_resources(GameData *game);
+int  load_game_state(GameData *game);
+void save_game_state(const GameData *game);
 void print_help();
-void process_arguments(gameData *game, int argc, char *argv[]);
-void card_sale(player_score *player, gameData *game, char card_type[], int no_cards);
-int  is_game_over(player_score *playerA, player_score *playerB);
-int  is_round_over(gameData *game);
-void game_over(player_score *playerA, player_score *playerB);
-void round_over(gameData *game);
+void process_arguments(GameData *game, int argc, char *argv[]);
+void card_sale(PlayerScore *player, GameData *game, char card_type[], int no_cards);
+int  is_game_over(PlayerScore *playerA, PlayerScore *playerB);
+int  is_round_over(GameData *game);
+void game_over(PlayerScore *playerA, PlayerScore *playerB);
+void round_over(GameData *game);
 
 #endif

@@ -1,5 +1,5 @@
 #include "game_data.h"
-void set_seed(gameData *game) {
+void setSeed(GameData *game) {
   srand(game->seed);
 
   for (int i = 0; i < MAX_BONUS_TOKENS; i++) {
@@ -23,7 +23,7 @@ void set_seed(gameData *game) {
   randomize_index_array(game->deck,DECK_SIZE);
 }
 
-void init_card_group(card_group *group){
+void initCardGroup(CardGroup *group){
    group->camels=0;
    group->diamonds=0;
    group->silvers=0;
@@ -33,19 +33,26 @@ void init_card_group(card_group *group){
    group->spices=0;
 }
 
-void initialize_gameData(gameData *game){
+void initPlayerScore(PlayerScore *score){
+  score->points=0;
+  score->no_bonus_tokens=0;
+  score->no_goods_tokens=0;
+  score->seals=0;
+}
+
+void initGameData(GameData *game){
     if (game->was_initialized == 1)
         return;
-    card_group template = {0, 0, 0, 0, 0, 0, 0};
+    CardGroup template = {0, 0, 0, 0, 0, 0, 0};
     game->hand_plA = template;
     game->hand_plB = template;
     game->market = template;
     game->market.camels = 3;
-    player_score template2 = {0, 0, 0, 0};
+    PlayerScore template2 = {0, 0, 0, 0};
     game->playerA = template2;
     game->playerB = template2;
     game->seed = (unsigned int)time(NULL);
-    set_seed(game);
+    setSeed(game);
     game->tokens_state.diamond_ptr = 0;
     game->tokens_state.gold_ptr = 0;
     game->tokens_state.silver_ptr = 0;
@@ -58,7 +65,7 @@ void initialize_gameData(gameData *game){
     game->tokens_state.finished_counter = 0;
     game->deck_ptr = 0;
 }
-void initialize_game(gameData *game) {
+void initializeGame(GameData *game) {
   // Optionally set the random seed in the system
   print_welcome_message();
   playerA->no_bonus_tokens = 0;
@@ -98,14 +105,14 @@ void initialize_game(gameData *game) {
   } else {
     game->seed = 42;  // Default seed if no input
   }
-  set_seed(game);
+  setSeed(game);
   game->turn_of = 'A' + (rand() & 1);
   printf("<Turn> Player %c starts this round <Turn>\n", game->turn_of);
 }
 
-void initialize_round(gameData *game)
+void initializeRound(GameData *game)
 {
-    initialize_gameData(game);
+    initGameData(game);
 
     printf("<Seed> Enter a random seed for the next round: ");
 
@@ -126,10 +133,10 @@ void initialize_round(gameData *game)
     } else {
     game->seed = 42;  // Default seed if no input
   }
-  set_seed(game);
+  setSeed(game);
   printf("<Turn> Player %c starts this round <Turn>\n", (game->turn_of));
 }
-void print_game_state(gameData *game) {
+void printGameState(GameData *game) {
   printf("\n");
   printf("<Scores>\n");
   printf("<Player A> Points:%i, Camels:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", playerA->points, playerA->camels,
@@ -153,7 +160,7 @@ void print_game_state(gameData *game) {
   printf("<Turn> It is player %c's turn now <Turn>\n", game->turn_of);
   printf("\n");
 }
-int check_data_integrity(gameData *game) {
+int checkDataIntegrity(GameData *game) {
   if (playerA->camels + playerB->camels > CAMELS_TOTAL || playerA->camels < 0 || playerB->camels < 0) {
     return -1;
   }
@@ -174,7 +181,7 @@ int check_data_integrity(gameData *game) {
   }
   return 0;
 }
-void set_finished_resources(gameData *game) {
+void set_finished_resources(GameData *game) {
   game->finished_counter = 0;
   if (game->leather_ptr == LEATHER_T_SIZE) {
     game->finished_counter++;
@@ -195,7 +202,7 @@ void set_finished_resources(gameData *game) {
     game->finished_counter++;
   }
 }
-int load_game_state(gameData *game) {
+int load_game_state(GameData *game) {
   char save_file[MAX_PATH];
   find_data_path(save_file);
   FILE *file = fopen(save_file, "r");
@@ -237,20 +244,20 @@ int load_game_state(gameData *game) {
                            &game->leather_ptr, &game->seed, &game->tokens_state.bonus_3_ptr, &game->tokens_state.bonus_4_ptr, &game->tokens_state.bonus_5_ptr);
     // printf("Items read: %d\n", itemsRead);
     free(buffer);
-    set_seed(game);
+    setSeed(game);
     if (is_round_over(game)) {
       round_over(playerA, playerB, game);
       if (is_game_over(playerA, playerB)) {
         game_over(playerA, playerB);
-        initialize_game(playerA, playerB, game);
+        initializeGame(playerA, playerB, game);
         game->was_initialized = 1;
       } else {
-        initialize_round(playerA, playerB, game);
+        initializeRound(playerA, playerB, game);
       }
     }
     if (is_game_over(playerA, playerB)) {
       game_over(playerA, playerB);
-      initialize_game(playerA, playerB, game);
+      initializeGame(playerA, playerB, game);
       game->was_initialized = 1;
     }
     if (itemsRead < 21) {
@@ -260,17 +267,17 @@ int load_game_state(gameData *game) {
     }
   } else {
     // Initialize default game state if no save file exists
-    initialize_game(playerA, playerB, game);
+    initializeGame(playerA, playerB, game);
     game->was_initialized = 1;
   }
   set_finished_resources(game);
-  if (check_data_integrity(playerA, playerB, game) == -1) {
+  if (checkDataIntegrity(playerA, playerB, game) == -1) {
     return -1;
   } else {
     return 0;
   }
 }
-void save_game_state(const player_score *playerA, const player_score *playerB, const gameData *game) {
+void save_game_state(const PlayerScore *playerA, const PlayerScore *playerB, const GameData *game) {
   char save_file[MAX_PATH];
   find_data_path(save_file);
   FILE *file = fopen(save_file, "w");
@@ -316,15 +323,15 @@ void print_help() {
   printf("1. The game ends when there are no cards left in the draw pile or the tokens of three resources are finished\n");
   printf("2. Cards from hand and from the herd can be traded with the market\n");
 }
-void process_arguments(gameData *game, int argc, char *argv[]) {
+void process_arguments(GameData *game, int argc, char *argv[]) {
   if (argc < 2) {
     // printf("Addresses A:%p B:%p\n", (void *)playerA, (void *)playerB);
-    print_game_state(playerA, playerB, game);
+    printGameState(playerA, playerB, game);
     return;
   }
   int          turn_happened   = 0;
   int          round_over_bool = 0;
-  player_score *curr_player;
+  PlayerScore *curr_player;
   if (game->turn_of == 'A') {
     curr_player = playerA;
   } else if (game->turn_of == 'B') {
@@ -332,7 +339,7 @@ void process_arguments(gameData *game, int argc, char *argv[]) {
   } else {
     printf("Data is corrupted: player %c\n", game->turn_of);
     if (game->was_initialized == 0) {
-      initialize_game(playerA, playerB, game);
+      initializeGame(playerA, playerB, game);
       game->was_initialized = 1;
     }
     return;
@@ -363,9 +370,9 @@ void process_arguments(gameData *game, int argc, char *argv[]) {
   } else if (strncmp(argv[1], "--market", 8) == 0) {
     turn_happened += 1;
   } else if (strncmp(argv[1], "--state", 7) == 0) {
-    print_game_state(playerA, playerB, game);
+    printGameState(playerA, playerB, game);
   } else if (strncmp(argv[1], "--reset", 7) == 0 && game->was_initialized == 0) {
-    initialize_game(playerA, playerB, game);
+    initializeGame(playerA, playerB, game);
     game->was_initialized = 1;
   } else if (strncmp(argv[1], "--round", 7) == 0) {
     round_over_bool = 1;
@@ -379,18 +386,18 @@ void process_arguments(gameData *game, int argc, char *argv[]) {
   }
   if (round_over_bool || is_round_over(game)) {
     round_over(playerA, playerB, game);
-    initialize_round(playerA, playerB, game);
+    initializeRound(playerA, playerB, game);
   } else {
-    print_game_state(playerA, playerB, game);
+    printGameState(playerA, playerB, game);
   }
   if (is_game_over(playerA, playerB)) {
     game_over(playerA, playerB);
-    initialize_game(playerA, playerB, game);
+    initializeGame(playerA, playerB, game);
     game->was_initialized = 1;
   }
 }
 
-void card_sale(player_score *player, gameData *game, char card_type[], int no_cards) {
+void card_sale(PlayerScore *player, GameData *game, char card_type[], int no_cards) {
   if (strncmp(card_type, "diamonds", 8) == 0) {
     int end = min(no_cards + game->diamond_ptr, DIAMOND_T_SIZE);
     for (int i = game->diamond_ptr; i < end; i++) {
@@ -449,7 +456,7 @@ void card_sale(player_score *player, gameData *game, char card_type[], int no_ca
   }
 }
 
-int is_game_over(player_score *playerA, player_score *playerB) {
+int is_game_over(PlayerScore *playerA, PlayerScore *playerB) {
   if (playerA->seals == SEALS_TO_WIN || playerB->seals == SEALS_TO_WIN) {
     return 1;
   } else {
@@ -457,7 +464,7 @@ int is_game_over(player_score *playerA, player_score *playerB) {
   }
 }
 
-int is_round_over(gameData *game) {
+int is_round_over(GameData *game) {
   set_finished_resources(game);
   if (game->finished_counter == FINISHED_GOODS_LIMIT) {
     return 1;
@@ -466,7 +473,7 @@ int is_round_over(gameData *game) {
   }
 }
 
-void game_over(player_score *playerA, player_score *playerB) {
+void game_over(PlayerScore *playerA, PlayerScore *playerB) {
   if (playerA->seals == SEALS_TO_WIN) {
     print_winning_trophy('A');
   } else if (playerB->seals == SEALS_TO_WIN) {
@@ -474,7 +481,7 @@ void game_over(player_score *playerA, player_score *playerB) {
   }
 }
 
-void round_over(gameData *game) {
+void round_over(GameData *game) {
   if (playerA->camels > playerB->camels) {
     playerA->points += CAMEL_TOKEN_VAL;
   } else if (playerB->camels > playerA->camels) {
