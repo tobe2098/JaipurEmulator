@@ -1,5 +1,10 @@
 #include "game_data.h"
+#include "state_emulator_api.h"
 
+void initialize_static_gameData(gameData *game){
+    if (game->was_initialized) return;
+    game->
+}
 
 gameState func(){
     static gameData g_data={.was_initialized=0};
@@ -10,5 +15,3 @@ gameState func(){
     set_gameState_from_gameData(&g_data, &g_state);
     return g_state;
 }
-
-

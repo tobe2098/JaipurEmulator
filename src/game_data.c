@@ -22,30 +22,34 @@ void set_seed(gameData *game) {
   }
   randomize_index_array(game->deck,DECK_SIZE);
 }
-void initialize_gameData(gameData *game){
-  if (game->was_initialized==1) return;
-  card_group template={0,0,0,0,0,0,0};
-  game->hand_plA=template;
-  game->hand_plB=template;
-  game->market=template;
-  game->market.camels=3;
-  player_score template2={0,0,0,0};
-  game->playerA=template2;
-  game->playerB=template2;
-  game->seed=(unsigned int)time(NULL);
-  set_seed(game);
-  game->tokens_state.diamond_ptr = 0;
-  game->tokens_state.gold_ptr = 0;
-  game->tokens_state.silver_ptr = 0;
-  game->tokens_state.spice_ptr = 0;
-  game->tokens_state.cloth_ptr = 0;
-  game->tokens_state.leather_ptr = 0;
-  game->tokens_state.bonus_3_ptr = 0;
-  game->tokens_state.bonus_4_ptr = 0;
-  game->tokens_state.bonus_5_ptr = 0;
-  game->tokens_state.finished_counter = 0;
-  game->deck_ptr=0;
-
+void init_card_group(card_group *group){
+   
+}
+void initialize_gameData(gameData *game)
+{
+    if (game->was_initialized == 1)
+        return;
+    card_group template = {0, 0, 0, 0, 0, 0, 0};
+    game->hand_plA = template;
+    game->hand_plB = template;
+    game->market = template;
+    game->market.camels = 3;
+    player_score template2 = {0, 0, 0, 0};
+    game->playerA = template2;
+    game->playerB = template2;
+    game->seed = (unsigned int)time(NULL);
+    set_seed(game);
+    game->tokens_state.diamond_ptr = 0;
+    game->tokens_state.gold_ptr = 0;
+    game->tokens_state.silver_ptr = 0;
+    game->tokens_state.spice_ptr = 0;
+    game->tokens_state.cloth_ptr = 0;
+    game->tokens_state.leather_ptr = 0;
+    game->tokens_state.bonus_3_ptr = 0;
+    game->tokens_state.bonus_4_ptr = 0;
+    game->tokens_state.bonus_5_ptr = 0;
+    game->tokens_state.finished_counter = 0;
+    game->deck_ptr = 0;
 }
 void initialize_game(gameData *game) {
   // Optionally set the random seed in the system
