@@ -28,16 +28,16 @@ typedef struct PlayerScore{
     int seals;
 } PlayerScore;
 
-typedef struct CardGroup{
-    int diamonds;
-    int golds;
-    int silvers;
-    int spices;
-    int cloths;
-    int leathers;
-    int camels; //Not in enforced hand-size
-
-} CardGroup;
+// typedef struct CardGroup{
+//     int diamonds;
+//     int golds;
+//     int silvers;
+//     int spices;
+//     int cloths;
+//     int leathers;
+//     int camels; //Not in enforced hand-size
+// CHANGE THIS TO ARRAY INDEXED BY ENUM
+// } CardGroup;
 
 typedef struct GameData{
     int was_initialized;
@@ -46,9 +46,9 @@ typedef struct GameData{
     char turn_of;
 
     
-    CardGroup market;
-    CardGroup hand_plA;
-    CardGroup hand_plB;
+    int market[CARD_GROUP_SIZE];
+    int hand_plA[CARD_GROUP_SIZE];
+    int hand_plB[CARD_GROUP_SIZE];
     PlayerScore playerA;
     PlayerScore playerB;
     struct{
@@ -78,9 +78,10 @@ typedef struct GameData{
 typedef struct GameState{
     char turn_of;
     
-    CardGroup market;
-    CardGroup hand_plA;
-    CardGroup hand_plB;
+    int market[CARD_GROUP_SIZE];
+    int hand_plA[CARD_GROUP_SIZE];
+    int hand_plB[CARD_GROUP_SIZE];
+
     PlayerScore playerA;
     PlayerScore playerB;
     struct{
@@ -95,7 +96,7 @@ typedef struct GameState{
         int bonus_4;
         int bonus_5;
 
-    } remaining_tokens;
+    } tokens;
 
     int cards_in_deck;
 
@@ -104,7 +105,7 @@ typedef struct GameState{
 
 void setSeed(GameData *game);
 
-void initCardGroup(CardGroup* group);
+void initCardGroup(int group[CARD_GROUP_SIZE]);
 void initPlayerScore(PlayerScore* score);
 void initGameData(GameData* game);
 void resetGameData(GameData* game);
@@ -115,14 +116,16 @@ void set_GameState_from_GameData(GameData* game_data, GameState* game_state);
 int  checkDataIntegrity(GameData *game);
 
 void set_finished_resources(GameData *game);
-int sum_cards_player(CardGroup* group);
-int sum_cards_market(CardGroup* group);
+int sum_cards_player(int group[CARD_GROUP_SIZE]);
+int sum_cards_market(int group[CARD_GROUP_SIZE]);
 int  load_game_state(GameData *game);
 void save_game_state(const GameData *game);
 
 void process_arguments(GameData *game, int argc, char *argv[]);
-void draw_cards_from_deck(CardGroup* group,GameData* game,int cards);
-void card_sale(GameData *game, char card_type[], int no_cards);
+void draw_cards_from_deck(int group[CARD_GROUP_SIZE],GameData* game,int cards);
+int take_card_from_market(int market[CARD_GROUP_SIZE],int player_hand[CARD_GROUP_SIZE],int index);
+void card_sale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROUP_SIZE], char card_type[], int no_cards);
+void card_exchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char* hand_idx, char* market_idx, int camels);
 
 int  is_game_over(PlayerScore *playerA, PlayerScore *playerB);
 int  is_round_over(GameData *game);

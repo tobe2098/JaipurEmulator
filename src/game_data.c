@@ -91,6 +91,11 @@ void initializeGame(GameData *game){
     game->was_initialized=0;
     print_welcome_message();
     initGameData(game);
+    //DEAL CARDS TO MARKET
+    draw_cards_from_deck(&(game->market),game,2);
+    //DEAL CARDS TO PLAYERS
+    draw_cards_from_deck(&(game->hand_plA),game,2);
+    draw_cards_from_deck(&(game->hand_plB),game,2);
     printf("<Turn> Player %c starts this round <Turn>\n", game->turn_of);
 }
 
@@ -100,27 +105,25 @@ void initializeRound(GameData *game){
 }
 
 void printGameState(GameData *game) {
-  GameState game_state;
-  set_GameState_from_GameData(game,&game_state);
   printf("\n");
   printf("<Scores>\n");
-  printf("<Player A> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game_state.playerA.points,
-         game_state.playerA.seals, game_state.playerA.no_bonus_tokens, game_state.playerA.no_goods_tokens);
-  printf("<Player B> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game_state.playerB.points,
-         game_state.playerB.seals, game_state.playerB.no_bonus_tokens, game_state.playerB.no_goods_tokens);
+  printf("<Player A> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerA.points,
+         game->playerA.seals, game->playerA.no_bonus_tokens, game->playerA.no_goods_tokens);
+  printf("<Player B> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerB.points,
+         game->playerB.seals, game->playerB.no_bonus_tokens, game->playerB.no_goods_tokens);
   printf("\n");
-  print_array_goods("diamonds", diamond_tokens, DIAMOND_T_SIZE, game_state.remaining_tokens.diamond);
-  print_array_goods("gold", gold_tokens, GOLD_T_SIZE, game_state.remaining_tokens.gold);
-  print_array_goods("silver", silver_tokens, SILVER_T_SIZE, game_state.remaining_tokens.silver);
-  print_array_goods("spice", spice_tokens, SPICE_T_SIZE, game_state.remaining_tokens.spice);
-  print_array_goods("cloth", cloth_tokens, CLOTH_T_SIZE, game_state.remaining_tokens.cloth);
-  print_array_goods("leather", leather_tokens, LEATHER_T_SIZE, game_state.remaining_tokens.leather);
+  print_array_goods("diamonds", diamond_tokens, DIAMOND_T_SIZE, game->tokens.diamond_ptr);
+  print_array_goods("gold", gold_tokens, GOLD_T_SIZE, game->tokens.gold_ptr);
+  print_array_goods("silver", silver_tokens, SILVER_T_SIZE, game->tokens.silver_ptr);
+  print_array_goods("spice", spice_tokens, SPICE_T_SIZE, game->tokens.spice_ptr);
+  print_array_goods("cloth", cloth_tokens, CLOTH_T_SIZE, game->tokens.cloth_ptr);
+  print_array_goods("leather", leather_tokens, LEATHER_T_SIZE, game->tokens.leather_ptr);
   printf("\n");
-  printf("<Bonus> Remaining 3 card bonus tokens: \t%i\n", game_state.remaining_tokens.bonus_3);
-  printf("<Bonus> Remaining 4 card bonus tokens: \t%i\n", game_state.remaining_tokens.bonus_4);
-  printf("<Bonus> Remaining 5 card bonus tokens: \t%i\n", game_state.remaining_tokens.bonus_5);
+  printf("<Bonus> Remaining 3 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->tokens.bonus_3_ptr);
+  printf("<Bonus> Remaining 4 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->tokens.bonus_4_ptr);
+  printf("<Bonus> Remaining 5 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->tokens.bonus_5_ptr);
   printf("\n");
-  printf("<Turn> It is player %c's turn now <Turn>\n", game_state.turn_of);
+  printf("<Turn> It is player %c's turn now <Turn>\n", game->turn_of);
   printf("\n");
 }
 int checkDataIntegrity(GameData *game) {
@@ -165,11 +168,20 @@ void set_finished_resources(GameData *game) {
     game->tokens.finished_counter++;
   }
 }
-int sum_cards_player(CardGroup *group){
-    return group->diamonds+group->golds+group->silvers+group->spices+group->cloths+group->leathers;
+int sum_cards_player(int group[CARD_GROUP_SIZE]){
+  int sum=0;
+  for (int i=0;i<CARD_GROUP_SIZE;i++){
+    if (i==camels) continue;
+    sum+=group[i];
+  }
+  return sum;
 }
-int sum_cards_market(CardGroup *group){
-    return group->camels+group->diamonds+group->golds+group->silvers+group->spices+group->cloths+group->leathers;
+int sum_cards_market(int group[CARD_GROUP_SIZE]){
+  int sum=0;
+  for (int i=0;i<CARD_GROUP_SIZE;i++){
+    sum+=group[i];
+  }
+  return sum;
 }
 int load_game_state(GameData *game)
 {
@@ -342,14 +354,28 @@ void process_arguments(GameData *game, int argc, char *argv[]) {
     int   no_goods = atoi(argv[3]);
     card_sale(curr_player, game, goods, no_goods);
     turn_happened += 1;
-  } else if (strncmp(argv[1], "--market", 8) == 0) {
+  } else if (strncmp(argv[1], "--exchange", 10) == 0) {
+    //Here the structure of the arguments has to be "--exchange seq num goodstype" where seq is a sequence of numbers
+    //Each sequence of numbers will be composed of numbers from 0 to 6 indicating the positions of the cards to be exchanged in hand. 
+    if (argc < 5) {
+      printf("Too few arguments.\n");
+      return;
+    }
+    char* hand_idx=argv[2];
+    int camels = atoi(argv[3]);
+    char* market_goods=argv[4];
+    
     turn_happened += 1;
-  } else if (strncmp(argv[1], "--draw", 8) == 0) {
+  } else if (strncmp(argv[1], "--take", 6) == 0) {
     if (sum_cards_player(curr_player_hand)>=7){
       printf("Error, hand is full");
       return;
     }
-    draw_cards_from_deck(&(game->market),game,1);
+    if (argc < 3) {
+      printf("Too few arguments.\n");
+      return;
+    }
+    take_card_from_market(&(game->market),curr_player)
     turn_happened += 1;
   } else if (strncmp(argv[1], "--state", 7) == 0) {
     printGameState(game);
@@ -378,14 +404,52 @@ void process_arguments(GameData *game, int argc, char *argv[]) {
 void draw_cards_from_deck(CardGroup *group, GameData *game, int cards){
   for (int i=0;i<cards;i++){
     char card=deck[game->deck[game->deck_ptr++]];
+    if (card=='c'){
 
+    } else if (card=='d'){
+
+    }else if (card=='g'){
+      
+    }else if (card=='s'){
+      
+    }else if (card=='d'){
+      
+    }else if (card=='d'){
+      
+    }else if (card=='d'){
+      
+    }
   }
 }
 
-void card_sale(GameData *game, char card_type[], int no_cards) {
+int take_card_from_market(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], int index){
+  if (sum_cards_market(market)!=5) return -1;
+  card_index card_type_index=diamonds;
+  int i=0;
+  while(i<index){
+#ifndef DEBUG
+    if (card_type_index>=CARD_GROUP_SIZE) {
+      printf("Error, out of bounds");
+      return -1;
+    }
+#endif
+    if (market[card_type_index]==0) card_type_index++;
+    else {
+      if (i+market[card_type_index]>=index) break;
+      else {
+        i+=market[card_type_index++];
+      }
+    }
+  }
+  player_hand[card_type_index]++;
+  market[card_type_index]--;
+  return 0;
+}
+
+void card_sale(GameData *game,PlayerScore* player_score,CardGroup* player_hand, char card_type[], int no_cards) {
   if (strncmp(card_type, "diamonds", 8) == 0) {
-    int end = min(no_cards + game->diamond_ptr, DIAMOND_T_SIZE);
-    for (int i = game->diamond_ptr; i < end; i++) {
+    int end = min(no_cards + game->tokens.diamond_ptr, DIAMOND_T_SIZE);
+    for (int i = game->tokens.diamond_ptr; i < end; i++) {
       player->points += diamond_tokens[i];
     }
     player->no_goods_tokens += end - game->diamond_ptr;
@@ -439,6 +503,9 @@ void card_sale(GameData *game, char card_type[], int no_cards) {
     player->points += game->tokens.bonus_5_arr[game->tokens.bonus_5_ptr];
     game->tokens.bonus_5_ptr++;
   }
+}
+
+void card_exchange(CardGroup *market, CardGroup *player_hand, char *hand_idx, char *market_idx, int camels){
 }
 
 int is_game_over(PlayerScore *playerA, PlayerScore *playerB) {
@@ -537,14 +604,14 @@ void set_GameState_from_GameData(GameData *game_data, GameState *game_state){
     game_state->hand_plB=game_data->hand_plB;
     game_state->playerA=game_data->playerA;
     game_state->playerB=game_data->playerB;
-    game_state->remaining_tokens.bonus_3=MAX_BONUS_TOKENS-game_data->tokens.bonus_3_ptr;
-    game_state->remaining_tokens.bonus_4=MAX_BONUS_TOKENS-game_data->tokens.bonus_4_ptr;
-    game_state->remaining_tokens.bonus_5=MAX_BONUS_TOKENS-game_data->tokens.bonus_5_ptr;
-    game_state->remaining_tokens.diamond=DIAMOND_T_SIZE-game_data->tokens.diamond_ptr;
-    game_state->remaining_tokens.gold=GOLD_T_SIZE-game_data->tokens.gold_ptr;
-    game_state->remaining_tokens.silver=SILVER_T_SIZE-game_data->tokens.silver_ptr;
-    game_state->remaining_tokens.spice=SPICE_T_SIZE-game_data->tokens.spice_ptr;
-    game_state->remaining_tokens.cloth=CLOTH_T_SIZE-game_data->tokens.cloth_ptr;
-    game_state->remaining_tokens.leather=LEATHER_T_SIZE-game_data->tokens.leather_ptr;
+    game_state->tokens.bonus_3=MAX_BONUS_TOKENS-game_data->tokens.bonus_3_ptr;
+    game_state->tokens.bonus_4=MAX_BONUS_TOKENS-game_data->tokens.bonus_4_ptr;
+    game_state->tokens.bonus_5=MAX_BONUS_TOKENS-game_data->tokens.bonus_5_ptr;
+    game_state->tokens.diamond=DIAMOND_T_SIZE-game_data->tokens.diamond_ptr;
+    game_state->tokens.gold=GOLD_T_SIZE-game_data->tokens.gold_ptr;
+    game_state->tokens.silver=SILVER_T_SIZE-game_data->tokens.silver_ptr;
+    game_state->tokens.spice=SPICE_T_SIZE-game_data->tokens.spice_ptr;
+    game_state->tokens.cloth=CLOTH_T_SIZE-game_data->tokens.cloth_ptr;
+    game_state->tokens.leather=LEATHER_T_SIZE-game_data->tokens.leather_ptr;
     game_state->cards_in_deck=DECK_SIZE-game_data->deck_ptr;
 }

@@ -15,6 +15,26 @@
 #define CAMELS_TOTAL 11
 #define SEALS_TO_WIN 2
 
+//d = diamonds, g = gold, s = silver, p = spice, h = cloth, l = leather, c = camel
+#define DIAMOND_CHAR 'd'
+#define GOLD_CHAR 'g'
+#define SILVER_CHAR 's'
+#define SPICE_CHAR 'p'
+#define CLOTH_CHAR 'h'
+#define LEATHER_CHAR 'l'
+#define CAMEL_CHAR 'c'
+
+#define CARD_GROUP_SIZE 7
+typedef enum card_index{
+    diamonds=0,
+    golds=1,
+    silvers=2,
+    spices=3,
+    cloths=4,
+    leathers=5,
+    camels=6
+} card_index;
+
 extern const int diamond_tokens[];
 extern const int gold_tokens[];
 extern const int silver_tokens[];
