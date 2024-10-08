@@ -23,79 +23,48 @@ void setSeed(GameData *game) {
   randomize_index_array(game->deck,DECK_SIZE);
 }
 
-void initCardGroup(CardGroup *group){
-   group->camels=0;
-   group->diamonds=0;
-   group->silvers=0;
-   group->golds=0;
-   group->leathers=0;
-   group->cloths=0;
-   group->spices=0;
-}
-
-void initPlayerScore(PlayerScore *score){
-  score->points=0;
-  score->no_bonus_tokens=0;
-  score->no_goods_tokens=0;
-  score->seals=0;
-}
-
 void initGameData(GameData *game){
     if (game->was_initialized == 1)
         return;
-    CardGroup template = {0, 0, 0, 0, 0, 0, 0};
-    game->hand_plA = template;
-    game->hand_plB = template;
-    game->market = template;
-    game->market.camels = 3;
-    PlayerScore template2 = {0, 0, 0, 0};
-    game->playerA = template2;
-    game->playerB = template2;
+    memset(game->hand_plA,0,CARD_GROUP_SIZE);
+    memset(game->hand_plB,0,CARD_GROUP_SIZE);
+    memset(game->market,0,CARD_GROUP_SIZE);
+    game->market[camels] = 3;
+    memset(&(game->playerA),0,sizeof(PlayerScore));
+    memset(&(game->playerB),0,sizeof(PlayerScore));
     game->seed = (unsigned int)time(NULL);
     setSeed(game);
-    game->tokens.diamond_ptr = 0;
-    game->tokens.gold_ptr = 0;
-    game->tokens.silver_ptr = 0;
-    game->tokens.spice_ptr = 0;
-    game->tokens.cloth_ptr = 0;
-    game->tokens.leather_ptr = 0;
-    game->tokens.bonus_3_ptr = 0;
-    game->tokens.bonus_4_ptr = 0;
-    game->tokens.bonus_5_ptr = 0;
-    game->tokens.finished_counter = 0;
+    memset(&(game->tokens),0,sizeof(game->tokens));
     game->deck_ptr = 0;
     game->turn_of = 'A' + (rand() & 1);
     game->was_initialized=1;
 }
-void resetGameData(GameData *game){
-    CardGroup template = {0, 0, 0, 0, 0, 0, 0};
-    game->hand_plA = template;
-    game->hand_plB = template;
-    game->market = template;
-    game->market.camels = 3;
+int resetGameData(GameData *game){
+    if (game->was_initialized==0){
+      return -1;
+    }
+    memset(game->hand_plA,0,CARD_GROUP_SIZE);
+    memset(game->hand_plB,0,CARD_GROUP_SIZE);
+    memset(game->market,0,CARD_GROUP_SIZE);
+    game->market[camels] = 3;
     game->seed = (unsigned int)time(NULL);
     setSeed(game);
-    game->tokens.diamond_ptr = 0;
-    game->tokens.gold_ptr = 0;
-    game->tokens.silver_ptr = 0;
-    game->tokens.spice_ptr = 0;
-    game->tokens.cloth_ptr = 0;
-    game->tokens.leather_ptr = 0;
-    game->tokens.bonus_3_ptr = 0;
-    game->tokens.bonus_4_ptr = 0;
-    game->tokens.bonus_5_ptr = 0;
-    game->tokens.finished_counter = 0;
+    memset(&(game->tokens),0,sizeof(game->tokens));
     game->deck_ptr = 0;
+    return 0;
+}
+void startGame(GameData *game){
+    //DEAL CARDS TO MARKET
+    drawCardsFromDeck(&(game->market),game,2);
+    //DEAL CARDS TO PLAYERS
+    drawCardsFromDeck(&(game->hand_plA),game,INITIAL_HAND_SIZE);
+    drawCardsFromDeck(&(game->hand_plB),game,INITIAL_HAND_SIZE);
 }
 void initializeGame(GameData *game){
     game->was_initialized=0;
     print_welcome_message();
     initGameData(game);
-    //DEAL CARDS TO MARKET
-    draw_cards_from_deck(&(game->market),game,2);
-    //DEAL CARDS TO PLAYERS
-    draw_cards_from_deck(&(game->hand_plA),game,2);
-    draw_cards_from_deck(&(game->hand_plB),game,2);
+    startGame(game);
     printf("<Turn> Player %c starts this round <Turn>\n", game->turn_of);
 }
 
@@ -343,7 +312,7 @@ void process_arguments(GameData *game, int argc, char *argv[]) {
     }
     game->market.camels=0;
     curr_player_hand->camels+=camels;
-    draw_cards_from_deck(&(game->market),game,camels);
+    drawCardsFromDeck(&(game->market),game,camels);
     turn_happened += 1;
   } else if (strncmp(argv[1], "--sell", 6) == 0) {
     if (argc < 4) {
@@ -401,22 +370,22 @@ void process_arguments(GameData *game, int argc, char *argv[]) {
   }
 }
 
-void draw_cards_from_deck(CardGroup *group, GameData *game, int cards){
+void drawCardsFromDeck(int* card_group, GameData *game, int cards){
   for (int i=0;i<cards;i++){
     char card=deck[game->deck[game->deck_ptr++]];
-    if (card=='c'){
+    if (card==CAMEL_CHAR){
 
-    } else if (card=='d'){
+    } else if (card==DIAMOND_CHAR){
 
-    }else if (card=='g'){
+    }else if (card==GOLD_CHAR){
       
-    }else if (card=='s'){
+    }else if (card==SILVER_CHAR){
       
-    }else if (card=='d'){
+    }else if (card==SPICE_CHAR){
       
-    }else if (card=='d'){
+    }else if (card==CLOTH_CHAR){
       
-    }else if (card=='d'){
+    }else if (card==LEATHER_CHAR){
       
     }
   }

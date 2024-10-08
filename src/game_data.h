@@ -105,10 +105,9 @@ typedef struct GameState{
 
 void setSeed(GameData *game);
 
-void initCardGroup(int group[CARD_GROUP_SIZE]);
-void initPlayerScore(PlayerScore* score);
 void initGameData(GameData* game);
-void resetGameData(GameData* game);
+int resetGameData(GameData* game);
+void startGame(GameData* game);
 void initializeGame(GameData *game);
 void initializeRound(GameData *game);
 void set_GameState_from_GameData(GameData* game_data, GameState* game_state);
@@ -122,7 +121,7 @@ int  load_game_state(GameData *game);
 void save_game_state(const GameData *game);
 
 void process_arguments(GameData *game, int argc, char *argv[]);
-void draw_cards_from_deck(int group[CARD_GROUP_SIZE],GameData* game,int cards);
+void drawCardsFromDeck(int group[CARD_GROUP_SIZE],GameData* game,int cards);
 int take_card_from_market(int market[CARD_GROUP_SIZE],int player_hand[CARD_GROUP_SIZE],int index);
 void card_sale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROUP_SIZE], char card_type[], int no_cards);
 void card_exchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char* hand_idx, char* market_idx, int camels);
