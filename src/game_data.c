@@ -74,6 +74,7 @@ void initializeRound(GameData *game){
 }
 
 void printGameState(GameData *game) {
+  //INTRODUCE COUNTDOWN FOR SECRECY, SLEEP, MACRO FOR SECONDS
   printf("\n");
   printf("<Scores>\n");
   printf("<Player A> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerA.points,
@@ -95,24 +96,44 @@ void printGameState(GameData *game) {
   printf("<Turn> It is player %c's turn now <Turn>\n", game->turn_of);
   printf("\n");
 }
-int checkDataIntegrity(GameData *game) {
-  if (game->hand_plA.camels + game->hand_plA.camels > CAMELS_TOTAL || game->hand_plA.camels < 0 || game->hand_plA.camels < 0) {
+int isHandSizeCorrect(int *card_group, int max){
+  int sum=0;
+  for (int card_type=0;card_type<CARD_GROUP_SIZE;card_type++){
+    sum+=card_group[card_type];
+  }
+  return sum<=max;
+}
+int checkDataIntegrity(GameData *game)
+{
+  //Only to run in case of data loading
+  int remaining_cards[CARD_GROUP_SIZE]={0};
+  for (int ptr=game->deck_ptr;ptr<DECK_SIZE;ptr++){
+    remaining_cards[char_to_enum_lookup_table[game->deck[ptr]]]++;
+  }
+  if (game->deck_ptr>=DECK_SIZE || game->deck_ptr<0||game->tokens.finished_counter >= FINISHED_GOODS_LIMIT || game->tokens.finished_counter < 0||game->playerA.seals>1||game->playerB.seals>2){
     return -1;
+  }
+  if (game->hand_plA[camels] + game->hand_plB[camels]+game->market[camels]+remaining_cards[camels] > CAMELS_TOTAL || game->hand_plA[camels] < 0 || game->hand_plB[camels] < 0||game->market[camels]<0){
+      return -1;
   }
   if (game->tokens.bonus_3_ptr > MAX_BONUS_TOKENS || game->tokens.bonus_3_ptr < 0 || game->tokens.bonus_4_ptr > MAX_BONUS_TOKENS || game->tokens.bonus_5_ptr < 0 ||
       game->tokens.bonus_5_ptr > MAX_BONUS_TOKENS || game->tokens.bonus_5_ptr < 0) {
-    return -1;
+      return -1;
   }
-  if (game->hand_plA.cloths > CLOTH_T_SIZE || game->hand_plA.cloths < 0 || game->hand_plA.spices > SPICE_T_SIZE || game->hand_plA.spices < 0 ||
-      game->hand_plA.leathers > LEATHER_T_SIZE || game->hand_plA.leathers < 0 ||game->hand_plA.silvers > SILVER_T_SIZE || game->hand_plA.silvers < 0 ||
-      game->hand_plA.golds > GOLD_T_SIZE || game->hand_plA.golds < 0 || game->hand_plA.diamonds > DIAMOND_T_SIZE || game->hand_plA.diamonds < 0) {
-    return -1;
+  if ((game->turn_of != 'A' && game->turn_of != 'B')){
+      return -1;
   }
-  if ((game->turn_of != 'A' && game->turn_of != 'B')) {
-    return -1;
+  int bound=0;
+  int *ptrs=(int*)(&(game->tokens.diamond_ptr));
+  for (int card_type=0;card_type<camels;card_type++){
+    remaining_cards[card_type]+=game->market[card_type]+game->hand_plA[card_type]+game->hand_plB[card_type]+ptrs[card_type];
+    bound|=(remaining_cards[card_type]>max_lookup_table[card_type]);
   }
-  if (game->tokens.finished_counter > FINISHED_GOODS_LIMIT || game->tokens.finished_counter < 0) {
-    return -1;
+  if (bound){
+      return -1;
+  }
+  for (int card_type=0;card_type<camels;card_type++){
+    if (ptrs[card_type]<0) return -1;
   }
   return 0;
 }

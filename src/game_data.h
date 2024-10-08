@@ -112,6 +112,7 @@ void initializeGame(GameData *game);
 void initializeRound(GameData *game);
 void set_GameState_from_GameData(GameData* game_data, GameState* game_state);
 
+int isHandSizeCorrect(int* card_group,int max);
 int  checkDataIntegrity(GameData *game);
 
 void set_finished_resources(GameData *game);

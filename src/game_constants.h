@@ -1,6 +1,10 @@
 #ifndef GAME_CONSTANTS_JAIPUR
 #define GAME_CONSTANTS_JAIPUR
 
+//Data macros
+#define CHAR_LOOKUP_TABLE_SIZE 256
+
+
 #define MAX_BONUS_TOKENS 6
 #define DECK_SIZE 52 //53 would include the string termination character
 
@@ -39,6 +43,8 @@ typedef enum card_index{
 } card_index;
 
 extern const int char_lookup_table[];
+extern const int max_lookup_table[];
+extern const int char_to_enum_lookup_table[];
 
 extern const int diamond_tokens[];
 extern const int gold_tokens[];
