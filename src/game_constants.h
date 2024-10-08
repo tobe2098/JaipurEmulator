@@ -24,7 +24,9 @@
 #define LEATHER_CHAR 'l'
 #define CAMEL_CHAR 'c'
 
-#define CARD_GROUP_SIZE 7
+#define INITIAL_HAND_SIZE 5
+
+// #define CARD_GROUP_SIZE 7
 typedef enum card_index{
     diamonds=0,
     golds=1,
@@ -32,8 +34,11 @@ typedef enum card_index{
     spices=3,
     cloths=4,
     leathers=5,
-    camels=6
+    camels=6,
+    CARD_GROUP_SIZE,
 } card_index;
+
+extern const int char_lookup_table[];
 
 extern const int diamond_tokens[];
 extern const int gold_tokens[];

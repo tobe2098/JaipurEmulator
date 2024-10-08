@@ -52,10 +52,25 @@ void print_player_wins(char player) {
     printf("      ╚═════╝      ╚══╝╚══╝ ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝        \n");
   }
 }
-void find_data_path(char* data_path) {
-  char exe_path[MAX_PATH];
-  int  size = sizeof(exe_path);
-  // Function to get the executable path based on the operating system
+void printCardGroup(int *card_group,int bool_camel){
+  char line_array[5][8][11];
+  // char line1[8][11];
+  // char line2[8][11];
+  // char line3[8][11];
+  // char line4[8][11];
+  // char line5[8][11];
+  for (int i=0;i<(bool_camel?CARD_GROUP_SIZE:camels);i++){
+    for (int j=0;j<card_group[i];j++){
+      int a=0;
+    }
+  }
+}
+
+void find_data_path(char *data_path)
+{
+    char exe_path[MAX_PATH];
+    int size = sizeof(exe_path);
+    // Function to get the executable path based on the operating system
 #ifdef _WIN32
   // On Windows
   if (GetModuleFileName(NULL, exe_path, size) == 0) {

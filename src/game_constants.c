@@ -1,5 +1,7 @@
 #include "game_constants.h"
 
+const int char_lookup_table[]={DIAMOND_CHAR,GOLD_CHAR,SILVER_CHAR,SPICE_CHAR,CLOTH_CHAR,LEATHER_CHAR,CAMEL_CHAR};
+
 const int diamond_tokens[] = { 7, 7, 5, 5, 5 };
 const int gold_tokens[]    = { 6, 6, 5, 5, 5 };
 const int silver_tokens[]  = { 5, 5, 5, 5, 5 };
