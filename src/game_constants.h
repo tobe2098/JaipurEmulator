@@ -4,7 +4,8 @@
 //Data macros
 #define CHAR_LOOKUP_TABLE_SIZE 256
 
-
+#define RESOURCE_TYPES 6
+#define BONUS_TOKEN_TYPES 3
 #define MAX_BONUS_TOKENS 6
 #define DECK_SIZE 52 //53 would include the string termination character
 
@@ -42,7 +43,7 @@ typedef enum card_index{
     CARD_GROUP_SIZE,
 } card_index;
 
-extern const int char_lookup_table[];
+extern const int enum_to_char_lookup_table[];
 extern const int max_lookup_table[];
 extern const int char_to_enum_lookup_table[];
 

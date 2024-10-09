@@ -63,7 +63,7 @@ void printCardGroup(int *card_group,int bool_camel){
   for (int card_type=0;card_type<(bool_camel?CARD_GROUP_SIZE:camels);card_type++){
     for (int card_it=0;card_it<card_group[card_type];card_it++){
       if (card_counter>=7) break;
-      char cardChar=char_lookup_table[card_type];
+      char cardChar=enum_to_char_lookup_table[card_type];
       snprintf(line_array[0][card_counter],sizeof(line_array[0][card_counter]),"  _____ ");
       snprintf(line_array[1][card_counter],sizeof(line_array[1][card_counter])," |%c    |",cardChar);
       snprintf(line_array[2][card_counter],sizeof(line_array[2][card_counter])," |     |");

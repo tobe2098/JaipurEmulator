@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
   // Process command-line arguments (e.g., "take_camel", "sell_goods", "draw_from_deck")
-  process_arguments(&playerA, &playerB, &game, argc, argv);
+  processAction(&playerA, &playerB, &game, argc, argv);
 
   // Save the updated state back to the JSON file
   save_game_state(&playerA, &playerB, &game);
