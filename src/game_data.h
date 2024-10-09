@@ -95,14 +95,15 @@ int  checkDataIntegrity(GameData *game);
 
 void computeFinishedResources(GameData *game);
 int sumOfCardsGroup(int group[CARD_GROUP_SIZE],int not_camels_bool);
+int getCardTypeIndex(int group[CARD_GROUP_SIZE],int card_index_input);
 int  load_game_state(GameData *game);
 void save_game_state(const GameData *game);
 
 void processAction(GameData *game, int argc, char *argv[]);
 void drawCardsFromDeck(int group[CARD_GROUP_SIZE],GameData* game,int cards);
-int take_card_from_market(int market[CARD_GROUP_SIZE],int player_hand[CARD_GROUP_SIZE],int index);
-void cardSale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROUP_SIZE], char card_type[], int no_cards);
-void card_exchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char* hand_idx, char* market_idx, int camels_no);
+int takeCardFromMarket(int market[CARD_GROUP_SIZE],int player_hand[CARD_GROUP_SIZE],int index);
+void cardSale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
+void cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char* hand_idx, char* market_idx, int camels_no);
 
 int  is_game_over(PlayerScore *playerA, PlayerScore *playerB);
 int  is_round_over(GameData *game);

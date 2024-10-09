@@ -32,6 +32,8 @@
 #define INITIAL_HAND_SIZE 5
 
 // #define CARD_GROUP_SIZE 7
+
+//Card type index
 typedef enum card_index{
     diamonds=0,
     golds=1,

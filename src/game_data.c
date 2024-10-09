@@ -145,7 +145,28 @@ int sumOfCardsGroup(int group[CARD_GROUP_SIZE],int not_camels_bool){
   }
   return sum;
 }
-int load_game_state(GameData *game){
+int getCardTypeIndex(int group[CARD_GROUP_SIZE], int card_index_input){
+  card_index card_type_index=diamonds;
+  int i=0;
+  while(i<card_index_input){
+#ifndef DEBUG
+    if (card_type_index>=CARD_GROUP_SIZE) {
+      printf("Error, out of bounds");
+      return -1;
+    }
+#endif
+    if (group[card_type_index]==0) card_type_index++;
+    else {
+      if (i+group[card_type_index]>=card_type_index) break;
+      else {
+        i+=group[card_type_index++];
+      }
+    }
+  }
+  return card_type_index;
+}
+int load_game_state(GameData *game)
+{
     char save_file[MAX_PATH];
     find_data_path(save_file);
     FILE *file = fopen(save_file, "r");
@@ -325,16 +346,30 @@ void processAction(GameData *game, int argc, char *argv[]) {
     cardSale(game,curr_player_score,curr_player_hand, goods, no_goods);
     turn_happened += 1;
   } else if (strncmp(argv[1], "--exchange", 10) == 0) {
-    //Here the structure of the arguments has to be "--exchange seq num goodstype" where seq is a sequence of numbers
+    //Here the structure of the arguments has to be "--exchange seq0-6 num seq0-4" where seq is a sequence of numbers
     //Each sequence of numbers will be composed of numbers from 0 to 6 indicating the positions of the cards to be exchanged in hand. 
     if (argc < 5) {
       printf("Too few arguments.\n");
       return;
     }
     char* hand_idx=argv[2];
+    int hand_idx_len=strlen(hand_idx);
     int camels_no = atoi(argv[3]);
-    char* market_goods=argv[4];
-    card_exchange(game->market,curr_player_hand,hand_idx,market_goods,camels_no);
+    char* market_goods_positions=argv[4];
+    int market_goods_positions_len=strlen(market_goods_positions);
+    if (camels_no>curr_player_hand[camels]){
+      printf("Cannot exchange more camels than owned");
+      return;
+    }
+    if (hand_idx_len+camels_no!=market_goods_positions_len){
+      printf("Number of cards from hand and market to be exchanged do not match");
+      return;
+    }
+    if (market_goods_positions_len>5){
+      printf("The market has only 5 cards, do not input more than 5 positions.");
+      return;
+    }
+    cardExchange(game->market,curr_player_hand,hand_idx,market_goods_positions,camels_no);
     turn_happened += 1;
   } else if (strncmp(argv[1], "--take", 6) == 0) {
     if (sumOfCardsGroup(curr_player_hand,1)>=7){
@@ -345,11 +380,19 @@ void processAction(GameData *game, int argc, char *argv[]) {
       printf("Too few arguments.\n");
       return;
     }
-    take_card_from_market(&(game->market),curr_player_hand,argv[2]);
-    turn_happened += 1;
+    int idx=(int)(strtol(argv[2],NULL,10)&INT_MAX);
+    if (idx>=5) {
+      printf("There are only 5 cards in the market, indexed 0-4.\n");
+      return;
+    }
+    if (takeCardFromMarket(&(game->market),curr_player_hand,argv[2])==0){
+      drawCardsFromDeck(game->market, game, 1);
+      turn_happened += 1;
+    }
   } else if (strncmp(argv[1], "--state", 7) == 0) {
     printGameState(game);
   } else if (strncmp(argv[1], "--reset", 7) == 0) {
+    game->was_initialized=0;
     initializeGame(game);
   } else if (strncmp(argv[1], "--help", 6) == 0) {
     print_help();
@@ -392,24 +435,12 @@ void drawCardsFromDeck(int* card_group, GameData *game, int cards){
   }
 }
 
-int take_card_from_market(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], int index){
+int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], int index){
   if (sum_cards_market(market)!=5) return -1;
-  card_index card_type_index=diamonds;
-  int i=0;
-  while(i<index){
-#ifndef DEBUG
-    if (card_type_index>=CARD_GROUP_SIZE) {
-      printf("Error, out of bounds");
-      return -1;
-    }
-#endif
-    if (market[card_type_index]==0) card_type_index++;
-    else {
-      if (i+market[card_type_index]>=index) break;
-      else {
-        i+=market[card_type_index++];
-      }
-    }
+  card_index card_type_index=getCardTypeIndex(market,index);
+  if (card_type_index==camels){
+    printf("Taking an individual camel is not allowed");
+    return -1;
   }
   player_hand[card_type_index]++;
   market[card_type_index]--;
@@ -426,14 +457,20 @@ void cardSale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROU
   game->resource_tk_ptrs[card_index]=end;
 
   if (no_cards<=2) return;
-  int * bonus_tkns=(int*)&(game->bonus_tk_ptrs);
-  int ** bonus_tkn_arrs=&*(game->bonus_tk_arrays);
   no_cards=min(2,no_cards-3);
   if (game->bonus_tk_ptrs[no_cards]<MAX_BONUS_TOKENS){
     player_score->points+=game->bonus_tk_arrays[no_cards][game->bonus_tk_ptrs[no_cards]];
     game->bonus_tk_ptrs[no_cards]++;
     player_score->no_bonus_tokens++;
   }
+}
+
+void cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no){
+  //Check if the exchange from market includes both goods and camels
+  int cards_from_hand[CARD_GROUP_SIZE]={0};
+  
+  int cards_from_market[CARD_GROUP_SIZE]={0};
+  
 }
 
 int is_game_over(PlayerScore *playerA, PlayerScore *playerB) {
