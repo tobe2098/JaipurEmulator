@@ -76,16 +76,16 @@ void printGameState(GameData *game) {
   printf("<Player B> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerB.points,
          game->playerB.seals, game->playerB.no_bonus_tokens, game->playerB.no_goods_tokens);
   printf("\n");
-  print_array_goods("diamonds", diamond_tokens, DIAMOND_T_SIZE, game->tokens.diamond_ptr);
-  print_array_goods("gold", gold_tokens, GOLD_T_SIZE, game->tokens.gold_ptr);
-  print_array_goods("silver", silver_tokens, SILVER_T_SIZE, game->tokens.silver_ptr);
-  print_array_goods("spice", spice_tokens, SPICE_T_SIZE, game->tokens.spice_ptr);
-  print_array_goods("cloth", cloth_tokens, CLOTH_T_SIZE, game->tokens.cloth_ptr);
-  print_array_goods("leather", leather_tokens, LEATHER_T_SIZE, game->tokens.leather_ptr);
-  printf("\n");
-  printf("<Bonus> Remaining 3 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->tokens.bonus_3_ptr);
-  printf("<Bonus> Remaining 4 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->tokens.bonus_4_ptr);
-  printf("<Bonus> Remaining 5 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->tokens.bonus_5_ptr);
+  // print_array_goods("diamonds", diamond_tokens, DIAMOND_T_SIZE, game->diamond_ptr);
+  // print_array_goods("gold", gold_tokens, GOLD_T_SIZE, game->gold_ptr);
+  // print_array_goods("silver", silver_tokens, SILVER_T_SIZE, game->silver_ptr);
+  // print_array_goods("spice", spice_tokens, SPICE_T_SIZE, game->spice_ptr);
+  // print_array_goods("cloth", cloth_tokens, CLOTH_T_SIZE, game->cloth_ptr);
+  // print_array_goods("leather", leather_tokens, LEATHER_T_SIZE, game->leather_ptr);
+  // printf("\n");
+  // printf("<Bonus> Remaining 3 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_tk_ptrs);
+  // printf("<Bonus> Remaining 4 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_4_ptr);
+  // printf("<Bonus> Remaining 5 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_5_ptr);
   printf("\n");
   printf("<Turn> It is player %c's turn now <Turn>\n", game->turn_of);
   printf("\n");
@@ -165,28 +165,29 @@ int load_game_state(GameData *game){
         }
         buffer[file_size] = '\0';
         fclose(file);
+        int itemsRead=0;
         // printf("Buffer 1 content:\n%s\n", buffer);
         // Parse the JSON-like ure
-        int itemsRead = sscanf(buffer,
-                               "{\n"
-                               "  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n"
-                               "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n"
-                               "  \"turn_of\": \"%c\",\n"
-                               "  \"diamond_ptr\": %i,\n"
-                               "  \"gold_ptr\": %i,\n"
-                               "  \"silver_ptr\": %i,\n"
-                               "  \"spice_ptr\": %i,\n"
-                               "  \"cloth_ptr\": %i,\n"
-                               "  \"leather_ptr\": %i,\n"
-                               "  \"seed\": %i,\n"
-                               "  \"bonus_3_ptr\": %i,\n"
-                               "  \"bonus_4_ptr\": %i,\n"
-                               "  \"bonus_5_ptr\": %i\n"
-                               "}\n",
-                               &(playerA->no_bonus_tokens), &playerA->no_goods_tokens, &playerA->camels, &playerA->points, &playerA->seals,
-                               &playerB->no_bonus_tokens, &playerB->no_goods_tokens, &playerB->camels, &playerB->points, &playerB->seals,
-                               &game->turn_of, &game->diamond_ptr, &game->gold_ptr, &game->silver_ptr, &game->spice_ptr, &game->cloth_ptr,
-                               &game->leather_ptr, &game->seed, &game->tokens.bonus_3_ptr, &game->tokens.bonus_4_ptr, &game->tokens.bonus_5_ptr);
+        // int itemsRead = sscanf(buffer,
+        //                        "{\n"
+        //                        "  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n"
+        //                        "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n"
+        //                        "  \"turn_of\": \"%c\",\n"
+        //                        "  \"diamond_ptr\": %i,\n"
+        //                        "  \"gold_ptr\": %i,\n"
+        //                        "  \"silver_ptr\": %i,\n"
+        //                        "  \"spice_ptr\": %i,\n"
+        //                        "  \"cloth_ptr\": %i,\n"
+        //                        "  \"leather_ptr\": %i,\n"
+        //                        "  \"seed\": %i,\n"
+        //                        "  \"bonus_tk_ptrs\": %i,\n"
+        //                        "  \"bonus_4_ptr\": %i,\n"
+        //                        "  \"bonus_5_ptr\": %i\n"
+        //                        "}\n",
+        //                        &(playerA->no_bonus_tokens), &playerA->no_goods_tokens, &playerA->camels, &playerA->points, &playerA->seals,
+        //                        &playerB->no_bonus_tokens, &playerB->no_goods_tokens, &playerB->camels, &playerB->points, &playerB->seals,
+        //                        &game->turn_of, &game->diamond_ptr, &game->gold_ptr, &game->silver_ptr, &game->spice_ptr, &game->cloth_ptr,
+        //                        &game->leather_ptr, &game->seed, &game->bonus_tk_ptrs, &game->bonus_4_ptr, &game->bonus_5_ptr);
         // printf("Items read: %d\n", itemsRead);
         free(buffer);
         setSeed(game);
@@ -235,27 +236,28 @@ void save_game_state(const GameData *game) {
   }
 
   // Write the JSON-like format for the game state
-  fprintf(file, "{\n");
-  fprintf(file, "  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n",
-          playerA->no_bonus_tokens, playerA->no_goods_tokens, playerA->camels, playerA->points, playerA->seals);
-  fprintf(file, "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n",
-          playerB->no_bonus_tokens, playerB->no_goods_tokens, playerB->camels, playerB->points, playerB->seals);
-  fprintf(file, "  \"turn_of\": \"%c\",\n", game->turn_of);
-  fprintf(file, "  \"diamond_ptr\": %i,\n", game->diamond_ptr);
-  fprintf(file, "  \"gold_ptr\": %i,\n", game->gold_ptr);
-  fprintf(file, "  \"silver_ptr\": %i,\n", game->silver_ptr);
-  fprintf(file, "  \"spice_ptr\": %i,\n", game->spice_ptr);
-  fprintf(file, "  \"cloth_ptr\": %i,\n", game->cloth_ptr);
-  fprintf(file, "  \"leather_ptr\": %i,\n", game->leather_ptr);
-  fprintf(file, "  \"seed\": %i,\n", game->seed);
-  fprintf(file, "  \"bonus_3_ptr\": %i,\n", game->tokens.bonus_3_ptr);
-  fprintf(file, "  \"bonus_4_ptr\": %i,\n", game->tokens.bonus_4_ptr);
-  fprintf(file, "  \"bonus_5_ptr\": %i\n", game->tokens.bonus_5_ptr);
-  fprintf(file, "}\n");
+  // fprintf(file, "{\n");
+  // fprintf(file, "  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n",
+  //         playerA->no_bonus_tokens, playerA->no_goods_tokens, playerA->camels, playerA->points, playerA->seals);
+  // fprintf(file, "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n",
+  //         playerB->no_bonus_tokens, playerB->no_goods_tokens, playerB->camels, playerB->points, playerB->seals);
+  // fprintf(file, "  \"turn_of\": \"%c\",\n", game->turn_of);
+  // fprintf(file, "  \"diamond_ptr\": %i,\n", game->diamond_ptr);
+  // fprintf(file, "  \"gold_ptr\": %i,\n", game->gold_ptr);
+  // fprintf(file, "  \"silver_ptr\": %i,\n", game->silver_ptr);
+  // fprintf(file, "  \"spice_ptr\": %i,\n", game->spice_ptr);
+  // fprintf(file, "  \"cloth_ptr\": %i,\n", game->cloth_ptr);
+  // fprintf(file, "  \"leather_ptr\": %i,\n", game->leather_ptr);
+  // fprintf(file, "  \"seed\": %i,\n", game->seed);
+  // fprintf(file, "  \"bonus_tk_ptrs\": %i,\n", game->bonus_tk_ptrs);
+  // fprintf(file, "  \"bonus_4_ptr\": %i,\n", game->bonus_4_ptr);
+  // fprintf(file, "  \"bonus_5_ptr\": %i\n", game->bonus_5_ptr);
+  // fprintf(file, "}\n");
 
   fclose(file);
 }
 void print_help() {
+  //Finish after everything else is done
   printf("Usage: ./program [options]\n");
   printf("Options:\n");
   printf("  --help                        Show this help message\n");
@@ -266,12 +268,18 @@ void print_help() {
   printf("  --camels <value>              Add a positive or negative number of camels to your herd\n");
   printf("                                Example: --camels 3\n");
   printf("  --sell <type> <value>         Sell a number of goods of the specified type\n");
-  printf("                                Example: --sell diamonds 3\n");
+  printf("                                Example: --sell d 3\n");
   printf("Notes on rules:\n");
   printf("1. The game ends when there are no cards left in the draw pile or the tokens of three resources are finished\n");
   printf("2. Cards from hand and from the herd can be traded with the market\n");
+  printf("Card types and their respective characters:\n");
+  printf("Diamonds: d, \n");
+  printf("REMEMBER: Indexing on position is 0-based. \n");
+
 }
-void process_arguments(GameData *game, int argc, char *argv[]) {
+void processAction(GameData *game, int argc, char *argv[]) {
+  //Go over the code logic (init, init when corrupt, starting a new game, loading, etc)
+  
   if (argc < 2) {
     // printf("Addresses A:%p B:%p\n", (void *)playerA, (void *)playerB);
     printGameState(game);
