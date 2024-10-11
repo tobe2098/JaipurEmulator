@@ -103,7 +103,7 @@ void processAction(GameData *game, int argc, char *argv[]);
 void drawCardsFromDeck(int group[CARD_GROUP_SIZE],GameData* game,int cards);
 int takeCardFromMarket(int market[CARD_GROUP_SIZE],int player_hand[CARD_GROUP_SIZE],int index);
 void cardSale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
-void cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char* hand_idx, char* market_idx, int camels_no);
+int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char* hand_idx, char* market_idx, int camels_no);
 
 int  is_game_over(PlayerScore *playerA, PlayerScore *playerB);
 int  is_round_over(GameData *game);

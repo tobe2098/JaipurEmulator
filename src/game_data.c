@@ -353,8 +353,8 @@ void processAction(GameData *game, int argc, char *argv[])
     cardSale(game,curr_player_score,curr_player_hand, goods, no_goods);
     turn_happened += 1;
   } else if (strncmp(argv[1], "--exchange", 10) == 0) {
-    //Here the structure of the arguments has to be "--exchange seq0-6 num seq0-4" where seq is a sequence of numbers
-    //Each sequence of numbers will be composed of numbers from 0 to 6 indicating the positions of the cards to be exchanged in hand. 
+    //Here the structure of the arguments has to be "--exchange seq num seq" where seq is a sequence of characters
+    //Each sequence of characters will be composed of the characters referring to cards 
     if (argc < 5) {
       printf("Too few arguments.\n");
       return;
@@ -472,12 +472,20 @@ void cardSale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROU
   }
 }
 
-void cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no){
-  //Check if the exchange from market includes both goods and camels
+int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no){
   int cards_from_hand[CARD_GROUP_SIZE]={0};
   
   int cards_from_market[CARD_GROUP_SIZE]={0};
   
+  
+  //Check if the exchange from market includes both goods and camels
+  if (cards_from_market[camels]){
+    for (int card_type=0;card_type<RESOURCE_TYPES;card_type++){
+      if (cards_from_market[card_type]!=0) return -1;
+    }
+  }
+  
+  return 0;
 }
 
 int is_game_over(PlayerScore *playerA, PlayerScore *playerB) {
