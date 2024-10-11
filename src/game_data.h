@@ -113,6 +113,7 @@ void round_over(GameData *game);
 
 void printGameState(GameData *game);
 void print_help();
+void print_rules();
 
 
 GameState interfaceJaipurEmulator();

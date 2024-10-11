@@ -290,30 +290,37 @@ void print_help() {
   printf("                                Example: --camels 3\n");
   printf("  --sell <type> <value>         Sell a number of goods of the specified type\n");
   printf("                                Example: --sell d 3\n");
-  printf("Notes on rules:\n");
-  printf("1. The game ends when there are no cards left in the draw pile or the tokens of three resources are finished\n");
-  printf("2. Cards from hand and from the herd can be traded with the market\n");
   printf("Card types and their respective characters:\n");
   printf("Diamonds: d, \n");
   printf("REMEMBER: Indexing on position is 0-based. \n");
 
 }
-void processAction(GameData *game, int argc, char *argv[]) {
-  //Go over the code logic (init, init when corrupt, starting a new game, loading, etc)
-  
-  if (argc < 2) {
-    // printf("Addresses A:%p B:%p\n", (void *)playerA, (void *)playerB);
-    printGameState(game);
-    return;
-  }
-  int          turn_happened   = 0;
-  int          round_over_bool = 0;
-  PlayerScore *curr_player_score;
-  int *curr_player_hand;
-  if (game->turn_of == 'A') {
-    curr_player_score = &(game->playerA);
-    curr_player_hand = game->hand_plA;
-  } else if (game->turn_of == 'B') {
+void print_help(){
+  printf("Notes on rules:\n");
+  printf("1. The game ends when there are no cards left in the draw pile or the tokens of three resources are finished\n");
+  printf("2. Cards from hand and from the herd can be traded with the market\n");
+  printf("3. When trading you can only take either goods or camels from the market, not both\n");
+  printf("3. \n");
+}
+void processAction(GameData *game, int argc, char *argv[])
+{
+    // Go over the code logic (init, init when corrupt, starting a new game, loading, etc)
+
+    if (argc < 2)
+    {
+        // printf("Addresses A:%p B:%p\n", (void *)playerA, (void *)playerB);
+        printGameState(game);
+        return;
+    }
+    int turn_happened = 0;
+    int round_over_bool = 0;
+    PlayerScore *curr_player_score;
+    int *curr_player_hand;
+    if (game->turn_of == 'A')
+    {
+        curr_player_score = &(game->playerA);
+        curr_player_hand = game->hand_plA;
+    } else if (game->turn_of == 'B') {
     curr_player_score = &(game->playerB);
     curr_player_hand = game->hand_plB;
   } else {
