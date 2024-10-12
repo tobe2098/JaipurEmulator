@@ -33,18 +33,10 @@ void setSeed(GameData *game){
 void initGameData(GameData *game){
     if (game->was_initialized == 1)
         return;
-    memset(game->hand_plA,0,CARD_GROUP_SIZE);
-    memset(game->hand_plB,0,CARD_GROUP_SIZE);
-    memset(game->market,0,CARD_GROUP_SIZE);
-    game->market[camels] = 3;
-    memset(&(game->playerA),0,sizeof(PlayerScore));
-    memset(&(game->playerB),0,sizeof(PlayerScore));
+    memset(game,0,sizeof(GameData));
+    game->market[camels] = STARTING_MARKET_CAMELS;
     game->seed = (unsigned int)time(NULL);
     setSeed(game);
-    memset(&(game->resource_tk_ptrs),0,sizeof(game->resource_tk_ptrs));
-    memset(&(game->bonus_tk_arrays),0,sizeof(game->bonus_tk_arrays));
-    memset(&(game->bonus_tk_ptrs),0,sizeof(game->bonus_tk_ptrs));
-    game->deck_ptr = 0;
     game->turn_of = PLAYER_A_CHAR + (rand() & 1);
     game->was_initialized=1;
 }
@@ -55,27 +47,27 @@ int resetGameData(GameData *game){
     memset(game->hand_plA,0,CARD_GROUP_SIZE);
     memset(game->hand_plB,0,CARD_GROUP_SIZE);
     memset(game->market,0,CARD_GROUP_SIZE);
-    game->market[camels] = 3;
+    memset((game->resource_tk_ptrs),0,sizeof(game->resource_tk_ptrs));
+    memset((game->bonus_tk_arrays),0,sizeof(game->bonus_tk_arrays));
+    memset((game->bonus_tk_ptrs),0,sizeof(game->bonus_tk_ptrs));
     game->seed = (unsigned int)time(NULL);
     setSeed(game);
-    memset(&(game->resource_tk_ptrs),0,sizeof(game->resource_tk_ptrs));
-    memset(&(game->bonus_tk_arrays),0,sizeof(game->bonus_tk_arrays));
-    memset(&(game->bonus_tk_ptrs),0,sizeof(game->bonus_tk_ptrs));
+    game->market[camels] = STARTING_MARKET_CAMELS;
     game->deck_ptr = 0;
     return 0;
 }
-void startGame(GameData *game){
+void startRound(GameData *game){
     //DEAL CARDS TO MARKET
-    drawCardsFromDeck(&(game->market),game,2);
+    drawCardsFromDeck(game->market,game,MAX_MARKET_CARDS-STARTING_MARKET_CAMELS);
     //DEAL CARDS TO PLAYERS
-    drawCardsFromDeck(&(game->hand_plA),game,INITIAL_HAND_SIZE);
-    drawCardsFromDeck(&(game->hand_plB),game,INITIAL_HAND_SIZE);
+    drawCardsFromDeck(game->hand_plA,game,INITIAL_HAND_SIZE);
+    drawCardsFromDeck(game->hand_plB,game,INITIAL_HAND_SIZE);
 }
 void initGame(GameData *game){
     game->was_initialized=0;
     print_welcome_message();
     initGameData(game);
-    startGame(game);
+    startRound(game);
     printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
 
@@ -416,11 +408,11 @@ void processAction(GameData *game, int argc, char *argv[])
 }
 
 int drawCardsFromDeck(int card_group[CARD_GROUP_SIZE], GameData *game, int cards){
-  for (int i=0;i<cards;i++){
+  for (int i=0;i<cards&&game->deck_ptr<DECK_SIZE;i++){
     char card=deck[game->deck[game->deck_ptr++]];
-
-    
+    card_group[char_to_enum_lookup_table[card]]++;
   }
+  return 0;
 }
 
 int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], int index){

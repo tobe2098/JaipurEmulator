@@ -83,7 +83,7 @@ void setSeed(GameData *game);
 
 void initGameData(GameData* game);
 int resetGameData(GameData* game);
-void startGame(GameData* game);
+void startRound(GameData* game);
 void initGame(GameData *game);
 void initRound(GameData *game);
 void set_GameState_from_GameData(GameData* game_data, GameState* game_state);
