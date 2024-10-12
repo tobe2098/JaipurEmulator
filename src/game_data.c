@@ -1,16 +1,33 @@
 #include "game_data.h"
-void setSeed(GameData *game) {
-  srand(game->seed);
-  for (int barr=0;barr<BONUS_TOKEN_TYPES;barr++){
-    for (int no_token=0;no_token<MAX_BONUS_TOKENS;no_token++){
-      game->bonus_tk_arrays[barr][no_token]=no_token;
+void initDeck(char deck[DECK_SIZE+1]){
+  int idx=0;
+  for (int card_type=0;card_type<CARD_GROUP_SIZE;card_type++){
+    for (int card_no=0;card_no<cards_starting_deck_lookup_table[card_type];card_no++){
+      deck[idx++]=enum_to_char_lookup_table[card_type];
     }
-    randomize_index_array(game->bonus_tk_arrays[barr],MAX_BONUS_TOKENS);
   }
-  for (int i = 0; i < DECK_SIZE; i++) {
-    game->deck[i] = i;
-  }
-  randomize_index_array(game->deck,DECK_SIZE);
+}
+void setSeed(GameData *game){
+    srand(game->seed);
+    for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++)
+    {
+        for (int no_token = 0; no_token < MAX_BONUS_TOKENS; no_token++)
+        {
+            game->bonus_tk_arrays[barr][no_token] = no_token;
+        }
+        randomize_int_array(game->bonus_tk_arrays[barr], MAX_BONUS_TOKENS);
+    }
+    for (int i = 0; i < DECK_SIZE; i++)
+    {
+        game->deck[i] = i;
+    }
+    randomize_int_array(game->deck, DECK_SIZE);
+    printf("Deck: ");
+    for (int i = 0; i < DECK_SIZE; i++)
+    {
+        printf("%c,", game->deck[i]);
+    }
+    printf("\n");
 }
 
 void initGameData(GameData *game){

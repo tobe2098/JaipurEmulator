@@ -10,6 +10,25 @@ void randomize_int_array(int arr[], int size) {
   }
 }
 
+void randomize_char_array(char arr[], int size){
+  for (int i = size - 1; i > 0; i--) {
+    int j    = rand() % (i + 1);
+    int temp = arr[i];
+    arr[i]   = arr[j];
+    arr[j]   = temp;
+  }
+}
+
+void randomize_void_array(void *arr, int arr_size, int type_size){
+  char temp[type_size];
+  for (int i = arr_size - 1; i > 0; i--) {
+    int j    = rand() % (i + 1);
+    memcpy(temp,(void*)((char*)arr+i*type_size),type_size);
+    memcpy((void*)((char*)arr+i*type_size),(void*)((char*)arr+j*type_size),type_size);
+    memcpy((void*)((char*)arr+j*type_size),temp,type_size);
+  }
+}
+
 void print_array_goods(char* name, const int* array, int size, int cutoff) {
   printf("<Goods> Remaining %s tokens:  \t", name);
   for (int i = 0; i < size; i++) {
