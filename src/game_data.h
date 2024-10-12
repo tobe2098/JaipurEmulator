@@ -52,7 +52,10 @@ typedef struct GameData{
     PlayerScore playerA;
     PlayerScore playerB;
 
+    
     int resource_tk_ptrs[RESOURCE_TYPES];
+    int resource_tk_arrs[RESOURCE_TYPES][LARGEST_TOKEN_SIZE];
+
     int bonus_tk_ptrs[BONUS_TOKEN_TYPES];
     int bonus_tk_arrays[BONUS_TOKEN_TYPES][MAX_BONUS_TOKENS];
 

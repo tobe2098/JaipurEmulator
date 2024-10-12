@@ -9,11 +9,9 @@ void initDeck(char deck[DECK_SIZE+1]){
 }
 void setSeed(GameData *game){
     srand(game->seed);
-    for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++)
-    {
-        for (int no_token = 0; no_token < MAX_BONUS_TOKENS; no_token++)
-        {
-            game->bonus_tk_arrays[barr][no_token] = no_token;
+    for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++){
+        for (int no_token = 0; no_token < MAX_BONUS_TOKENS; no_token++){
+            game->bonus_tk_arrays[barr][no_token] = (no_token)/2 + 1 +barr*3 ;
         }
         randomize_int_array(game->bonus_tk_arrays[barr], MAX_BONUS_TOKENS);
     }
@@ -429,7 +427,7 @@ int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_S
 
 void cardSale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards) {
   int card_index=char_to_enum_lookup_table[card_type];
-  int end = min(no_cards+game->resource_tk_ptrs[card_index],no_cards_lookup_table[card_index]);
+  int end = min(no_cards+game->resource_tk_ptrs[card_index],no_cards_lookup_table[card_index]-1);
   for (int token_idx=game->resource_tk_ptrs[card_index];token_idx<end;token_idx++){
     player_score->points+=diamond_tokens[token_idx];
   }

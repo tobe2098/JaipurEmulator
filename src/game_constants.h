@@ -32,6 +32,8 @@
 #define CLOTH_TOKEN_SIZE CLOTH_STARTING_DECK-1
 #define LEATHER_TOKEN_SIZE LEATHER_STARTING_DECK-1
 
+#define LARGEST_TOKEN_SIZE LEATHER_TOKEN_SIZE
+
 //Data macros
 //d = diamonds, g = gold, s = silver, p = spice, h = cloth, l = leather, c = camel
 #define DIAMOND_CHAR 'd'
@@ -75,14 +77,13 @@ extern const int char_to_enum_lookup_table[LAST_USEFUL_CHAR+1];
 extern const int diamond_tokens[DIAMOND_TOKEN_SIZE];
 extern const int gold_tokens[GOLD_TOKEN_SIZE];
 extern const int silver_tokens[SILVER_TOKEN_SIZE];
-
 extern const int spice_tokens[SPICE_TOKEN_SIZE];
 extern const int cloth_tokens[CLOTH_TOKEN_SIZE];
 extern const int leather_tokens[LEATHER_TOKEN_SIZE];
 
-extern const int bonus_template_3[MAX_BONUS_TOKENS];
-extern const int bonus_template_4[MAX_BONUS_TOKENS];
-extern const int bonus_template_5[MAX_BONUS_TOKENS];
+// extern const int bonus_template_3[MAX_BONUS_TOKENS];
+// extern const int bonus_template_4[MAX_BONUS_TOKENS];
+// extern const int bonus_template_5[MAX_BONUS_TOKENS];
 
 extern const char deck[DECK_SIZE+1];
 #endif
