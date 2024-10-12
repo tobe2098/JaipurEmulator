@@ -102,7 +102,7 @@ int checkDataIntegrity(GameData *game)
   //Only to run in case of data loading, review after finishing data loading/saving
   int remaining_cards[CARD_GROUP_SIZE]={0};
   for (int ptr=game->deck_ptr;ptr<DECK_SIZE;ptr++){
-    remaining_cards[char_to_enum_lookup_table[game->deck[ptr]]]++;
+    remaining_cards[char_to_enum_lookup_table[game->deck[ptr]-CHAR_LOOKUP_BASE_INDEX]]++;
   }
   if (game->deck_ptr>=DECK_SIZE || game->deck_ptr<0||game->finished_counter >= FINISHED_GOODS_LIMIT || game->finished_counter < 0||game->playerA.seals>1||game->playerB.seals>2){
     return -1;
@@ -455,7 +455,7 @@ int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_S
 }
 
 void cardSale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards) {
-  int card_index=char_to_enum_lookup_table[card_type];
+  int card_index=char_to_enum_lookup_table[card_type-CHAR_LOOKUP_BASE_INDEX];
   int end = min(no_cards+game->resource_tk_ptrs[card_index],max_lookup_table[card_index]);
   for (int token_idx=game->resource_tk_ptrs[card_index];token_idx<end;token_idx++){
     player_score->points+=diamond_tokens[token_idx];

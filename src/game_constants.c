@@ -3,7 +3,7 @@
 const int enum_to_char_lookup_table[]={DIAMOND_CHAR,GOLD_CHAR,SILVER_CHAR,SPICE_CHAR,CLOTH_CHAR,LEATHER_CHAR,CAMEL_CHAR};
 const int max_lookup_table[]={DIAMOND_T_SIZE+1,GOLD_T_SIZE+1,SILVER_T_SIZE+1,SPICE_T_SIZE+1,CLOTH_T_SIZE+1,LEATHER_T_SIZE+1,CAMELS_TOTAL};
 
-const int char_to_enum_lookup_table[CHAR_LOOKUP_TABLE_SIZE]={[0 ... CHAR_LOOKUP_TABLE_SIZE-1]=-1,[(int)DIAMOND_CHAR]=diamonds,[(int)GOLD_CHAR]=golds,[(int)SILVER_CHAR]=silvers,[(int)SPICE_CHAR]=spices,[(int)CLOTH_CHAR]=cloths,[(int)LEATHER_CHAR]=leathers,[(int)CAMEL_CHAR]=camels};
+const int char_to_enum_lookup_table[CHAR_LOOKUP_TABLE_SIZE]={[0 ... CHAR_LOOKUP_TABLE_SIZE-1]=-1,[DIAMOND_CHAR-CHAR_LOOKUP_BASE_INDEX]=diamonds,[GOLD_CHAR-CHAR_LOOKUP_BASE_INDEX]=golds,[SILVER_CHAR-CHAR_LOOKUP_BASE_INDEX]=silvers,[SPICE_CHAR-CHAR_LOOKUP_BASE_INDEX]=spices,[CLOTH_CHAR-CHAR_LOOKUP_BASE_INDEX]=cloths,[LEATHER_CHAR-CHAR_LOOKUP_BASE_INDEX]=leathers,[CAMEL_CHAR-CHAR_LOOKUP_BASE_INDEX]=camels};
 
 const int diamond_tokens[] = { 7, 7, 5, 5, 5 };
 const int gold_tokens[]    = { 6, 6, 5, 5, 5 };
