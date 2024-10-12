@@ -56,8 +56,6 @@ typedef struct GameData{
     int bonus_tk_ptrs[BONUS_TOKEN_TYPES];
     int bonus_tk_arrays[BONUS_TOKEN_TYPES][MAX_BONUS_TOKENS];
 
-    int finished_counter;
-
     int deck[DECK_SIZE];
     int deck_ptr;
 
@@ -80,40 +78,39 @@ typedef struct GameState{
 
 } GameState;
 
-
+void initDeck(char deck[DECK_SIZE+1]);
 void setSeed(GameData *game);
 
 void initGameData(GameData* game);
 int resetGameData(GameData* game);
 void startGame(GameData* game);
-void initializeGame(GameData *game);
-void initializeRound(GameData *game);
+void initGame(GameData *game);
+void initRound(GameData *game);
 void set_GameState_from_GameData(GameData* game_data, GameState* game_state);
 
 int isHandSizeCorrect(int* card_group,int max);
 int  checkDataIntegrity(GameData *game);
 
-void computeFinishedResources(GameData *game);
+int computeFinishedResources(GameData *game);
 int sumOfCardsGroup(int group[CARD_GROUP_SIZE],int not_camels_bool);
 int getCardTypeIndex(int group[CARD_GROUP_SIZE],int card_index_input);
 int  load_game_state(GameData *game);
 void save_game_state(const GameData *game);
 
 void processAction(GameData *game, int argc, char *argv[]);
-void drawCardsFromDeck(int group[CARD_GROUP_SIZE],GameData* game,int cards);
+int drawCardsFromDeck(int group[CARD_GROUP_SIZE],GameData* game,int cards);
 int takeCardFromMarket(int market[CARD_GROUP_SIZE],int player_hand[CARD_GROUP_SIZE],int index);
 void cardSale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
 int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char* hand_idx, char* market_idx, int camels_no,int hand_idx_len,int market_goods_positions_len);
 
-int  is_game_over(PlayerScore *playerA, PlayerScore *playerB);
-int  is_round_over(GameData *game);
-void game_over(PlayerScore *playerA, PlayerScore *playerB);
-void round_over(GameData *game);
+int  isGameOver(PlayerScore *playerA, PlayerScore *playerB);
+int  isRoundOver(GameData *game);
+void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB);
+int roundOverWinningPlayer(GameData *game);
+void roundOverPrint(GameData *game);
 
 
 void printGameState(GameData *game);
-void print_help();
-void print_rules();
 
 
 GameState interfaceJaipurEmulator();

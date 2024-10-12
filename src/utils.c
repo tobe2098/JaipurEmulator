@@ -1,6 +1,6 @@
 #include "utils.h"
 
-void randomize_index_array(int arr[], int size) {
+void randomize_int_array(int arr[], int size) {
   // Function to shuffle an array of integers using Fisher-Yates algorithm
   for (int i = size - 1; i > 0; i--) {
     int j    = rand() % (i + 1);
@@ -22,7 +22,7 @@ void print_array_goods(char* name, const int* array, int size, int cutoff) {
   printf("\n");
 }
 void print_player_wins(char player) {
-  if (player == 'A') {
+  if (player == PLAYER_A_CHAR) {
     printf("      ██████╗ ██╗      █████╗ ██╗   ██╗███████╗██████╗      \n");
     printf("      ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗     \n");
     printf("      ██████╔╝██║     ███████║ ╚████╔╝ █████╗  ██████╔╝     \n");
@@ -36,7 +36,7 @@ void print_player_wins(char player) {
     printf("      ██╔══██║    ██║███╗██║██║██║╚██╗██║╚════██║╚═╝        \n");
     printf("      ██║  ██║    ╚███╔███╔╝██║██║ ╚████║███████║██╗        \n");
     printf("      ╚═╝  ╚═╝     ╚══╝╚══╝ ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝        \n");
-  } else if (player == 'B') {
+  } else if (player == PLAYER_B_CHAR) {
     printf("      ██████╗ ██╗      █████╗ ██╗   ██╗███████╗██████╗      \n");
     printf("      ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗     \n");
     printf("      ██████╔╝██║     ███████║ ╚████╔╝ █████╗  ██████╔╝     \n");
@@ -135,43 +135,49 @@ void find_data_path(char *data_path)
   snprintf(data_path, MAX_PATH, "%s/../data/jaipur_game_state.json", exe_path);
 #endif
 }
-void print_winning_trophy(char player) {
-  printf("                        xxxxxxXXXxxxXx                         \n");
-  printf("                  xxxXXxxxxxxxxxxxXxxxxxxxxx                   \n");
-  printf("                xxxxxxxxxxxxxx+++xxxxxxxxxxxxxx                \n");
-  printf("             xxxxxXxxxxxxx+++xXXxx++xxxxxxxXxxxxxX             \n");
-  printf("          xxxxxxxxxxxxx++xxxxXXXXXXxxx+++xxxxxxxxxxx           \n");
-  printf("        xXxxxxxXxx+++xxxxxxXXXXxxxXXXXXXx++++xXXxxxxXx         \n");
-  printf("       XxxxXxxx++xxXxxxxxxXXXXxXXxxxXXXXxxXXx++xxxxxxxxX       \n");
-  printf("     xxXxxxx+xxxXxXxx+;:+xXXXXXxxxxXXxxXxxxXXXXxx++xxxxxx      \n");
-  printf("    xxxxx+xXxxxXX+;;+xXX$XXXXxxxxXXXxxxxXXx;;xXXxxXXxxxxxx     \n");
-  printf("   xxxxx++xxXx;;;xXXXXxxxXXXxXXXXXXxxXXXXXXXx;;;+xXxx+xxxxx    \n");
-  printf("  xxxxxx+xxxx;;+XXxxXXXxxxxXXXXXXXXXXXxxXxxxx+;;;+Xxx++xxxxX   \n");
-  printf("  xXxxx++XxX+;;xXXxxxXXXXxxxxXXXXXXXxxxXxxxxXx;;;;xXxx+xxxxXx  \n");
-  printf(" xxxxxx+xxxx;;+X$$XXXxxX$XxxxxxXXXXXxXXXxxxxXX+;;;+Xxx++xxxXx  \n");
-  printf(" XxxxXx+Xxxx;;;X$XXX$XXxxXXXXXXXXXXxXXXxxxxxXXx;;;+xxXx+XXxxxXX\n");
-  printf("xxxXxx++xxX+;;;;x$$$XXX$XXxxXX$$XxxXXXxXXXXX$x;;;;;xXxx+xxXXxxx\n");
-  printf("xxxxxx+xxXx;;++++x$$$$XXxXXXXXXXXXXXxxXXX$$X+;+;++;+xxXx+xxXxxx\n");
-  printf("Xxxxx++xxX++++++++xX$XXX$$XXXXXXXXX$$$$$$Xx+++++++++xXxx+xxxxxx\n");
-  printf("xxxxx+xXxx+++++++++xX$XX$XXXXXx;+XXXX$$$x++++++++++++xxX++xxxxx\n");
-  printf("xxxXx+xxXx+++++++++++X$$$XXXxxx++xxxx$X++++++++++++++Xxxx+XXxxx\n");
-  printf("xXxx++xxx++++++++++++xxX$Xxx+xXx+++++XX+++++++++++++;+Xxx++xXXX\n");
-  printf("xxxx+xXxXx;++++++++++xxX$X+++xXx++++xXX++++++++++++++xxxXxxXxxx\n");
-  printf(" xxxx+xXxxX++xx+++xxxxxX$XXX$$$$$$$XX$Xxx+++xxx++++xXxXX++xxxx \n");
-  printf(" xxxxxx+xxxxx+x+++xxxX$$$$$$XXXXXXX$$$$$Xx++xxxx++xxxXx+xxxXx  \n");
-  printf("  xxxxxx+xxxXx++++xxX$$$$$$$$XxxxxX$$$XXXx++xxx++Xxxx++xxxxXx  \n");
-  printf("   Xxxxxxx+XXxXx;+++XXX$$$$$$$$$$$$$$X+;+++++;+xXxXx+xxxxxxX   \n");
-  printf("    xxxXxxx+xxxxX++xxXXX$$$$$$$$$XXX$$xx+++++xXxxX++xxxxxXx    \n");
-  printf("     xxxxxxX++xxxXxxxxXX$$$$$$X$$$$XXXX+;;++xxxxx+xxxxxxxX     \n");
-  printf("      xxxXxxxx+xXxxXXxxX$$$$$$$XX$$$$$$x;;+XxxX++xxxXXxxx      \n");
-  printf("       xxXxxxxx++xxxXXxXX$$$$$XxxxXXXXxxxxXxXx+xxxxxxxx        \n");
-  printf("         xxxxxxx++xXXxXXXXXXXXxxxxxxxxXxxxXx++xxxxxxx          \n");
-  printf("           xxxxXxx+++xxxxxxxxx+xxxxxxxxxxx+++xxxxxx            \n");
-  printf("              xxxxxxxXxxxxxxxxxxxxXxxxxxxxxxxxxxx              \n");
-  printf("                xXxXxxxXXxxxxxxXXxxxXxxxxxxxXX                 \n");
-  printf("                    xXXxxxxxXxxxxXXxxxxxxx                     \n");
+const char *getPlayerName(char player){
+  if (player==PLAYER_A_CHAR) return PLAYER_A;
+  if (player==PLAYER_B_CHAR) return PLAYER_B;
+  return NULL;
+}
+void print_winning_trophy(char player)
+{
+    printf("                        xxxxxxXXXxxxXx                         \n");
+    printf("                  xxxXXxxxxxxxxxxxXxxxxxxxxx                   \n");
+    printf("                xxxxxxxxxxxxxx+++xxxxxxxxxxxxxx                \n");
+    printf("             xxxxxXxxxxxxx+++xXXxx++xxxxxxxXxxxxxX             \n");
+    printf("          xxxxxxxxxxxxx++xxxxXXXXXXxxx+++xxxxxxxxxxx           \n");
+    printf("        xXxxxxxXxx+++xxxxxxXXXXxxxXXXXXXx++++xXXxxxxXx         \n");
+    printf("       XxxxXxxx++xxXxxxxxxXXXXxXXxxxXXXXxxXXx++xxxxxxxxX       \n");
+    printf("     xxXxxxx+xxxXxXxx+;:+xXXXXXxxxxXXxxXxxxXXXXxx++xxxxxx      \n");
+    printf("    xxxxx+xXxxxXX+;;+xXX$XXXXxxxxXXXxxxxXXx;;xXXxxXXxxxxxx     \n");
+    printf("   xxxxx++xxXx;;;xXXXXxxxXXXxXXXXXXxxXXXXXXXx;;;+xXxx+xxxxx    \n");
+    printf("  xxxxxx+xxxx;;+XXxxXXXxxxxXXXXXXXXXXXxxXxxxx+;;;+Xxx++xxxxX   \n");
+    printf("  xXxxx++XxX+;;xXXxxxXXXXxxxxXXXXXXXxxxXxxxxXx;;;;xXxx+xxxxXx  \n");
+    printf(" xxxxxx+xxxx;;+X$$XXXxxX$XxxxxxXXXXXxXXXxxxxXX+;;;+Xxx++xxxXx  \n");
+    printf(" XxxxXx+Xxxx;;;X$XXX$XXxxXXXXXXXXXXxXXXxxxxxXXx;;;+xxXx+XXxxxXX\n");
+    printf("xxxXxx++xxX+;;;;x$$$XXX$XXxxXX$$XxxXXXxXXXXX$x;;;;;xXxx+xxXXxxx\n");
+    printf("xxxxxx+xxXx;;++++x$$$$XXxXXXXXXXXXXXxxXXX$$X+;+;++;+xxXx+xxXxxx\n");
+    printf("Xxxxx++xxX++++++++xX$XXX$$XXXXXXXXX$$$$$$Xx+++++++++xXxx+xxxxxx\n");
+    printf("xxxxx+xXxx+++++++++xX$XX$XXXXXx;+XXXX$$$x++++++++++++xxX++xxxxx\n");
+    printf("xxxXx+xxXx+++++++++++X$$$XXXxxx++xxxx$X++++++++++++++Xxxx+XXxxx\n");
+    printf("xXxx++xxx++++++++++++xxX$Xxx+xXx+++++XX+++++++++++++;+Xxx++xXXX\n");
+    printf("xxxx+xXxXx;++++++++++xxX$X+++xXx++++xXX++++++++++++++xxxXxxXxxx\n");
+    printf(" xxxx+xXxxX++xx+++xxxxxX$XXX$$$$$$$XX$Xxx+++xxx++++xXxXX++xxxx \n");
+    printf(" xxxxxx+xxxxx+x+++xxxX$$$$$$XXXXXXX$$$$$Xx++xxxx++xxxXx+xxxXx  \n");
+    printf("  xxxxxx+xxxXx++++xxX$$$$$$$$XxxxxX$$$XXXx++xxx++Xxxx++xxxxXx  \n");
+    printf("   Xxxxxxx+XXxXx;+++XXX$$$$$$$$$$$$$$X+;+++++;+xXxXx+xxxxxxX   \n");
+    printf("    xxxXxxx+xxxxX++xxXXX$$$$$$$$$XXX$$xx+++++xXxxX++xxxxxXx    \n");
+    printf("     xxxxxxX++xxxXxxxxXX$$$$$$X$$$$XXXX+;;++xxxxx+xxxxxxxX     \n");
+    printf("      xxxXxxxx+xXxxXXxxX$$$$$$$XX$$$$$$x;;+XxxX++xxxXXxxx      \n");
+    printf("       xxXxxxxx++xxxXXxXX$$$$$XxxxXXXXxxxxXxXx+xxxxxxxx        \n");
+    printf("         xxxxxxx++xXXxXXXXXXXXxxxxxxxxXxxxXx++xxxxxxx          \n");
+    printf("           xxxxXxx+++xxxxxxxxx+xxxxxxxxxxx+++xxxxxx            \n");
+    printf("              xxxxxxxXxxxxxxxxxxxxXxxxxxxxxxxxxxx              \n");
+    printf("                xXxXxxxXXxxxxxxXXxxxXxxxxxxxXX                 \n");
+    printf("                    xXXxxxxxXxxxxXXxxxxxxx                     \n");
 
-  print_player_wins(player);
+    print_player_wins(player);
 }
 
 void print_welcome_message() {
@@ -251,4 +257,30 @@ void print_new_round_message(char player) {
   // printf("██║╚██╔╝██║██╔══██║██╔══██╗██╔═██╗ ██╔══╝     ██║   ╚═╝      \n");
   // printf("██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗███████╗   ██║   ██╗      \n");
   // printf("╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝      \n");
+}
+void print_help() {
+  //Finish after everything else is done
+  printf("Usage: ./program [options]\n");
+  printf("Options:\n");
+  printf("  --help                        Show this help message\n");
+  printf("  --reset                       Restart the game\n");
+  printf("  --round                       End the current round due to the draw pile running out.\n");
+  printf("  --state                       Print the current state of the game. Default argument.\n");
+  printf("  --market                      Take a non-camel market action, passing the turn\n");
+  printf("  --camels <value>              Add a positive or negative number of camels to your herd\n");
+  printf("                                Example: --camels 3\n");
+  printf("  --sell <type> <value>         Sell a number of goods of the specified type\n");
+  printf("                                Example: --sell d 3\n");
+  printf("Card types and their respective characters:\n");
+  printf("Diamonds: d, \n");
+  printf("REMEMBER: Indexing on position is 0-based. \n");
+
+}
+
+void print_rules(){
+  printf("Notes on rules:\n");
+  printf("1. The game ends when there are no cards left in the draw pile or the tokens of three resources are finished\n");
+  printf("2. Cards from hand and from the herd can be traded with the market\n");
+  printf("3. When trading you can only take either goods or camels from the market, not both\n");
+  printf("3. \n");
 }
