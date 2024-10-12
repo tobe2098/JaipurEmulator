@@ -2,8 +2,7 @@
 #define GAME_CONSTANTS_JAIPUR
 
 //Data macros
-#define CHAR_LOOKUP_TABLE_SIZE 26
-#define CHAR_LOOKUP_BASE_INDEX 'a'
+
 #define RESOURCE_TYPES 6
 #define BONUS_TOKEN_TYPES 3
 #define MAX_BONUS_TOKENS 6
@@ -28,6 +27,8 @@
 #define CLOTH_CHAR 'h'
 #define LEATHER_CHAR 'l'
 #define CAMEL_CHAR 'c'
+
+#define LAST_USEFUL_CHAR SILVER_CHAR
 
 #define INITIAL_HAND_SIZE 5
 

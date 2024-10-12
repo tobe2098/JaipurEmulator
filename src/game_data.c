@@ -102,7 +102,7 @@ int checkDataIntegrity(GameData *game)
   //Only to run in case of data loading, review after finishing data loading/saving
   int remaining_cards[CARD_GROUP_SIZE]={0};
   for (int ptr=game->deck_ptr;ptr<DECK_SIZE;ptr++){
-    remaining_cards[char_to_enum_lookup_table[game->deck[ptr]-CHAR_LOOKUP_BASE_INDEX]]++;
+    remaining_cards[char_to_enum_lookup_table[game->deck[ptr]]]++;
   }
   if (game->deck_ptr>=DECK_SIZE || game->deck_ptr<0||game->finished_counter >= FINISHED_GOODS_LIMIT || game->finished_counter < 0||game->playerA.seals>1||game->playerB.seals>2){
     return -1;
@@ -455,7 +455,7 @@ int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_S
 }
 
 void cardSale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards) {
-  int card_index=char_to_enum_lookup_table[card_type-CHAR_LOOKUP_BASE_INDEX];
+  int card_index=char_to_enum_lookup_table[card_type];
   int end = min(no_cards+game->resource_tk_ptrs[card_index],max_lookup_table[card_index]);
   for (int token_idx=game->resource_tk_ptrs[card_index];token_idx<end;token_idx++){
     player_score->points+=diamond_tokens[token_idx];
@@ -476,12 +476,12 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
   //From the process_args function where this is called we know the strlens of the two char*s are valid (<6)
   int cards_from_hand[CARD_GROUP_SIZE]={0};
   for (int idx=0;idx<hand_idx_len;idx++){
-    cards_from_hand[char_to_enum_lookup_table[hand_idx[idx]-CHAR_LOOKUP_BASE_INDEX]]++;
+    cards_from_hand[char_to_enum_lookup_table[hand_idx[idx]]]++;
   }
   cards_from_hand[camels]=camels_no;
   int cards_from_market[CARD_GROUP_SIZE]={0};
   for (int idx=0;idx<market_goods_positions_len;idx++){
-    cards_from_market[char_to_enum_lookup_table[market_idx[idx]-CHAR_LOOKUP_BASE_INDEX]]++;
+    cards_from_market[char_to_enum_lookup_table[market_idx[idx]]]++;
   }
   
   //Check if the exchange from market includes both goods and camels
