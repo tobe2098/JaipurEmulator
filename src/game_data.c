@@ -68,7 +68,6 @@ void initializeRound(GameData *game){
 }
 
 void printGameState(GameData *game) {
-  //INTRODUCE COUNTDOWN FOR SECRECY, SLEEP, MACRO FOR SECONDS
   printf("\n");
   printf("<Scores>\n");
   printf("<Player A> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerA.points,
@@ -89,6 +88,7 @@ void printGameState(GameData *game) {
   printf("\n");
   printf("<Turn> It is player %c's turn now <Turn>\n", game->turn_of);
   printf("\n");
+  //INTRODUCE KEY PRESS FOR HAND SECRECY, maybe a console clearing before state
 }
 int isHandSizeCorrect(int *card_group, int max){
   int sum=0;
@@ -376,7 +376,7 @@ void processAction(GameData *game, int argc, char *argv[])
       printf("The market has only 5 cards, do not input more than 5 positions.");
       return;
     }
-    cardExchange(game->market,curr_player_hand,hand_idx,market_goods_positions,camels_no);
+    cardExchange(game->market,curr_player_hand,hand_idx,market_goods_positions,camels_no,hand_idx_len,market_goods_positions_len);
     turn_happened += 1;
   } else if (strncmp(argv[1], "--take", 6) == 0) {
     if (sumOfCardsGroup(curr_player_hand,1)>=7){
@@ -472,11 +472,17 @@ void cardSale(GameData *game,PlayerScore* player_score,int player_hand[CARD_GROU
   }
 }
 
-int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no){
+int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no,int hand_idx_len,int market_goods_positions_len){
+  //From the process_args function where this is called we know the strlens of the two char*s are valid (<6)
   int cards_from_hand[CARD_GROUP_SIZE]={0};
-  
+  for (int idx=0;idx<hand_idx_len;idx++){
+    cards_from_hand[char_to_enum_lookup_table[hand_idx[idx]-CHAR_LOOKUP_BASE_INDEX]]++;
+  }
+  cards_from_hand[camels]=camels_no;
   int cards_from_market[CARD_GROUP_SIZE]={0};
-  
+  for (int idx=0;idx<market_goods_positions_len;idx++){
+    cards_from_market[char_to_enum_lookup_table[market_idx[idx]-CHAR_LOOKUP_BASE_INDEX]]++;
+  }
   
   //Check if the exchange from market includes both goods and camels
   if (cards_from_market[camels]){
@@ -484,7 +490,10 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
       if (cards_from_market[card_type]!=0) return -1;
     }
   }
-  
+  for (int card_type=0;card_type<CARD_GROUP_SIZE;card_type++){
+    market[card_type]+=cards_from_hand[card_type]-cards_from_market[card_type];
+    player_hand[card_type]+=cards_from_market[card_type]-cards_from_hand[card_type];
+  }
   return 0;
 }
 
