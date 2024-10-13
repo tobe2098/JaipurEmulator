@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
   }
 
   PlayerScore playerA, playerB;
-  GameData   game;
+  GameData    game;
   game.was_initialized = 0;
   // Load the previous game state from the JSON file
   if (load_game_state(&playerA, &playerB, &game) == -1) {
@@ -18,7 +18,20 @@ int main(int argc, char *argv[]) {
   }
   // Process command-line arguments (e.g., "take_camel", "sell_goods", "draw_from_deck")
   processAction(&playerA, &playerB, &game, argc, argv);
-
+  if (processAction) {
+    game->turn_of = (((game->turn_of - PLAYER_A_CHAR) + 1) & 1) + PLAYER_A_CHAR;
+  }
+  if isRoundOver (game) {) {
+      roundOverWinningPlayer(game);
+      initRound(game);
+    }
+  } else {
+    printGameState(game);
+  }
+  if (isGameOver(&(game->playerA), &(game->playerB))) {
+    gameOverPrint(&(game->playerA), &(game->playerB));
+    initGame(game);
+  }
   // Save the updated state back to the JSON file
   save_game_state(&playerA, &playerB, &game);
 
