@@ -58,8 +58,8 @@ typedef struct GameData{
     int bonus_tk_ptrs[BONUS_TOKEN_TYPES];
     int bonus_tk_arrays[BONUS_TOKEN_TYPES][MAX_BONUS_TOKENS];
 
-    int deck[DECK_SIZE];
     int deck_ptr;
+    int deck[DECK_SIZE];
 
 } GameData;
 
@@ -80,7 +80,7 @@ typedef struct GameState{
 
 } GameState;
 
-void initDeck(char deck[DECK_SIZE+1]);
+void initDeck(GameData *game);
 void setSeed(GameData *game);
 
 void initGameData(GameData* game);
