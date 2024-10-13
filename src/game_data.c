@@ -39,7 +39,7 @@ void initGameData(GameData *game) {
 }
 int resetGameData(GameData *game) {
   if (game->was_initialized == 0) {
-    return -1;
+    return DATA_IS_CORRUPTED;
   }
   memset(game->hand_plA, 0, CARD_GROUP_SIZE);
   memset(game->hand_plB, 0, CARD_GROUP_SIZE);
@@ -51,51 +51,28 @@ int resetGameData(GameData *game) {
   setSeed(game);
   game->market[camels] = STARTING_MARKET_CAMELS;
   game->deck_ptr       = 0;
-  return 0;
+  return DATA_IS_OKAY;
 }
 void startRound(GameData *game) {
   // DEAL CARDS TO MARKET
-  drawCardsFromDeck(game->market, game, MAX_MARKET_CARDS - STARTING_MARKET_CAMELS);
+  drawCardsFromDeck(game->market, game, CARDS_IN_MARKET - STARTING_MARKET_CAMELS);
   // DEAL CARDS TO PLAYERS
   drawCardsFromDeck(game->hand_plA, game, INITIAL_HAND_SIZE);
   drawCardsFromDeck(game->hand_plB, game, INITIAL_HAND_SIZE);
 }
 void initGame(GameData *game) {
   game->was_initialized = 0;
-  print_welcome_message();
+  // print_welcome_message();
   initGameData(game);
   startRound(game);
-  printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
+  // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
 
 void initRound(GameData *game) {
   resetGameData(game);
-  printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
+  // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
 
-void printGameState(GameData *game) {
-  printf("\n");
-  printf("<Scores>\n");
-  printf("<Player A> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerA.points, game->playerA.seals,
-         game->playerA.no_bonus_tokens, game->playerA.no_goods_tokens);
-  printf("<Player B> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerB.points, game->playerB.seals,
-         game->playerB.no_bonus_tokens, game->playerB.no_goods_tokens);
-  printf("\n");
-  // print_array_goods("diamonds", diamond_tokens, DIAMOND_T_SIZE, game->diamond_ptr);
-  // print_array_goods("gold", gold_tokens, GOLD_T_SIZE, game->gold_ptr);
-  // print_array_goods("silver", silver_tokens, SILVER_T_SIZE, game->silver_ptr);
-  // print_array_goods("spice", spice_tokens, SPICE_T_SIZE, game->spice_ptr);
-  // print_array_goods("cloth", cloth_tokens, CLOTH_T_SIZE, game->cloth_ptr);
-  // print_array_goods("leather", leather_tokens, LEATHER_T_SIZE, game->leather_ptr);
-  // printf("\n");
-  // printf("<Bonus> Remaining 3 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_tk_ptrs);
-  // printf("<Bonus> Remaining 4 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_4_ptr);
-  // printf("<Bonus> Remaining 5 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_5_ptr);
-  printf("\n");
-  printf("<Turn> It is %s's turn now <Turn>\n", getPlayerName(game->turn_of));
-  printf("\n");
-  // INTRODUCE KEY PRESS FOR HAND SECRECY, maybe a console clearing before state
-}
 int isHandSizeCorrect(int *card_group, int max) {
   int sum = 0;
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
@@ -110,21 +87,21 @@ int checkDataIntegrity(GameData *game) {
     remaining_cards[char_to_enum_lookup_table[game->deck[ptr]]]++;
   }
   if (game->deck_ptr >= DECK_SIZE || game->deck_ptr < 0 || game->playerA.seals > 1 || game->playerB.seals > 2) {
-    return -1;
+    return DATA_IS_CORRUPTED;
   }
   if (game->hand_plA[camels] + game->hand_plB[camels] + game->market[camels] + remaining_cards[camels] > CAMELS_TOTAL ||
       game->hand_plA[camels] < 0 || game->hand_plB[camels] < 0 || game->market[camels] < 0) {
-    return -1;
+    return DATA_IS_CORRUPTED;
   }
   int tokens_bound = 1;
   for (int tk_type = 0; tk_type < BONUS_TOKEN_TYPES; tk_type++) {
     tokens_bound &= (game->bonus_tk_ptrs[tk_type] <= MAX_BONUS_TOKENS && game->bonus_tk_ptrs[tk_type] >= 0);
   }
   if (!tokens_bound) {
-    return -1;
+    return DATA_IS_CORRUPTED;
   }
   if ((game->turn_of != PLAYER_A_CHAR && game->turn_of != PLAYER_B_CHAR)) {
-    return -1;
+    return DATA_IS_CORRUPTED;
   }
   int not_bound = 0;
   for (int card_type = 0; card_type < RESOURCE_TYPES; card_type++) {
@@ -133,14 +110,14 @@ int checkDataIntegrity(GameData *game) {
     not_bound |= (remaining_cards[card_type] > no_cards_lookup_table[card_type]);
   }
   if (not_bound) {
-    return -1;
+    return DATA_IS_CORRUPTED;
   }
   for (int card_type = 0; card_type < RESOURCE_TYPES; card_type++) {
     if (game->resource_tk_ptrs[card_type] < 0) {
-      return -1;
+      return DATA_IS_CORRUPTED;
     }
   }
-  return 0;
+  return DATA_IS_OKAY;
 }
 int computeFinishedResources(GameData *game) {
   int finished_counter = 0;
@@ -180,116 +157,15 @@ int sumOfCardsGroup(int group[CARD_GROUP_SIZE], int not_camels_bool) {
 //   }
 //   return card_type_index;
 // }
-int load_game_state(GameData *game) {
-  char save_file[MAX_PATH];
-  find_data_path(save_file);
-  FILE *file = fopen(save_file, "r");
 
-  if (file != NULL) {
-    fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
-    rewind(file);
-
-    char *buffer       = (char *)malloc(file_size + 1);
-    int   counted_size = fread(buffer, 1, file_size, file);
-    if (counted_size != file_size) {
-      free(buffer);
-      return -1;
-    }
-    buffer[file_size] = '\0';
-    fclose(file);
-    int itemsRead = 0;
-    // printf("Buffer 1 content:\n%s\n", buffer);
-    // Parse the JSON-like ure
-    // int itemsRead = sscanf(buffer,
-    //                        "{\n"
-    //                        "  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n"
-    //                        "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n"
-    //                        "  \"turn_of\": \"%c\",\n"
-    //                        "  \"diamond_ptr\": %i,\n"
-    //                        "  \"gold_ptr\": %i,\n"
-    //                        "  \"silver_ptr\": %i,\n"
-    //                        "  \"spice_ptr\": %i,\n"
-    //                        "  \"cloth_ptr\": %i,\n"
-    //                        "  \"leather_ptr\": %i,\n"
-    //                        "  \"seed\": %i,\n"
-    //                        "  \"bonus_tk_ptrs\": %i,\n"
-    //                        "  \"bonus_4_ptr\": %i,\n"
-    //                        "  \"bonus_5_ptr\": %i\n"
-    //                        "}\n",
-    //                        &(playerA->no_bonus_tokens), &playerA->no_goods_tokens, &playerA->camels, &playerA->points, &playerA->seals,
-    //                        &playerB->no_bonus_tokens, &playerB->no_goods_tokens, &playerB->camels, &playerB->points, &playerB->seals,
-    //                        &game->turn_of, &game->diamond_ptr, &game->gold_ptr, &game->silver_ptr, &game->spice_ptr, &game->cloth_ptr,
-    //                        &game->leather_ptr, &game->seed, &game->bonus_tk_ptrs, &game->bonus_4_ptr, &game->bonus_5_ptr);
-    // printf("Items read: %d\n", itemsRead);
-    free(buffer);
-    setSeed(game);
-    if (isRoundOver(game)) {
-      roundOverWinningPlayer(game);
-      if (isGameOver(&(game->playerA), &(game->playerB))) {
-        gameOverPrint(&(game->playerA), &(game->playerB));
-        initGame(game);
-      } else {
-        initRound(game);
-      }
-    }
-    if (isGameOver(&(game->playerA), &(game->playerB))) {
-      gameOverPrint(&(game->playerA), &(game->playerB));
-      initGame(game);
-    }
-    if (itemsRead < 21) {
-      printf("Data was partially corrupted, use `--reset` to restart the game or manually correct the json.\n");
-      printf("Input into the template json file your data manually as an alternative.\n");
-      return -1;
-    }
-  } else {
-    // Initialize default game state if no save file exists
-    initGame(game);
-  }
-  computeFinishedResources(game);
-  if (checkDataIntegrity(game) == -1) {
-    return -1;
-  } else {
-    return 0;
-  }
-}
-void save_game_state(const GameData *game) {
-  char save_file[MAX_PATH];
-  find_data_path(save_file);
-  FILE *file = fopen(save_file, "w");
-  if (file == NULL) {
-    perror("Unable to save game state");
-    return;
-  }
-
-  // Write the JSON-like format for the game state
-  // fprintf(file, "{\n");
-  // fprintf(file, "  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n",
-  //         playerA->no_bonus_tokens, playerA->no_goods_tokens, playerA->camels, playerA->points, playerA->seals);
-  // fprintf(file, "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"camels\": %i, \"points\": %i, \"seals\": %i},\n",
-  //         playerB->no_bonus_tokens, playerB->no_goods_tokens, playerB->camels, playerB->points, playerB->seals);
-  // fprintf(file, "  \"turn_of\": \"%c\",\n", game->turn_of);
-  // fprintf(file, "  \"diamond_ptr\": %i,\n", game->diamond_ptr);
-  // fprintf(file, "  \"gold_ptr\": %i,\n", game->gold_ptr);
-  // fprintf(file, "  \"silver_ptr\": %i,\n", game->silver_ptr);
-  // fprintf(file, "  \"spice_ptr\": %i,\n", game->spice_ptr);
-  // fprintf(file, "  \"cloth_ptr\": %i,\n", game->cloth_ptr);
-  // fprintf(file, "  \"leather_ptr\": %i,\n", game->leather_ptr);
-  // fprintf(file, "  \"seed\": %i,\n", game->seed);
-  // fprintf(file, "  \"bonus_tk_ptrs\": %i,\n", game->bonus_tk_ptrs);
-  // fprintf(file, "  \"bonus_4_ptr\": %i,\n", game->bonus_4_ptr);
-  // fprintf(file, "  \"bonus_5_ptr\": %i\n", game->bonus_5_ptr);
-  // fprintf(file, "}\n");
-
-  fclose(file);
-}
 int processAction(GameData *game, int argc, char *argv[]) {
-  // In this function, return 0 is no turn action happened, return 1 is a turn action happened.
+  // In this function, return 0 is no turn action happened, return 1 is a turn action happened, OTHER NUMBERS ARE ERROR CODES.
   //  Go over the code logic (init, init when corrupt, starting a new game, loading, etc)
+  int return_code = DATA_IS_OKAY;
   if (argc < 2) {
     // printf("Addresses A:%p B:%p\n", (void *)playerA, (void *)playerB);
     printGameState(game);
-    return 0;
+    return NO_TURN_HAPPENED;
   }
   PlayerScore *curr_player_score;
   int         *curr_player_hand;
@@ -302,37 +178,37 @@ int processAction(GameData *game, int argc, char *argv[]) {
   } else {
     if (game->was_initialized == 0) {
       initGame(game);
+      return DATA_NOT_INIT;
     } else {
-      printf("Data is corrupted: player turn of %c\n", game->turn_of);
+      // #ifndef DEBUG
+      // printf("Data is corrupted: player turn of %c\n", game->turn_of);
+      // #endif
+      return DATA_IS_CORRUPTED;
     }
-    return 0;
   }
   // printf("Addresses A:%p B:%p, current:%p\n", (void *)playerA, (void *)playerB, (void *)curr_player);
 
   if (strncmp(argv[1], "--camels", 8) == 0) {
     int camels_no = game->market[camels];
     if (camels_no == 0) {
-      printf("Error, no camels in the market");
-      return 0;
+      return (TOO_FEW_CARDS | MARKET | camels);
     }
     game->market[camels] = 0;
     curr_player_hand[camels] += camels_no;
-    drawCardsFromDeck(&(game->market), game, camels_no);
+    return_code |= drawCardsFromDeck(game->market, game, camels_no);
   } else if (strncmp(argv[1], "--sell", 6) == 0) {
     // We assume maximum sale? No
     if (argc < 4) {
-      printf("Too few arguments.\n");
-      return 0;
+      return TOO_FEW_ARGS;
     }
     char *goods    = argv[2];
     int   no_goods = atoi(argv[3]);
-    cardSale(game, curr_player_score, curr_player_hand, goods, no_goods);
+    return_code |= cardSale(game, curr_player_score, curr_player_hand, goods, no_goods);
   } else if (strncmp(argv[1], "--exchange", 10) == 0) {
     // Here the structure of the arguments has to be "--exchange seq num seq" where seq is a sequence of characters
     // Each sequence of characters will be composed of the characters referring to cards
     if (argc < 5) {
-      printf("Too few arguments.\n");
-      return 0;
+      return TOO_FEW_ARGS;
     }
     char *hand_idx                   = argv[2];
     int   hand_idx_len               = strlen(hand_idx);
@@ -340,87 +216,106 @@ int processAction(GameData *game, int argc, char *argv[]) {
     char *market_goods_positions     = argv[4];
     int   market_goods_positions_len = strlen(market_goods_positions);
     if (camels_no > curr_player_hand[camels]) {
-      printf("Cannot exchange more camels than owned");
-      return 0;
+      // printf("Cannot exchange more camels than owned");
+      return TOO_FEW_CARDS | HAND | camels;
     }
     if (hand_idx_len + camels_no != market_goods_positions_len) {
-      printf("Number of cards from hand and market to be exchanged do not match");
-      return 0;
+      // printf("Number of cards from hand and market to be exchanged do not match");
+      if (hand_idx_len + camels_no > market_goods_positions_len) {
+        return ARGS_DO_NOT_MATCH | TOO_FEW_CARDS | MARKET;
+      } else {
+        return ARGS_DO_NOT_MATCH | TOO_FEW_CARDS | HAND;
+      }
     }
     if (market_goods_positions_len > 5) {
-      printf("The market has only 5 cards, do not input more than 5 positions.");
-      return 0;
+      // printf("The market has only 5 cards, do not input more than 5 positions.");
+      return ARG_OVERFLOW | MARKET;
     }
-    cardExchange(game->market, curr_player_hand, hand_idx, market_goods_positions, camels_no, hand_idx_len, market_goods_positions_len);
+    return_code |=
+      cardExchange(game->market, curr_player_hand, hand_idx, market_goods_positions, camels_no, hand_idx_len, market_goods_positions_len);
   } else if (strncmp(argv[1], "--take", 6) == 0) {
     if (sumOfCardsGroup(curr_player_hand, 1) >= 7) {
-      printf("Error, hand is full");
-      return 0;
+      // printf("Error, hand is full");
+      return TOO_MANY_CARDS | HAND;
     }
     if (argc < 3) {  // Here in theory it would be "--take char"
-      printf("Too few arguments.\n");
-      return 0;
+      // printf("Too few arguments.\n");
+      return TOO_FEW_ARGS;
     }
     // int idx=(int)(strtol(argv[2],NULL,10)&INT_MAX);
-    char card = argv[2][0];
-    if (takeCardFromMarket(&(game->market), curr_player_hand, argv[2]) == 0) {
-      drawCardsFromDeck(game->market, game, 1);
-    } else {
-      printf("The market does not have that card.\n");
-      return 0;
+    return_code |= takeCardFromMarket(game->market, curr_player_hand, argv[2][0]);
+    if (return_code & TURN_HAPPENED) {
+      return_code |= drawCardsFromDeck(game->market, game, 1);
+      // } else { // Redundant
+      //   return return_code;
     }
   } else if (strncmp(argv[1], "--state", 7) == 0) {
     printGameState(game);
-    return 0;
+    return NO_TURN_HAPPENED;
   } else if (strncmp(argv[1], "--reset", 7) == 0) {
     game->was_initialized = 0;
     initGame(game);
-    return 0;
+    return NO_TURN_HAPPENED;
   } else if (strncmp(argv[1], "--help", 6) == 0) {
     print_help();
-    return 0;
+    return NO_TURN_HAPPENED;
   } else {
     printf("Unknown command: %s\n", argv[1]);
-    return 0;
+    return NO_TURN_HAPPENED;
   }
-  return 1;
+  return return_code;
 }
 
 int drawCardsFromDeck(int card_group[CARD_GROUP_SIZE], GameData *game, int cards) {
-  for (int i = 0; i < cards && game->deck_ptr < DECK_SIZE; i++) {
+  for (int card = 0; card < cards && game->deck_ptr < DECK_SIZE; card++) {
     char card = game->deck[game->deck_ptr++];
     card_group[char_to_enum_lookup_table[card]]++;
   }
-  return 0;
+  return TURN_HAPPENED;
 }
 
-int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], int index) {
-  if (sum_cards_market(market) != 5) {
-    return -1;
+int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char card) {
+  int market_cards = sum_cards_market(market);
+  if (market_cards != CARDS_IN_MARKET) {
+    if (market_cards > CARDS_IN_MARKET) {
+      return TOO_MANY_CARDS | MARKET;
+    } else {
+      return TOO_FEW_CARDS | MARKET;
+    }
   }
-  card_index card_type_index = getCardTypeIndex(market, index);
+  card_index card_type_index = char_to_enum_lookup_table[card];
   if (card_type_index == camels) {
-    printf("Taking an individual camel is not allowed");
-    return -1;
+    // printf("Taking an individual camel is not allowed.\n");
+    return NOT_ALLOWED_ACTION | camels;
+  }
+  if (market[card_type_index] == 0) {
+    // printf("That card is not in the market.\n");
+    return MISSING_CARD | MARKET | card_type_index;
   }
   player_hand[card_type_index]++;
   market[card_type_index]--;
-  return 0;
+  return TURN_HAPPENED;
 }
 
-void cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards) {
+int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards) {
   int card_index = char_to_enum_lookup_table[card_type];
-  int end        = min(no_cards + game->resource_tk_ptrs[card_index], no_cards_lookup_table[card_index] - 1);
+  if (player_hand[card_index] < no_cards) {
+    return TOO_FEW_CARDS | HAND | card_index;
+  }
+
+  int end = min(no_cards + game->resource_tk_ptrs[card_index], resource_tokens[card_index].size);
+
+  int *resource_array = resource_tokens[card_index].tokens;
 
   for (int token_idx = game->resource_tk_ptrs[card_index]; token_idx < end; token_idx++) {
-    player_score->points += diamond_tokens[token_idx];
+    player_score->points += resource_array[token_idx];
   }
 
   player_score->no_goods_tokens += end - game->resource_tk_ptrs[card_index];
   game->resource_tk_ptrs[card_index] = end;
 
   if (no_cards <= 2) {
-    return;
+    return TURN_HAPPENED;
   }
   no_cards = min(2, no_cards - 3);
   if (game->bonus_tk_ptrs[no_cards] < MAX_BONUS_TOKENS) {
@@ -428,6 +323,7 @@ void cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GR
     game->bonus_tk_ptrs[no_cards]++;
     player_score->no_bonus_tokens++;
   }
+  return TURN_HAPPENED;
 }
 
 int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no,
@@ -447,7 +343,7 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
   if (cards_from_market[camels]) {
     for (int card_type = 0; card_type < RESOURCE_TYPES; card_type++) {
       if (cards_from_market[card_type] != 0) {
-        return -1;
+        return MIXING_GOODS_CAMELS;
       }
     }
   }
@@ -455,7 +351,7 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
     market[card_type] += cards_from_hand[card_type] - cards_from_market[card_type];
     player_hand[card_type] += cards_from_market[card_type] - cards_from_hand[card_type];
   }
-  return 0;
+  return TURN_HAPPENED;
 }
 
 int isGameOver(PlayerScore *playerA, PlayerScore *playerB) {
@@ -466,69 +362,41 @@ int isRoundOver(GameData *game) {
   return computeFinishedResources(game) == FINISHED_GOODS_LIMIT || game->deck_ptr == DECK_SIZE;
 }
 
-void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB) {
-  if (playerA->seals == SEALS_TO_WIN) {
-    print_winning_trophy(PLAYER_A_CHAR);
-  } else if (playerB->seals == SEALS_TO_WIN) {
-    print_winning_trophy(PLAYER_B_CHAR);
-  }
-}
-
-int roundOverWinningPlayer(GameData *game) {
-  if (playerA->camels > playerB->camels) {
+int compRoundWinningPlayer(GameData *game) {
+  PlayerScore *playerA = &(game->playerA), *playerB = &(game->playerB);
+  if (game->hand_plA[camels] > game->hand_plB[camels]) {
     playerA->points += CAMEL_TOKEN_VAL;
-  } else if (playerB->camels > playerA->camels) {
-    playerB->camels += CAMEL_TOKEN_VAL;
+  } else if (game->hand_plA[camels] < game->hand_plB[camels]) {
+    playerB->points += CAMEL_TOKEN_VAL;
   }
   if (playerA->points > playerB->points) {
     playerA->seals++;
     game->turn_of = PLAYER_B_CHAR;
-    if (isGameOver(playerA, playerB) == 0) {
-      print_new_round_message(PLAYER_A_CHAR);
-    }
-    return;
   } else if (playerA->points < playerB->points) {
     playerB->seals++;
     game->turn_of = PLAYER_A_CHAR;
-    if (isGameOver(playerA, playerB) == 0) {
-      print_new_round_message(PLAYER_B_CHAR);
-    }
-    return;
   }
+  return 0;
   if (playerA->no_bonus_tokens > playerB->no_bonus_tokens) {
     playerA->seals++;
     game->turn_of = PLAYER_B_CHAR;
-    if (isGameOver(playerA, playerB) == 0) {
-      print_new_round_message(PLAYER_A_CHAR);
-    }
-    return;
   } else if (playerA->no_bonus_tokens < playerB->no_bonus_tokens) {
     playerB->seals++;
     game->turn_of = PLAYER_A_CHAR;
-    if (isGameOver(playerA, playerB) == 0) {
-      print_new_round_message(PLAYER_B_CHAR);
-    }
-    return;
   }
+  return 0;
   if (playerA->no_goods_tokens > playerB->no_goods_tokens) {
     playerA->seals++;
     game->turn_of = PLAYER_B_CHAR;
-    if (isGameOver(playerA, playerB) == 0) {
-      print_new_round_message(PLAYER_A_CHAR);
-    }
-    return;
   } else if (playerA->no_goods_tokens < playerB->no_goods_tokens) {
     playerB->seals++;
     game->turn_of = PLAYER_A_CHAR;
-    if (isGameOver(playerA, playerB) == 0) {
-      print_new_round_message(PLAYER_B_CHAR);
-    }
-    return;
+  } else {
+    return DRAW;
   }
-  printf("ERROR: IT WAS A DRAW! CONGRATULATIONS! THIS IS NORMALLY IMPOSSIBLE\n");
+  return 0;
+  // printf("ERROR: IT WAS A DRAW! CONGRATULATIONS! THIS IS NORMALLY IMPOSSIBLE\n");
 }
-
-void roundOverPrint(GameData *game) { }
 
 GameState interfaceJaipurEmulator() {
   static GameData g_data = { .was_initialized = 0 };

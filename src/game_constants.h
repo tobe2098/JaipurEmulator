@@ -14,7 +14,7 @@
 
 #define INITIAL_HAND_SIZE      5
 #define STARTING_MARKET_CAMELS 3
-#define MAX_MARKET_CARDS       5
+#define CARDS_IN_MARKET        5
 
 #define DIAMONDS_STARTING_DECK 6
 #define GOLD_STARTING_DECK     6
@@ -70,18 +70,6 @@ typedef enum card_index {
   camels   = 6,
   CARD_GROUP_SIZE,
 } card_index;
-
-typedef struct {
-    int tokens[LARGEST_TOKEN_SIZE];  // Static array instead of a pointer
-    int size;                        // Current size of the token array
-} ResourceTokens;
-
-extern const ResourceTokens resource_types[RESOURCE_TYPES];
-
-extern const int enum_to_char_lookup_table[CARD_GROUP_SIZE];
-extern const int no_cards_lookup_table[CARD_GROUP_SIZE];
-extern const int cards_starting_deck_lookup_table[CARD_GROUP_SIZE];
-extern const int char_to_enum_lookup_table[LAST_USEFUL_CHAR + 1];
 
 // extern const int bonus_template_3[MAX_BONUS_TOKENS];
 // extern const int bonus_template_4[MAX_BONUS_TOKENS];

@@ -1,6 +1,8 @@
 #ifndef PLAYER_INFO_HEADER_JAIPUR
 #define PLAYER_INFO_HEADER_JAIPUR
+#include "flags.h"
 #include "game_constants.h"
+#include "ltables.h"
 #include "utils.h"
 
 #include <stdio.h>
@@ -94,23 +96,17 @@ int checkDataIntegrity(GameData *game);
 int computeFinishedResources(GameData *game);
 int sumOfCardsGroup(int group[CARD_GROUP_SIZE], int not_camels_bool);
 // int getCardTypeIndex(int group[CARD_GROUP_SIZE],int card_index_input);
-int  load_game_state(GameData *game);
-void save_game_state(const GameData *game);
 
-int  processAction(GameData *game, int argc, char *argv[]);
-int  drawCardsFromDeck(int group[CARD_GROUP_SIZE], GameData *game, int cards);
-int  takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], int index);
-void cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
-int  cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no,
-                  int hand_idx_len, int market_goods_positions_len);
+int processAction(GameData *game, int argc, char *argv[]);
+int drawCardsFromDeck(int group[CARD_GROUP_SIZE], GameData *game, int cards);
+int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char card);
+int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
+int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no,
+                 int hand_idx_len, int market_goods_positions_len);
 
-int  isGameOver(PlayerScore *playerA, PlayerScore *playerB);
-int  isRoundOver(GameData *game);
-void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB);
-int  roundOverWinningPlayer(GameData *game);
-void roundOverPrint(GameData *game);
-
-void printGameState(GameData *game);
+int isGameOver(PlayerScore *playerA, PlayerScore *playerB);
+int isRoundOver(GameData *game);
+int compRoundWinningPlayer(GameData *game);
 
 GameState interfaceJaipurEmulator();
 
