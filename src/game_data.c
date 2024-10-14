@@ -399,7 +399,8 @@ int compRoundWinningPlayer(GameData *game) {
 }
 
 GameState interfaceJaipurEmulator() {
-  static GameData g_data = { .was_initialized = 0 };
+  ANOTHER VERSION ACCEPTING A STATE AS AN INPUT I SUPPOSE FOR INITIALIZATION;
+  static GameData                                             g_data = { .was_initialized = 0 };
   init(g_data);  // Initialize only if the was_initialized is zero, or if the round is over?
 
   // If the round is finished by the last action, do not reset the state
@@ -409,20 +410,15 @@ GameState interfaceJaipurEmulator() {
 }
 
 void set_GameState_from_GameData(GameData *game_data, GameState *game_state) {
-  game_state->turn_of       = game_data->turn_of;
-  game_state->market        = game_data->market;
-  game_state->hand_plA      = game_data->hand_plA;
-  game_state->hand_plB      = game_data->hand_plB;
-  game_state->playerA       = game_data->playerA;
-  game_state->playerB       = game_data->playerB;
-  game_state->bonus_3       = MAX_BONUS_TOKENS - game_data->bonus_tk_ptrs;
-  game_state->bonus_4       = MAX_BONUS_TOKENS - game_data->bonus_4_ptr;
-  game_state->bonus_5       = MAX_BONUS_TOKENS - game_data->bonus_5_ptr;
-  game_state->diamond       = DIAMOND_TOKEN_SIZE - game_data->diamond_ptr;
-  game_state->gold          = GOLD_TOKEN_SIZE - game_data->gold_ptr;
-  game_state->silver        = SILVER_TOKEN_SIZE - game_data->silver_ptr;
-  game_state->spice         = SPICE_TOKEN_SIZE - game_data->spice_ptr;
-  game_state->cloth         = CLOTH_TOKEN_SIZE - game_data->cloth_ptr;
-  game_state->leather       = LEATHER_TOKEN_SIZE - game_data->leather_ptr;
+  game_state->turn_of = game_data->turn_of;
+
+  memcpy(&(game_data->market), &(game_state->market), sizeof(int[CARD_GROUP_SIZE]) * 3 * sizeof(PlayerScore) * 2);
+
+  for (int resource = 0; resource < RESOURCE_TYPES; resource++) {
+    game_state->resource_tks[resource] = resource_tokens[resource].size - game_data->resource_tk_ptrs[resource];
+  }
+  for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++) {
+    game_state->bonus_tks[barr] = MAX_BONUS_TOKENS - game_data->bonus_tk_ptrs[barr];
+  }
   game_state->cards_in_deck = DECK_SIZE - game_data->deck_ptr;
 }
