@@ -4,10 +4,25 @@ Emulates the game (both players can see each other's hands)
 
 
 # Use instructions
+## C library must be
+```
+#include <stdio.h>
+
+typedef struct {
+    int x;
+    double y;
+} MyCustomType;
+
+MyCustomType* process_custom_type(MyCustomType* input) {
+    static MyCustomType result = {0, 0.0};  // Initialized once
+    result.x = input->x * 2;  // Modified on each call
+    result.y = input->y * 3.14;  // Modified on each call
+    return &result;
+}
+```
 ## Package
 
-
-## Julia library
+### Julia library
 
 ```
 using Libdl
