@@ -6,58 +6,120 @@ Emulates the game (both players can see each other's hands)
 # Use instructions
 ## C library must be
 ```
-#include <stdio.h>
+#include <stdlib.h>
 
 typedef struct {
     int x;
     double y;
+    int** matrix;
+    int rows;
+    int cols;
 } MyCustomType;
 
+MyCustomType* create_custom_type(int x, double y, int rows, int cols) {
+    MyCustomType* obj = (MyCustomType*)malloc(sizeof(MyCustomType));
+    obj->x = x;
+    obj->y = y;
+    obj->rows = rows;
+    obj->cols = cols;
+    
+    obj->matrix = (int**)malloc(rows * sizeof(int*));
+    for (int i = 0; i < rows; i++) {
+        obj->matrix[i] = (int*)malloc(cols * sizeof(int));
+        for (int j = 0; j < cols; j++) {
+            obj->matrix[i][j] = 0;
+        }
+    }
+    
+    return obj;
+}
+
 MyCustomType* process_custom_type(MyCustomType* input) {
-    static MyCustomType result = {0, 0.0};  // Initialized once
-    result.x = input->x * 2;  // Modified on each call
-    result.y = input->y * 3.14;  // Modified on each call
-    return &result;
+    MyCustomType* result = create_custom_type(input->x * 2, input->y * 3.14, input->rows, input->cols);
+    // Process matrix if needed
+    return result;
+}
+
+void free_custom_type(MyCustomType* obj) {
+    if (obj) {
+        for (int i = 0; i < obj->rows; i++) {
+            free(obj->matrix[i]);
+        }
+        free(obj->matrix);
+        free(obj);
+    }
 }
 ```
 ## Package
 
 ### Julia library
 
-```
-using Libdl
+```using Libdl
 
+# Load the shared library
 lib = Libdl.dlopen("./libmyclib.so")  # or .dylib on macOS, .dll on Windows
 
+# Define the struct in Julia to match the C struct
 struct MyCustomType
     x::Cint
     y::Cdouble
+    matrix::Ptr{Ptr{Cint}}
+    rows::Cint
+    cols::Cint
 end
 
-function process_custom_type(input::MyCustomType)
-    result_ptr = ccall(
+# Define functions to call C functions
+function create_custom_type(x::Int, y::Float64, rows::Int, cols::Int)
+    ccall(
+        (:create_custom_type, lib),
+        Ptr{MyCustomType},
+        (Cint, Cdouble, Cint, Cint),
+        x, y, rows, cols
+    )
+end
+
+function process_custom_type(input::Ptr{MyCustomType})
+    ccall(
         (:process_custom_type, lib),
         Ptr{MyCustomType},
-        (Ref{MyCustomType},),
+        (Ptr{MyCustomType},),
         input
     )
-    return result_ptr  # Return the pointer directly
 end
 
-# Create a wrapper type to work with the pointer
-struct MyCustomTypePtr
-    ptr::Ptr{MyCustomType}
+function free_custom_type(obj::Ptr{MyCustomType})
+    ccall(
+        (:free_custom_type, lib),
+        Cvoid,
+        (Ptr{MyCustomType},),
+        obj
+    )
 end
 
-# Define methods to access the struct members
-Base.getproperty(m::MyCustomTypePtr, s::Symbol) = getproperty(unsafe_load(m.ptr), s)
+# Usage example
+input_ptr = create_custom_type(5, 2.5, 3, 3)
+input = unsafe_load(input_ptr)
 
-# Usage
-input = MyCustomType(5, 2.5)
-result_ptr = process_custom_type(input)
-result = MyCustomTypePtr(result_ptr)
+println("Input: x = $(input.x), y = $(input.y)")
 
-println("Result: x = $(result.x), y = $(result.y)")
+output_ptr = process_custom_type(input_ptr)
+output = unsafe_load(output_ptr)
 
+println("Output: x = $(output.x), y = $(output.y)")
+
+# Accessing matrix elements (be careful with this!)
+for i in 1:input.rows
+    row = unsafe_load(input.matrix, i)
+    for j in 1:input.cols
+        value = unsafe_load(row, j)
+        println("input.matrix[$i][$j] = $value")
+    end
+end
+
+# Clean up
+free_custom_type(input_ptr)
+free_custom_type(output_ptr)
+
+# Close the library when done
 Libdl.dlclose(lib)
 ```
