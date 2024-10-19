@@ -50,6 +50,7 @@ void free_custom_type(MyCustomType* obj) {
     }
 }
 ```
+I also need to write a custom state starter by altering the market, deck and hand initializers.
 ## Package
 
 ### Julia library
