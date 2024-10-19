@@ -44,7 +44,7 @@ typedef struct GameData {
     int          was_initialized;
     unsigned int seed;
 
-    char turn_of;
+    int turn_of;
 
     int market[CARD_GROUP_SIZE];
     int hand_plA[CARD_GROUP_SIZE];
@@ -64,7 +64,7 @@ typedef struct GameData {
 } GameData;
 
 typedef struct GameState {
-    char turn_of;
+    int turn_of;
 
     int market[CARD_GROUP_SIZE];
     int hand_plA[CARD_GROUP_SIZE];

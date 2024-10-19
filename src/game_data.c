@@ -90,7 +90,7 @@ void initGameData(GameData *game) {
   game->market[camels] = STARTING_MARKET_CAMELS;
   game->seed           = (unsigned int)time(NULL);
   setSeed(game);
-  game->turn_of         = PLAYER_A_CHAR + (rand() & 1);
+  game->turn_of         = (rand() & 1);
   game->was_initialized = 1;
 }
 int resetGameData(GameData *game) {
@@ -156,7 +156,7 @@ int checkDataIntegrity(GameData *game) {
   if (!tokens_bound) {
     return DATA_IS_CORRUPTED;
   }
-  if ((game->turn_of != PLAYER_A_CHAR && game->turn_of != PLAYER_B_CHAR)) {
+  if ((game->turn_of != PLAYER_A_NUM && game->turn_of != PLAYER_B_NUM)) {
     return DATA_IS_CORRUPTED;
   }
   int not_bound = 0;
@@ -225,10 +225,10 @@ int processAction(GameData *game, int argc, char *argv[]) {
   }
   PlayerScore *curr_player_score;
   int         *curr_player_hand;
-  if (game->turn_of == PLAYER_A_CHAR) {
+  if (game->turn_of == PLAYER_A_NUM) {
     curr_player_score = &(game->playerA);
     curr_player_hand  = game->hand_plA;
-  } else if (game->turn_of == PLAYER_B_CHAR) {
+  } else if (game->turn_of == PLAYER_B_NUM) {
     curr_player_score = &(game->playerB);
     curr_player_hand  = game->hand_plB;
   } else {
@@ -427,26 +427,26 @@ int compRoundWinningPlayer(GameData *game) {
   }
   if (playerA->points > playerB->points) {
     playerA->seals++;
-    game->turn_of = PLAYER_B_CHAR;
+    game->turn_of = PLAYER_B_NUM;
   } else if (playerA->points < playerB->points) {
     playerB->seals++;
-    game->turn_of = PLAYER_A_CHAR;
+    game->turn_of = PLAYER_A_NUM;
   }
   return 0;
   if (playerA->no_bonus_tokens > playerB->no_bonus_tokens) {
     playerA->seals++;
-    game->turn_of = PLAYER_B_CHAR;
+    game->turn_of = PLAYER_B_NUM;
   } else if (playerA->no_bonus_tokens < playerB->no_bonus_tokens) {
     playerB->seals++;
-    game->turn_of = PLAYER_A_CHAR;
+    game->turn_of = PLAYER_A_NUM;
   }
   return 0;
   if (playerA->no_goods_tokens > playerB->no_goods_tokens) {
     playerA->seals++;
-    game->turn_of = PLAYER_B_CHAR;
+    game->turn_of = PLAYER_B_NUM;
   } else if (playerA->no_goods_tokens < playerB->no_goods_tokens) {
     playerB->seals++;
-    game->turn_of = PLAYER_A_CHAR;
+    game->turn_of = PLAYER_A_NUM;
   } else {
     return DRAW;
   }
@@ -469,20 +469,17 @@ void initGameDataFromState(GameState *game_state, unsigned int seed, int bonus_u
   GameData *game_data        = (GameData *)malloc(sizeof(GameData));
   game_data->seed            = seed;
   game_data->was_initialized = 1;
-  memcpy(&(game_data->turn_of), &(game_data->turn_of), sizeof(char) + 3 * sizeof(int[CARD_GROUP_SIZE]) + 2 * sizeof(PlayerScore));
-
-  game->market[camels] = STARTING_MARKET_CAMELS;
-  game->seed           = (unsigned int)time(NULL);
-  setSeed(game);
-  game->turn_of         = PLAYER_A_CHAR + (rand() & 1);
-  game->was_initialized = 1;
+  memcpy(&(game_data->turn_of), &(game_data->turn_of), sizeof(int) + 3 * sizeof(int[CARD_GROUP_SIZE]) + 2 * sizeof(PlayerScore));
+  int used_cards[CARD_GROUP_SIZE];
+  for (int c_type = 0; c_type < CARD_GROUP_SIZE; c_type++) {
+    used_cards[c_type] = game_data->hand_plA[c_type] + game_data->hand_plB[c_type] + game_data->market[c_type];
+  }
+  setSeedLib(game_data, bonus_used, used_cards);
   game_state->game_data = game_data;
 }
 
 void set_GameState_from_GameData(GameData *game_data, GameState *game_state) {
-  game_state->turn_of = game_data->turn_of;
-
-  memcpy(&(game_data->market), &(game_state->market), sizeof(int[CARD_GROUP_SIZE]) * 3 * sizeof(PlayerScore) * 2);
+  memcpy(&(game_data->turn_of), &(game_state->turn_of), sizeof(int) + sizeof(int[CARD_GROUP_SIZE]) * 3 + sizeof(PlayerScore) * 2);
 
   for (int resource = 0; resource < RESOURCE_TYPES; resource++) {
     game_state->resource_tks[resource] = resource_tokens[resource].size - game_data->resource_tk_ptrs[resource];

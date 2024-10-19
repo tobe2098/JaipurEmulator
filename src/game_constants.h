@@ -51,11 +51,11 @@
   MAX(DIAMOND_CHAR, MAX(GOLD_CHAR, MAX(SILVER_CHAR, MAX(SPICE_CHAR, MAX(CLOTH_CHAR, MAX(LEATHER_CHAR, CAMEL_CHAR))))))
 
 // Custom names macros
-#define PLAYER_A      "Lizzard-Tron"
-#define PLAYER_B      "Post-Terminator"
+#define PLAYER_A     "Lizzard-Tron"
+#define PLAYER_B     "Post-Terminator"
 
-#define PLAYER_A_CHAR 'A'
-#define PLAYER_B_CHAR 'B'
+#define PLAYER_A_NUM 0
+#define PLAYER_B_NUM 1
 
 // #define PLAYER_A_STRLEN strlen(PLAYER_A)
 // #define PLAYER_B_STRLEN strlen(PLAYER_B)
