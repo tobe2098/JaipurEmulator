@@ -126,6 +126,7 @@ void initGame(GameData *game) {
 
 void initRound(GameData *game) {
   resetGameData(game);
+  startRound(game);
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
 
@@ -454,15 +455,34 @@ int compRoundWinningPlayer(GameData *game) {
   // printf("ERROR: IT WAS A DRAW! CONGRATULATIONS! THIS IS NORMALLY IMPOSSIBLE\n");
 }
 
-GameState *interfaceJaipurEmulator() {
-  ANOTHER VERSION ACCEPTING A STATE AS AN INPUT I SUPPOSE FOR INITIALIZATION;
-  static GameData                                             g_data = { .was_initialized = 0 };
-  init(g_data);  // Initialize only if the was_initialized is zero, or if the round is over?
-
+GameState *initLibGameState(GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]) {
+  // Options are null state or default state? And then the custom one, but how to distinguish?
+  //  ANOTHER VERSION ACCEPTING A STATE AS AN INPUT I SUPPOSE FOR INITIALIZATION;
+  if (game_state == NULL) {
+    char *arena = (char *)malloc(sizeof(GameState) + sizeof(GameData));
+    if (arena == NULL) {
+      return NULL;
+    }
+    game_state                 = (GameState *)arena;
+    GameData *game_data        = (GameData *)(arena + sizeof(GameState));
+    game_data->was_initialized = 0;
+    initGameData(game_data);
+    game_state->game_data = game_data;
+    set_GameState_from_GameData(game_data, game_state);
+  } else if (game_state->game_data == NULL) {
+    initGameDataFromState(game_state, seed, bonus_used);
+  } else if (game_state->game_data->was_initialized == 0) {
+    initGameData(game_state->game_data);
+    set_GameState_from_GameData(game_state->game_data, game_state);
+  } else {
+    return NULL;
+  }
   // If the round is finished by the last action, do not reset the state
-  GameState g_state;
-  set_GameState_from_GameData(&g_data, &g_state);
-  return g_state;
+  return game_state;
+}
+
+void freeLibGameState(GameState *game_state) {
+  free(game_state);
 }
 
 void initGameDataFromState(GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]) {

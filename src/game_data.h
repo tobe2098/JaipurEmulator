@@ -111,7 +111,8 @@ int isGameOver(PlayerScore *playerA, PlayerScore *playerB);
 int isRoundOver(GameData *game);
 int compRoundWinningPlayer(GameData *game);
 
-GameState *interfaceJaipurEmulator();
+GameState *initLibGameState(GameState game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]);
+void       freeLibGameState(GameState *game_state);
 void       initGameDataFromState(GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]);
 
 #endif
