@@ -7,6 +7,25 @@ void initDeck(GameData *game) {
     }
   }
 }
+void initDeckLib(GameData *game, int cards_used[CARD_GROUP_SIZE]) {
+  int arr_ptr = 0;
+
+  for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
+    int no_cards = no_cards_lookup_table[card_type] - cards_used[card_type];
+    while (no_cards) {
+      game->deck[arr_ptr++] = enum_to_char_lookup_table[card_type];
+      no_cards--;
+    }
+  }
+  for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
+    int no_cards = cards_used[card_type];
+    while (no_cards) {
+      game->deck[arr_ptr++] = enum_to_char_lookup_table[card_type];
+      no_cards--;
+    }
+  }
+}
+
 void setSeed(GameData *game) {
   srand(game->seed);
   for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++) {
@@ -17,6 +36,43 @@ void setSeed(GameData *game) {
   }
   initDeck(game);
   randomize_char_array(game->deck, DECK_SIZE);
+#ifndef DEBUG
+  printf("Deck: ");
+  for (int i = 0; i < DECK_SIZE; i++) {
+    printf("%c,", game->deck[i]);
+  }
+  printf("\n");
+#endif
+}
+
+void setSeedLib(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]) {
+  int bonus_tokens[BONUS_TOKENS_DATA_ARRAY] = { [0 ... BONUS_TOKENS_DATA_ARRAY - 1] = 2 };
+
+  for (int idx = 0; idx < BONUS_TOKENS_DATA_ARRAY; idx++) {
+    bonus_tokens[idx] -= bonus_tokens_used[idx];
+  }
+
+  srand(game->seed);
+  int barr = 0;
+  while (barr < BONUS_TOKEN_TYPES) {
+    int arr_ptr = 0;
+
+    for (int tk_type = barr * 3; tk_type < (barr + 1) * 3; tk_type++) {
+      while (bonus_tokens[tk_type]) {
+        game->bonus_tk_arrays[barr][arr_ptr++] = tk_type + 1;
+        bonus_tokens[tk_type]--;
+      }
+    }
+    for (int tk_type = barr * 3; tk_type < (barr + 1) * 3; tk_type++) {
+      while (bonus_tokens_used[tk_type]) {
+        game->bonus_tk_arrays[barr][arr_ptr++] = tk_type + 1;
+        bonus_tokens_used[tk_type]--;
+      }
+    }
+    randomize_int_array(game->bonus_tk_arrays[barr], MAX_BONUS_TOKENS - game->bonus_tk_ptrs[barr]);
+  }
+  initDeckLib(game, cards_used);
+  randomize_char_array(game->deck, DECK_SIZE - game->deck_ptr);
 #ifndef DEBUG
   printf("Deck: ");
   for (int i = 0; i < DECK_SIZE; i++) {
@@ -398,7 +454,7 @@ int compRoundWinningPlayer(GameData *game) {
   // printf("ERROR: IT WAS A DRAW! CONGRATULATIONS! THIS IS NORMALLY IMPOSSIBLE\n");
 }
 
-GameState interfaceJaipurEmulator() {
+GameState *interfaceJaipurEmulator() {
   ANOTHER VERSION ACCEPTING A STATE AS AN INPUT I SUPPOSE FOR INITIALIZATION;
   static GameData                                             g_data = { .was_initialized = 0 };
   init(g_data);  // Initialize only if the was_initialized is zero, or if the round is over?
@@ -407,6 +463,20 @@ GameState interfaceJaipurEmulator() {
   GameState g_state;
   set_GameState_from_GameData(&g_data, &g_state);
   return g_state;
+}
+
+void initGameDataFromState(GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]) {
+  GameData *game_data        = (GameData *)malloc(sizeof(GameData));
+  game_data->seed            = seed;
+  game_data->was_initialized = 1;
+  memcpy(&(game_data->turn_of), &(game_data->turn_of), sizeof(char) + 3 * sizeof(int[CARD_GROUP_SIZE]) + 2 * sizeof(PlayerScore));
+
+  game->market[camels] = STARTING_MARKET_CAMELS;
+  game->seed           = (unsigned int)time(NULL);
+  setSeed(game);
+  game->turn_of         = PLAYER_A_CHAR + (rand() & 1);
+  game->was_initialized = 1;
+  game_state->game_data = game_data;
 }
 
 void set_GameState_from_GameData(GameData *game_data, GameState *game_state) {

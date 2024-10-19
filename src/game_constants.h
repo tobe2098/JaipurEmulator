@@ -2,36 +2,37 @@
 #define GAME_CONSTANTS_JAIPUR
 
 // Rules macros
-#define RESOURCE_TYPES         6
-#define BONUS_TOKEN_TYPES      3
-#define MAX_BONUS_TOKENS       6
-#define DECK_SIZE              52  // 53 would include the string termination character
+#define RESOURCE_TYPES          6
+#define BONUS_TOKEN_TYPES       3
+#define MAX_BONUS_TOKENS        6
+#define BONUS_TOKENS_DATA_ARRAY 9
+#define DECK_SIZE               52  // 53 would include the string termination character
 
-#define FINISHED_GOODS_LIMIT   3
-#define CAMEL_TOKEN_VAL        5
-#define CAMELS_TOTAL           11
-#define SEALS_TO_WIN           2
+#define FINISHED_GOODS_LIMIT    3
+#define CAMEL_TOKEN_VAL         5
+#define CAMELS_TOTAL            11
+#define SEALS_TO_WIN            2
 
-#define INITIAL_HAND_SIZE      5
-#define STARTING_MARKET_CAMELS 3
-#define CARDS_IN_MARKET        5
+#define INITIAL_HAND_SIZE       5
+#define STARTING_MARKET_CAMELS  3
+#define CARDS_IN_MARKET         5
 
-#define DIAMONDS_STARTING_DECK 6
-#define GOLD_STARTING_DECK     6
-#define SILVER_STARTING_DECK   6
-#define SPICE_STARTING_DECK    8
-#define CLOTH_STARTING_DECK    8
-#define LEATHER_STARTING_DECK  10
-#define CAMELS_STARTING_DECK   (CAMELS_TOTAL - STARTING_MARKET_CAMELS)
+#define DIAMONDS_STARTING_DECK  6
+#define GOLD_STARTING_DECK      6
+#define SILVER_STARTING_DECK    6
+#define SPICE_STARTING_DECK     8
+#define CLOTH_STARTING_DECK     8
+#define LEATHER_STARTING_DECK   10
+#define CAMELS_STARTING_DECK    (CAMELS_TOTAL - STARTING_MARKET_CAMELS)
 
-#define DIAMOND_TOKEN_SIZE     DIAMONDS_STARTING_DECK - 1
-#define GOLD_TOKEN_SIZE        GOLD_STARTING_DECK - 1
-#define SILVER_TOKEN_SIZE      SILVER_STARTING_DECK - 1
-#define SPICE_TOKEN_SIZE       SPICE_STARTING_DECK - 1
-#define CLOTH_TOKEN_SIZE       CLOTH_STARTING_DECK - 1
-#define LEATHER_TOKEN_SIZE     LEATHER_STARTING_DECK - 1
+#define DIAMOND_TOKEN_SIZE      DIAMONDS_STARTING_DECK - 1
+#define GOLD_TOKEN_SIZE         GOLD_STARTING_DECK - 1
+#define SILVER_TOKEN_SIZE       SILVER_STARTING_DECK - 1
+#define SPICE_TOKEN_SIZE        SPICE_STARTING_DECK - 1
+#define CLOTH_TOKEN_SIZE        CLOTH_STARTING_DECK - 1
+#define LEATHER_TOKEN_SIZE      LEATHER_STARTING_DECK - 1
 
-#define MAX(a, b)              ((a) > (b) ? (a) : (b))
+#define MAX(a, b)               ((a) > (b) ? (a) : (b))
 
 #define LARGEST_TOKEN_SIZE \
   MAX(LEATHER_TOKEN_SIZE, MAX(CLOTH_TOKEN_SIZE, MAX(SPICE_TOKEN_SIZE, MAX(SILVER_TOKEN_SIZE, MAX(GOLD_TOKEN_SIZE, DIAMOND_TOKEN_SIZE)))))

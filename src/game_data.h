@@ -76,12 +76,15 @@ typedef struct GameState {
     int resource_tks[RESOURCE_TYPES];
     int bonus_tks[BONUS_TOKEN_TYPES];
 
-    int cards_in_deck;
+    int       cards_in_deck;
+    GameData *game_data;
 
 } GameState;
 
 void initDeck(GameData *game);
+void initDeckLib(GameData *game, int cards_used[CARD_GROUP_SIZE]);
 void setSeed(GameData *game);
+void setSeedLib(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]);
 
 void initGameData(GameData *game);
 int  resetGameData(GameData *game);
@@ -108,6 +111,7 @@ int isGameOver(PlayerScore *playerA, PlayerScore *playerB);
 int isRoundOver(GameData *game);
 int compRoundWinningPlayer(GameData *game);
 
-GameState interfaceJaipurEmulator();
+GameState *interfaceJaipurEmulator();
+void       initGameDataFromState(GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]);
 
 #endif
