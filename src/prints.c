@@ -12,7 +12,7 @@ void print_array_goods(char *name, const int *array, int size, int cutoff) {
   printf("\n");
 }
 void print_player_wins(char player) {
-  if (player == PLAYER_A_CHAR) {
+  if (player == PLAYER_A_NUM) {
     printf("      ██████╗ ██╗      █████╗ ██╗   ██╗███████╗██████╗      \n");
     printf("      ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗     \n");
     printf("      ██████╔╝██║     ███████║ ╚████╔╝ █████╗  ██████╔╝     \n");
@@ -26,7 +26,7 @@ void print_player_wins(char player) {
     printf("      ██╔══██║    ██║███╗██║██║██║╚██╗██║╚════██║╚═╝        \n");
     printf("      ██║  ██║    ╚███╔███╔╝██║██║ ╚████║███████║██╗        \n");
     printf("      ╚═╝  ╚═╝     ╚══╝╚══╝ ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝        \n");
-  } else if (player == PLAYER_B_CHAR) {
+  } else if (player == PLAYER_B_NUM) {
     printf("      ██████╗ ██╗      █████╗ ██╗   ██╗███████╗██████╗      \n");
     printf("      ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗     \n");
     printf("      ██████╔╝██║     ███████║ ╚████╔╝ █████╗  ██████╔╝     \n");
@@ -42,6 +42,7 @@ void print_player_wins(char player) {
     printf("      ╚═════╝      ╚══╝╚══╝ ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝        \n");
   }
 }
+
 void printCardGroup(int *card_group, int bool_camel) {
   char line_array[5][8][9];
   int  card_counter = 0;

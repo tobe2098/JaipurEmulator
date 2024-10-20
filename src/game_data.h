@@ -60,6 +60,9 @@ typedef struct GameData {
 
     int deck_ptr;
     int deck[DECK_SIZE];
+    int cards_in_deck;
+    int resource_tks[RESOURCE_TYPES];
+    int bonus_tks[BONUS_TOKEN_TYPES];
 
 } GameData;
 
@@ -76,22 +79,21 @@ typedef struct GameState {
     int resource_tks[RESOURCE_TYPES];
     int bonus_tks[BONUS_TOKEN_TYPES];
 
-    int       cards_in_deck;
-    GameData *game_data;
+    int cards_in_deck;
+    // GameData *game_data;
 
 } GameState;
 
 void initDeck(GameData *game);
-void initDeckLib(GameData *game, int cards_used[CARD_GROUP_SIZE]);
+void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]);
 void setSeed(GameData *game);
-void setSeedLib(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]);
+void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]);
 
 void initGameData(GameData *game);
 int  resetGameData(GameData *game);
 void startRound(GameData *game);
-void initGame(GameData *game);
+void startGame(GameData *game);
 void initRound(GameData *game);
-void set_GameState_from_GameData(GameData *game_data, GameState *game_state);
 
 int isHandSizeCorrect(int *card_group, int max);
 int checkDataIntegrity(GameData *game);
@@ -100,7 +102,8 @@ int computeFinishedResources(GameData *game);
 int sumOfCardsGroup(int group[CARD_GROUP_SIZE], int not_camels_bool);
 // int getCardTypeIndex(int group[CARD_GROUP_SIZE],int card_index_input);
 
-int processAction(GameData *game, int argc, char *argv[]);
+// Expecting DATA_IS_OKAY
+int processAction(GameData *game, int argc, char *argv[], int flags);
 int drawCardsFromDeck(int group[CARD_GROUP_SIZE], GameData *game, int cards);
 int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char card);
 int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
@@ -111,8 +114,12 @@ int isGameOver(PlayerScore *playerA, PlayerScore *playerB);
 int isRoundOver(GameData *game);
 int compRoundWinningPlayer(GameData *game);
 
-GameState *initLibGameState(GameState game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]);
-void       freeLibGameState(GameState *game_state);
-void       initGameDataFromState(GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]);
+GameData *initLibGameStateCustom(GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]);
+GameData *initLibGameStateScratch();
+void      freeLibGameData(GameData *game_data);
+int       processLibAction(GameData *game, int argc, char *argv[], int flags);
+
+void setGameDataLib(GameData *game_data);
+void initGameDataFromState(GameData *game_data, GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]);
 
 #endif

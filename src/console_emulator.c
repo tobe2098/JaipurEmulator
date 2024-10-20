@@ -47,14 +47,14 @@ int load_game_data(GameData *game) {
       compRoundWinningPlayer(game);
       if (isGameOver(&(game->playerA), &(game->playerB))) {
         gameOverPrint(&(game->playerA), &(game->playerB));
-        initGame(game);
+        startGame(game);
       } else {
         initRound(game);
       }
     }
     if (isGameOver(&(game->playerA), &(game->playerB))) {
       gameOverPrint(&(game->playerA), &(game->playerB));
-      initGame(game);
+      startGame(game);
     }
     if (itemsRead < 21) {
       printf("Data was partially corrupted, use `--reset` to restart the game or manually correct the json.\n");
@@ -64,7 +64,7 @@ int load_game_data(GameData *game) {
     }
   } else {
     // Initialize default game state if no save file exists
-    initGame(game);
+    startGame(game);
   }
   computeFinishedResources(game);
   return checkDataIntegrity(game);
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
   }
   if (isGameOver(&(game->playerA), &(game->playerB))) {
     gameOverPrint(&(game->playerA), &(game->playerB));
-    initGame(game);
+    startGame(game);
   }
   // Save the updated state back to the JSON file
   save_game_data(&playerA, &playerB, &game);

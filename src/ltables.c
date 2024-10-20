@@ -24,7 +24,3 @@ extern const ResourceTokens resource_tokens[RESOURCE_TYPES] = {
   [cloths]   = { { 5, 3, 3, 2, 2, 1, 1, -1, -1 }, CLOTH_TOKEN_SIZE },      // Cloth Tokens
   [leathers] = { { 4, 3, 2, 1, 1, 1, 1, 1, 1 }, LEATHER_TOKEN_SIZE }       // Leather Tokens
 };
-
-const int bonus_template_3[MAX_BONUS_TOKENS] = { 3, 3, 2, 2, 1, 1 };
-const int bonus_template_4[MAX_BONUS_TOKENS] = { 6, 6, 5, 5, 4, 4 };
-const int bonus_template_5[MAX_BONUS_TOKENS] = { 9, 9, 8, 8, 7, 7 };
