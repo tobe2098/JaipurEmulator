@@ -82,12 +82,57 @@ void find_data_path(char *data_path) {
   snprintf(data_path, MAX_PATH, "%s/../data/jaipur_game_state.json", exe_path);
 #endif
 }
-const char *getPlayerName(char player) {
-  if (player == PLAYER_A_CHAR) {
+const char *getPlayerName(int player) {
+  if (player == PLAYER_A_NUM) {
     return PLAYER_A;
   }
-  if (player == PLAYER_B_CHAR) {
+  if (player == PLAYER_B_NUM) {
     return PLAYER_B;
   }
   return NULL;
+}
+
+int printErrors(int flags) {
+  if (flags & TOO_FEW_ARGS_FLAG) {
+    printf("Error: Too few arguments.\n");
+  }
+  if (flags & MIXING_GOODS_CAMELS) {
+    printf("Error: You are attempting to trade cards for both camels and goods.\n");
+  }
+  if (flags & DATA_CORRUPTED_FLAG) {
+    printf("Error: The data has been corrupted, it does not fit the constraints.\n");
+    printf("Data was partially corrupted, use `--reset` to restart the game or manually correct the json.\n");
+    printf("Input into the template json file your data manually as an alternative.\n");
+    perror("Data could not be read:");
+  }
+  if (flags & TOO_FEW_C_MARKET_FLAG) {
+    printf("Error: There are not enough cards in the market.\n");
+  }
+  if (flags & TOO_FEW_C_HAND_FLAG) {
+    printf("Error: You do not have enough cards in your hand.\n");
+  }
+  if (flags & TOO_MANY_C_MARKET_FLAG) {
+    printf("Error: There are too many cards in the market.\n");
+  }
+  if (flags & TOO_MANY_C_HAND_FLAG) {
+    printf("Error: Your hand is full.\n");
+  }
+  if (flags & NOT_ALLOWED_FLAG) {
+    printf("Error: The action is not allowed.\n");
+  }
+  if (flags & MISSING_CARD_FLAG) {
+    printf("Error: The card is not in the market.\n");
+  }
+  if (flags & ARG_OVERFLOW_FLAG) {
+    printf("Error: Input less than 5 cards for the market.\n");
+  }
+  if (flags & NO_CAMELS) {
+    printf("Error: There are no camels in the market.\n");
+  }
+  if (flags & ARGS_MISS_MATCH_FLAG) {
+    printf("Error: The number of exchanged cards does not match.\n");
+  }
+  if (flags & DATA_NOT_INIT_FLAG) {
+    printf("Error: The data was not properly initialized.\n");
+  }
 }

@@ -1,6 +1,7 @@
 #ifndef GAME_UTILS_JAIPUR
 #define GAME_UTILS_JAIPUR
 #include "config.h"
+#include "flags.h"
 #include "game_constants.h"
 #include "ltables.h"
 
@@ -25,6 +26,8 @@ void randomize_char_array(char arr[], int size);
 void randomize_void_array(void* arr, int arr_size, int type_size);
 void find_data_path(char* data_path);
 
-const char* getPlayerName(char player);
+const char* getPlayerName(int player);
+
+int printErrors(int flags);
 
 #endif

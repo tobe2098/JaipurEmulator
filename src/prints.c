@@ -11,7 +11,7 @@ void print_array_goods(char *name, const int *array, int size, int cutoff) {
   }
   printf("\n");
 }
-void print_player_wins(char player) {
+void print_player_wins(int player) {
   if (player == PLAYER_A_NUM) {
     printf("      ██████╗ ██╗      █████╗ ██╗   ██╗███████╗██████╗      \n");
     printf("      ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗     \n");
@@ -72,7 +72,7 @@ void printCardGroup(int *card_group, int bool_camel) {
     printf("\n");
   }
 }
-void print_winning_trophy(char player) {
+void print_winning_trophy(int player) {
   printf("                        xxxxxxXXXxxxXx                         \n");
   printf("                  xxxXXxxxxxxxxxxxXxxxxxxxxx                   \n");
   printf("                xxxxxxxxxxxxxx+++xxxxxxxxxxxxxx                \n");
@@ -144,8 +144,9 @@ void print_version() {
   printf("There is NO WARRANTY, to the extent permitted by law.\n");
 }
 
-void print_new_round_message(char player) {
+void print_new_round_message(int player) {
   print_player_wins(player);
+  (void)getchar();
   printf("////////////////////////////////////////////////////////////\n");
   printf("//            ███╗   ██╗███████╗██╗  ██╗████████╗         //\n");
   printf("//            ████╗  ██║██╔════╝╚██╗██╔╝╚══██╔══╝         //\n");

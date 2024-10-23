@@ -2,6 +2,7 @@
 #define GAME_CONSTANTS_JAIPUR
 
 // Rules macros
+#define JSON_ELEMENTS           21
 #define RESOURCE_TYPES          6
 #define BONUS_TOKEN_TYPES       3
 #define MAX_BONUS_TOKENS        6

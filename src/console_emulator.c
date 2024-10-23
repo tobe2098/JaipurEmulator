@@ -1,4 +1,14 @@
 #include "console_emulator.h"
+void roundOverPrint(GameData *game) {
+  print_new_round_message(((game->turn_of + 1) & 1));
+}
+void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB) {
+  if (playerA->seals == SEALS_TO_WIN) {
+    print_winning_trophy(PLAYER_A_NUM);
+  } else if (playerB->seals == SEALS_TO_WIN) {
+    print_winning_trophy(PLAYER_B_NUM);
+  }
+}
 int load_game_data(GameData *game) {
   char save_file[MAX_PATH];
   find_data_path(save_file);
@@ -43,30 +53,14 @@ int load_game_data(GameData *game) {
     // printf("Items read: %d\n", itemsRead);
     free(buffer);
     setSeed(game);
-    if (isRoundOver(game)) {
-      compRoundWinningPlayer(game);
-      if (isGameOver(&(game->playerA), &(game->playerB))) {
-        gameOverPrint(&(game->playerA), &(game->playerB));
-        startGame(game);
-      } else {
-        initRound(game);
-      }
-    }
-    if (isGameOver(&(game->playerA), &(game->playerB))) {
-      gameOverPrint(&(game->playerA), &(game->playerB));
-      startGame(game);
-    }
-    if (itemsRead < 21) {
-      printf("Data was partially corrupted, use `--reset` to restart the game or manually correct the json.\n");
-      printf("Input into the template json file your data manually as an alternative.\n");
-      perror("Data could not be read:");
-      return -1;
+
+    if (itemsRead != JSON_ELEMENTS) {
+      return DATA_CORRUPTED_FLAG;
     }
   } else {
     // Initialize default game state if no save file exists
-    startGame(game);
+    return DATA_NOT_INIT_FLAG;
   }
-  computeFinishedResources(game);
   return checkDataIntegrity(game);
 }
 void save_game_data(const GameData *game) {
@@ -74,7 +68,7 @@ void save_game_data(const GameData *game) {
   find_data_path(save_file);
   FILE *file = fopen(save_file, "w");
   if (file == NULL) {
-    perror("Unable to save game state");
+    perror("Unable to save game state: ");
     return;
   }
 
@@ -99,17 +93,26 @@ void save_game_data(const GameData *game) {
 
   fclose(file);
 }
-void roundOverPrint(GameData *game) {
-  print_new_round_message(((game->turn_of - PLAYER_A_CHAR + 1) & 1) + PLAYER_A_CHAR);
-}
-void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB) {
-  if (playerA->seals == SEALS_TO_WIN) {
-    print_winning_trophy(PLAYER_A_CHAR);
-  } else if (playerB->seals == SEALS_TO_WIN) {
-    print_winning_trophy(PLAYER_B_CHAR);
+
+int endingChecks(GameData *game) {
+  if (isRoundOver(&game)) {
+    compRoundWinningPlayer(&game);
+    if (isGameOver(&(game->playerA), &(game->playerB))) {
+      gameOverPrint(&(game->playerA), &(game->playerB));
+      return GAME_OVER;
+    } else {
+      return ROUND_OVER;
+    }
   }
+  // if (isGameOver(&(game->playerA), &(game->playerB))) {
+  //   gameOverPrint(&(game->playerA), &(game->playerB));
+  //   return GAME_OVER;
+  // }
+  gameStatePrint(game);
+  return 0;
 }
-void printGameState(GameData *game) {
+
+void gameStatePrint(GameData *game) {
   printf("\n");
   printf("<Scores>\n");
   printf("<Player A> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerA.points, game->playerA.seals,
@@ -141,33 +144,30 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  PlayerScore playerA, playerB;
-  GameData    game;
+  GameData game;
   game.was_initialized = 0;
+
+  int flags = 0;
   // Load the previous game state from the JSON file
-  if (load_game_data(&playerA, &playerB, &game) == -1) {
-    return -1;
-  }
+  flags |= load_game_data(&game);
   // Process command-line arguments (e.g., "take_camel", "sell_goods", "draw_from_deck")
-  processAction(&playerA, &playerB, &game, argc, argv);
-  if (processAction) {
-    game->turn_of = (((game->turn_of - PLAYER_A_CHAR) + 1) & 1) + PLAYER_A_CHAR;
+  if (flags & DATA_OKAY_FLAG) {
+    computeFinishedResources(&game);
+    flags |= endingChecks(&game);
+    if (!(flags & GAME_OVER || flags & ROUND_OVER)) {
+      flags |= processAction(&game, argc, argv, flags);
+    }
+    if (flags & TURN_HAPPENED_FLAG) {
+      game.turn_of = (game.turn_of + 1) & 1;
+      flags |= endingChecks(&game);
+    }
+    if (flags & GAME_OVER) {
+    } else if (flags & ROUND_OVER) {
+    }
   }
   // All prints have to be handed here, in console
-
-  if isRoundOver (game) {) {
-      compRoundWinningPlayer(game);
-      initRound(game);
-    }
-  } else {
-    printGameState(game);
-  }
-  if (isGameOver(&(game->playerA), &(game->playerB))) {
-    gameOverPrint(&(game->playerA), &(game->playerB));
-    startGame(game);
-  }
   // Save the updated state back to the JSON file
-  save_game_data(&playerA, &playerB, &game);
-
+  save_game_data(&game);
+  (void)printErrors(flags);
   return 0;
 }
