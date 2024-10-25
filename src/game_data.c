@@ -83,7 +83,7 @@ void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY
 }
 
 void initGameData(GameData *game) {
-  if (game->was_initialized == 1) {
+  if (game->was_initialized == DATA_WAS_INIT) {
     return;
   }
   memset(game, 0, sizeof(GameData));
@@ -91,10 +91,10 @@ void initGameData(GameData *game) {
   game->seed           = (unsigned int)time(NULL);
   setSeed(game);
   game->turn_of         = (rand() & 1);
-  game->was_initialized = 1;
+  game->was_initialized = DATA_WAS_INIT;
 }
 int resetGameData(GameData *game) {
-  if (game->was_initialized == 0) {
+  if (game->was_initialized != DATA_WAS_INIT) {
     return DATA_NOT_INIT_FLAG;
   }
   memset(game->hand_plA, 0, CARD_GROUP_SIZE);
@@ -139,7 +139,7 @@ int isHandSizeCorrect(int *card_group, int max) {
 }
 int checkDataIntegrity(GameData *game) {
   // Only to run in case of data loading, review after finishing data loading/saving
-  if (game->was_initialized == 0) {
+  if (game->was_initialized != DATA_WAS_INIT) {
     return DATA_NOT_INIT_FLAG;
   }
   int remaining_cards[CARD_GROUP_SIZE] = { 0 };
@@ -221,8 +221,8 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
   //   Go over the code logic (init, init when corrupt, starting a new game, loading, etc)
   if (argc < 2 || (flags & DATA_CORRUPTED_FLAG) || (flags & DATA_NOT_INIT_FLAG)) {
     // printf("Addresses A:%p B:%p\n", (void *)playerA, (void *)playerB);
-    gameStatePrint(game);
-    return NO_TURN_HAPPENED_FLAG | flags;
+    // gameStatePrint(game);
+    return 0;
   }
   PlayerScore *curr_player_score;
   int         *curr_player_hand;
@@ -240,16 +240,16 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
     // #ifndef DEBUG
     // printf("Data is corrupted: player turn of %c\n", game->turn_of);
     // #endif
-    return DATA_CORRUPTED_FLAG | flags;
+    return DATA_CORRUPTED_FLAG;
     // }
   }
-  flags |= DATA_OKAY_FLAG;
+  // flags |= DATA_OKAY_FLAG;
   // printf("Addresses A:%p B:%p, current:%p\n", (void *)playerA, (void *)playerB, (void *)curr_player);
 
   if (strncmp(argv[1], "--camels", 8) == 0) {
     int camels_no = game->market[camels];
     if (camels_no == 0) {
-      return NO_CAMELS | flags;
+      return NO_CAMELS;
     }
     game->market[camels] = 0;
     curr_player_hand[camels] += camels_no;
@@ -257,7 +257,7 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
   } else if (strncmp(argv[1], "--sell", 6) == 0) {
     // We assume maximum sale? No
     if (argc < 4) {
-      return TOO_FEW_ARGS_FLAG | flags;
+      return TOO_FEW_ARGS_FLAG;
     }
     char *goods    = argv[2];
     int   no_goods = atoi(argv[3]);
@@ -266,7 +266,7 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
     // Here the structure of the arguments has to be "--exchange seq num seq" where seq is a sequence of characters
     // Each sequence of characters will be composed of the characters referring to cards
     if (argc < 5) {
-      return TOO_FEW_ARGS_FLAG | flags;
+      return TOO_FEW_ARGS_FLAG;
     }
     char *hand_idx                   = argv[2];
     int   hand_idx_len               = strlen(hand_idx);
@@ -275,26 +275,26 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
     int   market_goods_positions_len = strlen(market_goods_positions);
     if (camels_no > curr_player_hand[camels]) {
       // printf("Cannot exchange more camels than owned");
-      return TOO_FEW_C_HAND_FLAG | flags;
+      return TOO_FEW_C_HAND_FLAG;
     }
     if (hand_idx_len + camels_no != market_goods_positions_len) {
       // printf("Number of cards from hand and market to be exchanged do not match");
-      return ARGS_MISS_MATCH_FLAG | flags;
+      return ARGS_MISS_MATCH_FLAG;
     }
     if (market_goods_positions_len > 5) {
       // printf("The market has only 5 cards, do not input more than 5 positions.");
-      return ARG_OVERFLOW_FLAG | flags;
+      return ARG_OVERFLOW_FLAG;
     }
     flags |=
       cardExchange(game->market, curr_player_hand, hand_idx, market_goods_positions, camels_no, hand_idx_len, market_goods_positions_len);
   } else if (strncmp(argv[1], "--take", 6) == 0) {
     if (sumOfCardsGroup(curr_player_hand, 1) >= 7) {
       // printf("Error, hand is full");
-      return TOO_MANY_C_HAND_FLAG | flags;
+      return TOO_MANY_C_HAND_FLAG;
     }
     if (argc < 3) {  // Here in theory it would be "--take char"
       // printf("Too few arguments.\n");
-      return TOO_FEW_ARGS_FLAG | flags;
+      return TOO_FEW_ARGS_FLAG;
     }
     // int idx=(int)(strtol(argv[2],NULL,10)&INT_MAX);
     flags |= takeCardFromMarket(game->market, curr_player_hand, argv[2][0]);
@@ -304,18 +304,18 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
       //   return return_code;
     }
   } else if (strncmp(argv[1], "--state", 7) == 0) {
-    gameStatePrint(game);
-    return NO_TURN_HAPPENED_FLAG | flags;
+    // gameStatePrint(game);
+    return 0;
   } else if (strncmp(argv[1], "--reset", 7) == 0) {
     game->was_initialized = 0;
-    startGame(game);
-    return NO_TURN_HAPPENED_FLAG | flags;
+    // startGame(game);
+    return GAME_OVER;
   } else if (strncmp(argv[1], "--help", 6) == 0) {
     print_help();
-    return NO_TURN_HAPPENED_FLAG | flags;
+    return NO_GAME_PRINT_FLAG;
   } else {
     printf("Unknown command: %s\n", argv[1]);
-    return NO_TURN_HAPPENED_FLAG | flags;
+    return NO_GAME_PRINT_FLAG;
   }
   return flags;
 }
@@ -503,7 +503,7 @@ void setGameDataLib(GameData *game_data) {
 
 void initGameDataFromState(GameData *game_data, GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]) {
   game_data->seed            = seed;
-  game_data->was_initialized = 1;
+  game_data->was_initialized = DATA_WAS_INIT;
   memcpy(&(game_data->turn_of), &(game_data->turn_of), sizeof(int) + 3 * sizeof(int[CARD_GROUP_SIZE]) + 2 * sizeof(PlayerScore));
   int used_cards[CARD_GROUP_SIZE];
   for (int c_type = 0; c_type < CARD_GROUP_SIZE; c_type++) {

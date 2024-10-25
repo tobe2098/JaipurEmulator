@@ -1,7 +1,7 @@
 #include "prints.h"
 
-void print_array_goods(char *name, const int *array, int size, int cutoff) {
-  printf("<Goods> Remaining %s tokens:  \t", name);
+void printGoodsTokenArray(char name, const int *array, int size, int cutoff) {
+  printf("<Goods> Remaining %c tokens:  \t", name);
   for (int i = 0; i < size; i++) {
     if (i < cutoff) {
       printf(" * ");  // Three spaces
@@ -11,7 +11,7 @@ void print_array_goods(char *name, const int *array, int size, int cutoff) {
   }
   printf("\n");
 }
-void print_player_wins(int player) {
+void printWinner(int player) {
   if (player == PLAYER_A_NUM) {
     printf("      ██████╗ ██╗      █████╗ ██╗   ██╗███████╗██████╗      \n");
     printf("      ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗     \n");
@@ -107,8 +107,8 @@ void print_winning_trophy(int player) {
   printf("              xxxxxxxXxxxxxxxxxxxxXxxxxxxxxxxxxxx              \n");
   printf("                xXxXxxxXXxxxxxxXXxxxXxxxxxxxXX                 \n");
   printf("                    xXXxxxxxXxxxxXXxxxxxxx                     \n");
-
-  print_player_wins(player);
+  (void)getchar();
+  printWinner(player);
 }
 
 void print_welcome_message() {
@@ -145,7 +145,7 @@ void print_version() {
 }
 
 void print_new_round_message(int player) {
-  print_player_wins(player);
+  printWinner(player);
   (void)getchar();
   printf("////////////////////////////////////////////////////////////\n");
   printf("//            ███╗   ██╗███████╗██╗  ██╗████████╗         //\n");

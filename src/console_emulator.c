@@ -96,19 +96,23 @@ void save_game_data(const GameData *game) {
 
 int endingChecks(GameData *game) {
   if (isRoundOver(&game)) {
-    compRoundWinningPlayer(&game);
+    if (compRoundWinningPlayer(&game) & DRAW_FLAG) {
+      return DRAW_FLAG | ROUND_OVER;
+    }
     if (isGameOver(&(game->playerA), &(game->playerB))) {
       gameOverPrint(&(game->playerA), &(game->playerB));
       return GAME_OVER;
     } else {
+      roundOverPrint(game);
       return ROUND_OVER;
     }
+    // } else {
+    // if (isGameOver(&(game->playerA), &(game->playerB))) {
+    //   gameOverPrint(&(game->playerA), &(game->playerB));
+    //   return GAME_OVER;
+    // }
+    // gameStatePrint(game);
   }
-  // if (isGameOver(&(game->playerA), &(game->playerB))) {
-  //   gameOverPrint(&(game->playerA), &(game->playerB));
-  //   return GAME_OVER;
-  // }
-  gameStatePrint(game);
   return 0;
 }
 
@@ -120,12 +124,12 @@ void gameStatePrint(GameData *game) {
   printf("<Player B> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerB.points, game->playerB.seals,
          game->playerB.no_bonus_tokens, game->playerB.no_goods_tokens);
   printf("\n");
-  // print_array_goods("diamonds", diamond_tokens, DIAMOND_T_SIZE, game->diamond_ptr);
-  // print_array_goods("gold", gold_tokens, GOLD_T_SIZE, game->gold_ptr);
-  // print_array_goods("silver", silver_tokens, SILVER_T_SIZE, game->silver_ptr);
-  // print_array_goods("spice", spice_tokens, SPICE_T_SIZE, game->spice_ptr);
-  // print_array_goods("cloth", cloth_tokens, CLOTH_T_SIZE, game->cloth_ptr);
-  // print_array_goods("leather", leather_tokens, LEATHER_T_SIZE, game->leather_ptr);
+  // printGoodsTokenArray("diamonds", diamond_tokens, DIAMOND_T_SIZE, game->diamond_ptr);
+  // printGoodsTokenArray("gold", gold_tokens, GOLD_T_SIZE, game->gold_ptr);
+  // printGoodsTokenArray("silver", silver_tokens, SILVER_T_SIZE, game->silver_ptr);
+  // printGoodsTokenArray("spice", spice_tokens, SPICE_T_SIZE, game->spice_ptr);
+  // printGoodsTokenArray("cloth", cloth_tokens, CLOTH_T_SIZE, game->cloth_ptr);
+  // printGoodsTokenArray("leather", leather_tokens, LEATHER_T_SIZE, game->leather_ptr);
   // printf("\n");
   // printf("<Bonus> Remaining 3 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_tk_ptrs);
   // printf("<Bonus> Remaining 4 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_4_ptr);
@@ -162,8 +166,17 @@ int main(int argc, char *argv[]) {
       flags |= endingChecks(&game);
     }
     if (flags & GAME_OVER) {
+      printf("Press any key to start a new game:\n");
+      (void)getchar();
+      startGame(&game);
     } else if (flags & ROUND_OVER) {
+      printf("Press any key to start the next round:\n");
+      (void)getchar();
+      startRound(&game);
     }
+  }
+  if (!(flags & NO_GAME_PRINT_FLAG)) {
+    gameStatePrint(&game);
   }
   // All prints have to be handed here, in console
   // Save the updated state back to the JSON file

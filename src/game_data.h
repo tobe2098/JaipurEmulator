@@ -110,6 +110,7 @@ int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GRO
 int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no,
                  int hand_idx_len, int market_goods_positions_len);
 
+// Also have to be in the Julia lib interface
 int isGameOver(PlayerScore *playerA, PlayerScore *playerB);
 int isRoundOver(GameData *game);
 int compRoundWinningPlayer(GameData *game);

@@ -2,7 +2,7 @@
 #define JAIPUR_ERRORS_HEADER
 #include "game_constants.h"
 
-#define NO_TURN_HAPPENED_FLAG  1 << 0  // No need to put it in the flag if there are other numbers
+#define DATA_WAS_INIT          1 << 0  // No need to put it in the flag if there are other numbers
 #define TURN_HAPPENED_FLAG     1 << 1
 
 #define DATA_NOT_INIT_FLAG     1 << 2
@@ -28,5 +28,6 @@
 #define NO_CAMELS             1 << 17
 #define GAME_OVER             1 << 18
 #define ROUND_OVER            1 << 19
+#define NO_GAME_PRINT_FLAG    1 << 20
 // #define UNWRITTEN_ERROR     1 << 15
 #endif
