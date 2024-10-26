@@ -11,14 +11,14 @@ void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]) {
   int arr_ptr = 0;
 
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
-    int no_cards = no_cards_lookup_table[card_type] - cards_used[card_type];
+    int no_cards = cards_used[card_type];
     while (no_cards) {
       game->deck[arr_ptr++] = enum_to_char_lookup_table[card_type];
       no_cards--;
     }
   }
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
-    int no_cards = cards_used[card_type];
+    int no_cards = no_cards_lookup_table[card_type] - cards_used[card_type];
     while (no_cards) {
       game->deck[arr_ptr++] = enum_to_char_lookup_table[card_type];
       no_cards--;
@@ -32,10 +32,10 @@ void setSeed(GameData *game) {
     for (int no_token = 0; no_token < MAX_BONUS_TOKENS; no_token++) {
       game->bonus_tk_arrays[barr][no_token] = (no_token) / 2 + 1 + barr * MAX_BONUS_TOKENS / 2;
     }
-    randomize_int_array(game->bonus_tk_arrays[barr], MAX_BONUS_TOKENS);
+    randomizeArrayInt(game->bonus_tk_arrays[barr], 0, MAX_BONUS_TOKENS);
   }
   initDeck(game);
-  randomize_char_array(game->deck, DECK_SIZE);
+  randomizeArrayChar(game->deck, 0, DECK_SIZE);
 #ifndef DEBUG
   printf("Deck: ");
   for (int i = 0; i < DECK_SIZE; i++) {
@@ -46,33 +46,33 @@ void setSeed(GameData *game) {
 }
 
 void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]) {
-  int bonus_tokens[BONUS_TOKENS_DATA_ARRAY] = { [0 ... BONUS_TOKENS_DATA_ARRAY - 1] = 2 };
+  int bonus_tokens[BONUS_TOKENS_DATA_ARRAY] = { [0 ... BONUS_TOKENS_DATA_ARRAY - 1] = BONUS_TOKENS_PER_VALUE };
 
   for (int idx = 0; idx < BONUS_TOKENS_DATA_ARRAY; idx++) {
     bonus_tokens[idx] -= bonus_tokens_used[idx];
   }
 
   srand(game->seed);
-  int barr = 0;
-  while (barr < BONUS_TOKEN_TYPES) {
+  for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++) {
     int arr_ptr = 0;
-
+    for (int tk_type = barr * 3; tk_type < (barr + 1) * 3; tk_type++) {
+      while (bonus_tokens_used[tk_type]) {
+        game->bonus_tk_arrays[barr][arr_ptr++] = tk_type + 1;
+        bonus_tokens_used[tk_type]--;
+        game->bonus_tk_ptrs[barr]++;
+      }
+    }
     for (int tk_type = barr * 3; tk_type < (barr + 1) * 3; tk_type++) {
       while (bonus_tokens[tk_type]) {
         game->bonus_tk_arrays[barr][arr_ptr++] = tk_type + 1;
         bonus_tokens[tk_type]--;
       }
     }
-    for (int tk_type = barr * 3; tk_type < (barr + 1) * 3; tk_type++) {
-      while (bonus_tokens_used[tk_type]) {
-        game->bonus_tk_arrays[barr][arr_ptr++] = tk_type + 1;
-        bonus_tokens_used[tk_type]--;
-      }
-    }
-    randomize_int_array(game->bonus_tk_arrays[barr], MAX_BONUS_TOKENS - game->bonus_tk_ptrs[barr]);
+
+    randomizeArrayInt(game->bonus_tk_arrays[barr], game->bonus_tk_ptrs[barr], MAX_BONUS_TOKENS);
   }
   initDeckCustom(game, cards_used);
-  randomize_char_array(game->deck, DECK_SIZE - game->deck_ptr);
+  randomizeArrayChar(game->deck, game->deck_ptr, DECK_SIZE);
 #ifndef DEBUG
   printf("Deck: ");
   for (int i = 0; i < DECK_SIZE; i++) {
@@ -171,6 +171,32 @@ int checkDataIntegrity(GameData *game) {
   }
   for (int card_type = 0; card_type < RESOURCE_TYPES; card_type++) {
     if (game->resource_tk_ptrs[card_type] < 0 || game->resource_tk_ptrs[card_type] >= resource_tokens[card_type].size) {
+      return DATA_CORRUPTED_FLAG;
+    }
+  }
+  return DATA_OKAY_FLAG;
+}
+int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
+  if (state->cards_in_deck > DECK_SIZE || state->cards_in_deck <= 0) {
+    return DATA_CORRUPTED_FLAG;
+  }
+  for (int card_idx = 0; card_idx < RESOURCE_TYPES; card_idx++) {
+    if (state->resource_tks[card_idx] > resource_tokens[card_idx].size || state->resource_tks[card_idx] < 0 ||
+        used_cards[card_idx] > no_cards_lookup_table[card_idx] || used_cards[card_idx] < 0 ||
+        !(resource_tokens[card_idx].size == state->resource_tks[card_idx] ||
+          used_cards[card_idx] == resource_tokens[card_idx].size - state->resource_tks[card_idx])) {
+      return DATA_CORRUPTED_FLAG;
+    }
+  }
+  for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++) {
+    if (state->bonus_tks[barr] > MAX_BONUS_TOKENS || state->bonus_tks[barr] < 0) {
+      return DATA_CORRUPTED_FLAG;
+    }
+    int sum = 0;
+    for (int tk = barr * 3; tk < (barr + 1) * 3; tk++) {
+      sum += state->bonus_used[tk];
+    }
+    if (sum != MAX_BONUS_TOKENS - state->bonus_tks[barr]) {
       return DATA_CORRUPTED_FLAG;
     }
   }
@@ -448,16 +474,24 @@ int compRoundWinningPlayer(GameData *game) {
   // printf("ERROR: IT WAS A DRAW! CONGRATULATIONS! THIS IS NORMALLY IMPOSSIBLE\n");
 }
 
-GameData *initLibGameStateCustom(GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]) {
+GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed) {
   // Options are null state or default state? And then the custom one, but how to distinguish?
   //  ANOTHER VERSION ACCEPTING A STATE AS AN INPUT I SUPPOSE FOR INITIALIZATION;
   GameData *game_data = (GameData *)malloc(sizeof(GameData));
-  if (game_data == NULL) {
+  memcpy(game_data, game_state, sizeof(GameData));
+  int used_cards[CARD_GROUP_SIZE];
+  for (int c_type = 0; c_type < CARD_GROUP_SIZE; c_type++) {
+    used_cards[c_type] = game_data->hand_plA[c_type] + game_data->hand_plB[c_type] + game_data->market[c_type];
+  }
+  if (game_data == NULL || !(checkStateIntegrity(game_state, used_cards) == DATA_OKAY_FLAG)) {
     return NULL;
   }
+  if (!seed) {
+    seed = (unsigned int)time(NULL);
+  }
   game_data->was_initialized = 0;
-  initGameData(game_data);
-  initGameDataFromState(game_data, game_state, seed, bonus_used);
+  // initGameData(game_data);
+  initGameDataFromState(game_data, seed, used_cards);
   // If the round is finished by the last action, do not reset the state
   return game_data;
 }
@@ -497,15 +531,11 @@ void setGameDataLib(GameData *game_data) {
   game_data->cards_in_deck = DECK_SIZE - game_data->deck_ptr;
 }
 
-void initGameDataFromState(GameData *game_data, GameState *game_state, unsigned int seed, int bonus_used[BONUS_TOKENS_DATA_ARRAY]) {
+void initGameDataFromState(GameData *game_data, unsigned int seed, int used_cards[CARD_GROUP_SIZE]) {
   game_data->seed            = seed;
   game_data->was_initialized = DATA_WAS_INIT;
-  memcpy(&(game_data->turn_of), &(game_data->turn_of), sizeof(int) + 3 * sizeof(int[CARD_GROUP_SIZE]) + 2 * sizeof(PlayerScore));
-  int used_cards[CARD_GROUP_SIZE];
-  for (int c_type = 0; c_type < CARD_GROUP_SIZE; c_type++) {
-    used_cards[c_type] = game_data->hand_plA[c_type] + game_data->hand_plB[c_type] + game_data->market[c_type];
-  }
-  setSeedCustom(game_data, bonus_used, used_cards);
+
+  setSeedCustom(game_data, game_data->bonus_used, used_cards);
 }
 
 // void set_GameState_from_GameData(GameData *game_data, GameState *game_state) {
