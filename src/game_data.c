@@ -118,7 +118,7 @@ void startRound(GameData *game) {
 }
 void startGame(GameData *game) {
   game->was_initialized = 0;
-  // print_welcome_message();
+  // printWelcomeMessage();
   initGameData(game);
   startRound(game);
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
@@ -246,10 +246,10 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
   // flags |= DATA_OKAY_FLAG;
   // printf("Addresses A:%p B:%p, current:%p\n", (void *)playerA, (void *)playerB, (void *)curr_player);
 
-  if (strncmp(argv[1], "--camels", 8) == 0) {
+  if (strncmp(argv[1], "--camels", strlen("--camels")) == 0 || strncmp(argv[1], "-c", strlen("-c") == 0)) {
     int camels_no = game->market[camels];
     if (camels_no == 0) {
-      return NO_CAMELS;
+      return NO_CAMELS | NO_GAME_PRINT_FLAG;
     }
     game->market[camels] = 0;
     curr_player_hand[camels] += camels_no;
@@ -257,44 +257,43 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
   } else if (strncmp(argv[1], "--sell", 6) == 0) {
     // We assume maximum sale? No
     if (argc < 4) {
-      return TOO_FEW_ARGS_FLAG;
+      return TOO_FEW_ARGS_FLAG | NO_GAME_PRINT_FLAG;
     }
     char *goods    = argv[2];
     int   no_goods = atoi(argv[3]);
     flags |= cardSale(game, curr_player_score, curr_player_hand, goods, no_goods);
-  } else if (strncmp(argv[1], "--exchange", 10) == 0) {
+  } else if (strncmp(argv[1], "--exchange", strlen("--exchange")) == 0 || strncmp(argv[1], "-e", strlen("-e")) == 0) {
     // Here the structure of the arguments has to be "--exchange seq num seq" where seq is a sequence of characters
     // Each sequence of characters will be composed of the characters referring to cards
     if (argc < 5) {
-      return TOO_FEW_ARGS_FLAG;
+      return TOO_FEW_ARGS_FLAG | NO_GAME_PRINT_FLAG;
     }
-    char *hand_idx                   = argv[2];
-    int   hand_idx_len               = strlen(hand_idx);
-    int   camels_no                  = atoi(argv[3]);
-    char *market_goods_positions     = argv[4];
-    int   market_goods_positions_len = strlen(market_goods_positions);
+    char *hand_idx               = argv[2];
+    int   hand_idx_len           = strlen(hand_idx);
+    int   camels_no              = atoi(argv[3]);
+    char *market_goods_positions = argv[4];
+    int   market_goods_len       = strlen(market_goods_positions);
     if (camels_no > curr_player_hand[camels]) {
       // printf("Cannot exchange more camels than owned");
-      return TOO_FEW_C_HAND_FLAG;
+      return TOO_FEW_C_HAND_FLAG | NO_GAME_PRINT_FLAG;
     }
-    if (hand_idx_len + camels_no != market_goods_positions_len) {
+    if (hand_idx_len + camels_no != market_goods_len) {
       // printf("Number of cards from hand and market to be exchanged do not match");
-      return ARGS_MISS_MATCH_FLAG;
+      return ARGS_MISS_MATCH_FLAG | NO_GAME_PRINT_FLAG;
     }
-    if (market_goods_positions_len > 5) {
+    if (market_goods_len > 5) {
       // printf("The market has only 5 cards, do not input more than 5 positions.");
-      return ARG_OVERFLOW_FLAG;
+      return ARG_OVERFLOW_FLAG | NO_GAME_PRINT_FLAG;
     }
-    flags |=
-      cardExchange(game->market, curr_player_hand, hand_idx, market_goods_positions, camels_no, hand_idx_len, market_goods_positions_len);
-  } else if (strncmp(argv[1], "--take", 6) == 0) {
+    flags |= cardExchange(game->market, curr_player_hand, hand_idx, market_goods_positions, camels_no, hand_idx_len, market_goods_len);
+  } else if (strncmp(argv[1], "--take", strlen("--take")) == 0 || strncmp(argv[1], "-t", strlen("-t")) == 0) {
     if (sumOfCardsGroup(curr_player_hand, 1) >= 7) {
       // printf("Error, hand is full");
-      return TOO_MANY_C_HAND_FLAG;
+      return TOO_MANY_C_HAND_FLAG | NO_GAME_PRINT_FLAG;
     }
     if (argc < 3) {  // Here in theory it would be "--take char"
       // printf("Too few arguments.\n");
-      return TOO_FEW_ARGS_FLAG;
+      return TOO_FEW_ARGS_FLAG | NO_GAME_PRINT_FLAG;
     }
     // int idx=(int)(strtol(argv[2],NULL,10)&INT_MAX);
     flags |= takeCardFromMarket(game->market, curr_player_hand, argv[2][0]);
@@ -303,16 +302,13 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
       // } else { // Redundant
       //   return return_code;
     }
-  } else if (strncmp(argv[1], "--state", 7) == 0) {
+  } else if (strncmp(argv[1], "--state", strlen("--state")) == 0 || strncmp(argv[1], "-s", strlen("-s")) == 0) {
     // gameStatePrint(game);
     return 0;
-  } else if (strncmp(argv[1], "--reset", 7) == 0) {
+  } else if (strncmp(argv[1], "--reset", strlen("--reset")) == 0 || strncmp(argv[1], "-r", strlen("-r")) == 0) {
     game->was_initialized = 0;
     // startGame(game);
     return GAME_OVER;
-  } else if (strncmp(argv[1], "--help", 6) == 0) {
-    print_help();
-    return NO_GAME_PRINT_FLAG;
   } else {
     printf("Unknown command: %s\n", argv[1]);
     return NO_GAME_PRINT_FLAG;
@@ -381,7 +377,7 @@ int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GRO
 }
 
 int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no,
-                 int hand_idx_len, int market_goods_positions_len) {
+                 int hand_idx_len, int market_goods_len) {
   // From the process_args function where this is called we know the strlens of the two char*s are valid (<6)
   int cards_from_hand[CARD_GROUP_SIZE] = { 0 };
   for (int idx = 0; idx < hand_idx_len; idx++) {
@@ -389,7 +385,7 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
   }
   cards_from_hand[camels]                = camels_no;
   int cards_from_market[CARD_GROUP_SIZE] = { 0 };
-  for (int idx = 0; idx < market_goods_positions_len; idx++) {
+  for (int idx = 0; idx < market_goods_len; idx++) {
     cards_from_market[char_to_enum_lookup_table[market_idx[idx]]]++;
   }
 

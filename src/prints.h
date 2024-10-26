@@ -7,9 +7,9 @@
 #include <stdio.h>
 
 void printGoodsTokenArray(char name, const int* array, int size, int cutoff);
-void print_winning_trophy(int player);
-void print_welcome_message();
-void print_version();
+void printWinningTrophy(int player);
+void printWelcomeMessage();
+void printVersion();
 void print_new_round_message(int player);
 void printWinner(int player);
 void print_help();

@@ -72,7 +72,7 @@ void printCardGroup(int *card_group, int bool_camel) {
     printf("\n");
   }
 }
-void print_winning_trophy(int player) {
+void printWinningTrophy(int player) {
   printf("                        xxxxxxXXXxxxXx                         \n");
   printf("                  xxxXXxxxxxxxxxxxXxxxxxxxxx                   \n");
   printf("                xxxxxxxxxxxxxx+++xxxxxxxxxxxxxx                \n");
@@ -111,7 +111,7 @@ void print_winning_trophy(int player) {
   printWinner(player);
 }
 
-void print_welcome_message() {
+void printWelcomeMessage() {
   printf(":::+++;;;;;:.....:++++;+:;:..::::::::::...........:::;X:::::;::\n");
   printf("::;+;+;;::;:.....:;+++;+:;;:.:;:;:.:..............::.:$++;x+:::\n");
   printf("+;++;;;::::....;;;;;;;;;;;;;;;;;;::::................+$+;;;x:..\n");
@@ -136,8 +136,8 @@ void print_welcome_message() {
   printf("╚══════╝  ╚════╝ ╚═╝  ╚═╝╚═╝ ╚═╝      ╚═════╝ ╚═╝  ╚═╝ ╚══════╝\n");
 }
 
-void print_version() {
-  printf("Jaipur Game Tracker %s\n", PROJECT_VER);
+void printVersion() {
+  printf("Jaipur Game Emulator %s\n", PROJECT_VER);
   printf("Built for %s\n", OS_NAME);
   printf("%s\n", LICENSE_VERSION);
   printf("This is free software: you are free to change and redistribute it.\n");

@@ -4,9 +4,9 @@ void roundOverPrint(GameData *game) {
 }
 void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB) {
   if (playerA->seals == SEALS_TO_WIN) {
-    print_winning_trophy(PLAYER_A_NUM);
+    printWinningTrophy(PLAYER_A_NUM);
   } else if (playerB->seals == SEALS_TO_WIN) {
-    print_winning_trophy(PLAYER_B_NUM);
+    printWinningTrophy(PLAYER_B_NUM);
   }
 }
 int load_game_data(GameData *game) {
@@ -140,11 +140,11 @@ void gameStatePrint(GameData *game) {
   // INTRODUCE KEY PRESS FOR HAND SECRECY, maybe a console clearing before state
 }
 int main(int argc, char *argv[]) {
-  if (argc == 2 && strncmp(argv[1], "--help", 6) == 0) {
+  if (argc == 2 && (strncmp(argv[1], "--help", strlen("--help")) || strncmp(argv[1], "-h", strlen("-h"))) == 0) {
     print_help();
     return 0;
-  } else if (argc == 2 && strncmp(argv[1], "--version", 9) == 0) {
-    print_version();
+  } else if (argc == 2 && (strncmp(argv[1], "--version", strlen("--version")) || strncmp(argv[1], "-v", strlen("-v"))) == 0) {
+    printVersion();
     return 0;
   }
 
