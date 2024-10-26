@@ -7,6 +7,7 @@
 #define BONUS_TOKEN_TYPES       3
 #define MAX_BONUS_TOKENS        6
 #define BONUS_TOKENS_DATA_ARRAY 9
+#define BONUS_TOKENS_PER_VALUE  2
 #define DECK_SIZE               52  // 53 would include the string termination character
 
 #define FINISHED_GOODS_LIMIT    3

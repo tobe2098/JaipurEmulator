@@ -119,11 +119,15 @@ int endingChecks(GameData *game) {
 void gameStatePrint(GameData *game) {
   printf("\n");
   printf("<Scores>\n");
-  printf("<Player A> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerA.points, game->playerA.seals,
+  printf("<%s> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", PLAYER_A, game->playerA.points, game->playerA.seals,
          game->playerA.no_bonus_tokens, game->playerA.no_goods_tokens);
-  printf("<Player B> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", game->playerB.points, game->playerB.seals,
+  printf("<%s> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", PLAYER_B, game->playerB.points, game->playerB.seals,
          game->playerB.no_bonus_tokens, game->playerB.no_goods_tokens);
   printf("\n");
+  for (int card_index = 0; card_index < RESOURCE_TYPES; card_index++) {
+    printGoodsTokenArray(enum_to_char_lookup_table[card_index], resource_tokens[card_index].tokens, resource_tokens[card_index].size,
+                         game->resource_tk_ptrs[card_index]);
+  }
   // printGoodsTokenArray("diamonds", diamond_tokens, DIAMOND_T_SIZE, game->diamond_ptr);
   // printGoodsTokenArray("gold", gold_tokens, GOLD_T_SIZE, game->gold_ptr);
   // printGoodsTokenArray("silver", silver_tokens, SILVER_T_SIZE, game->silver_ptr);
@@ -156,7 +160,7 @@ int main(int argc, char *argv[]) {
   flags |= load_game_data(&game);
   // Process command-line arguments (e.g., "take_camel", "sell_goods", "draw_from_deck")
   if (flags & DATA_OKAY_FLAG) {
-    computeFinishedResources(&game);
+    // computeFinishedResources(&game);
     flags |= endingChecks(&game);
     if (!(flags & GAME_OVER || flags & ROUND_OVER)) {
       flags |= processAction(&game, argc, argv, flags);
