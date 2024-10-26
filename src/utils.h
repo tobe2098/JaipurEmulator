@@ -21,8 +21,8 @@
 #define MAX_PATH PATH_MAX
 #endif
 
-void randomize_int_array(int arr[], int size);
-void randomize_char_array(char arr[], int size);
+void randomizeArrayInt(int arr[], int start, int size);
+void randomizeArrayChar(char arr[], int start, int size);
 void randomize_void_array(void* arr, int arr_size, int type_size);
 void find_data_path(char* data_path);
 
