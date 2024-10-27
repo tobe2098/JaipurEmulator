@@ -1,6 +1,10 @@
 #ifndef GAME_CONSTANTS_JAIPUR
 #define GAME_CONSTANTS_JAIPUR
 
+#define TRUE      1
+#define FALSE     0
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 // Rules macros
 #define JSON_ELEMENTS           21
 #define RESOURCE_TYPES          6
@@ -34,8 +38,6 @@
 #define CLOTH_TOKEN_SIZE        CLOTH_STARTING_DECK - 1
 #define LEATHER_TOKEN_SIZE      LEATHER_STARTING_DECK - 1
 
-#define MAX(a, b)               ((a) > (b) ? (a) : (b))
-
 #define LARGEST_TOKEN_SIZE \
   MAX(LEATHER_TOKEN_SIZE, MAX(CLOTH_TOKEN_SIZE, MAX(SPICE_TOKEN_SIZE, MAX(SILVER_TOKEN_SIZE, MAX(GOLD_TOKEN_SIZE, DIAMOND_TOKEN_SIZE)))))
 
@@ -54,7 +56,7 @@
 
 // Custom names macros
 #define PLAYER_A     "Lizzard-Tron"
-#define PLAYER_B     "Post-Terminator"
+#define PLAYER_B     "Croc-Terminator"
 
 #define PLAYER_A_NUM 0
 #define PLAYER_B_NUM 1
