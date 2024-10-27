@@ -1,7 +1,8 @@
 #include "utils.h"
 
 void randomizeArrayInt(int arr[], int start, int size) {
-  // Function to shuffle an array of integers using Fisher-Yates algorithm
+  // Function to shuffle an array of integers using Fisher-Yates algorithm, from a starting index to an ending index.
+  // Starting index is included in the shuffling, the ending index is not (equivalent to size).
   for (int i = size - 1; i > start; i--) {
     int j    = (rand() % (i + 1 - start)) + start;
     int temp = arr[i];
@@ -11,7 +12,8 @@ void randomizeArrayInt(int arr[], int start, int size) {
 }
 
 void randomizeArrayChar(int arr[], int start, int size) {
-  // Function to shuffle an array of chars using Fisher-Yates algorithm
+  // Function to shuffle an array of chars using Fisher-Yates algorithm, from a starting index to an ending index.
+  // Starting index is included in the shuffling, the ending index is not (equivalent to size).
   for (int i = size - 1; i > start; i--) {
     int j    = (rand() % (i + 1 - start)) + start;
     int temp = arr[i];
@@ -21,6 +23,8 @@ void randomizeArrayChar(int arr[], int start, int size) {
 }
 
 void randomize_void_array(void *arr, int arr_size, int type_size) {
+  // Function to shuffle an array of chars using Fisher-Yates algorithm, from a starting index to an ending index.
+  // Starting index is included in the shuffling, the ending index is not (equivalent to size).
   char temp[type_size];
   for (int i = arr_size - 1; i > 0; i--) {
     int j = rand() % (i + 1);

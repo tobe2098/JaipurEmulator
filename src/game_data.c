@@ -82,13 +82,15 @@ void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY
 #endif
 }
 
-void initGameData(GameData *game) {
+void initGameData(GameData *game, unsigned int seed) {
   if (game->was_initialized == DATA_WAS_INIT) {
     return;
   }
   memset(game, 0, sizeof(GameData));
   game->market[camels] = STARTING_MARKET_CAMELS;
-  game->seed           = (unsigned int)time(NULL);
+  if (!seed) {
+    game->seed = (unsigned int)time(NULL);
+  }
   setSeed(game);
   game->turn_of         = (rand() & 1);
   game->was_initialized = DATA_WAS_INIT;
@@ -116,10 +118,10 @@ void startRound(GameData *game) {
   drawCardsFromDeck(game->hand_plA, game, INITIAL_HAND_SIZE);
   drawCardsFromDeck(game->hand_plB, game, INITIAL_HAND_SIZE);
 }
-void startGame(GameData *game) {
+void startGame(GameData *game, unsigned int seed) {
   game->was_initialized = 0;
   // printWelcomeMessage();
-  initGameData(game);
+  initGameData(game, seed);
   startRound(game);
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
@@ -315,7 +317,7 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
     }
     flags |= cardExchange(game->market, curr_player_hand, hand_idx, market_goods_positions, camels_no, hand_idx_len, market_goods_len);
   } else if (strncmp(argv[1], "--take", strlen("--take")) == 0 || strncmp(argv[1], "-t", strlen("-t")) == 0) {
-    if (sumOfCardsGroup(curr_player_hand, 1) >= 7) {
+    if (sumOfCardsGroup(curr_player_hand, TRUE) >= 7) {
       // printf("Error, hand is full");
       return TOO_MANY_C_HAND_FLAG | NO_GAME_PRINT_FLAG;
     }
@@ -361,7 +363,7 @@ int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_S
       return TOO_FEW_C_MARKET_FLAG;
     }
   }
-  card_index card_type_index = char_to_enum_lookup_table[card];
+  int card_type_index = char_to_enum_lookup_table[card];
   if (card_type_index == camels) {
     // printf("Taking an individual camel is not allowed.\n");
     return NOT_ALLOWED_FLAG;
@@ -476,16 +478,27 @@ int compRoundWinningPlayer(GameData *game) {
   // printf("ERROR: IT WAS A DRAW! CONGRATULATIONS! THIS IS NORMALLY IMPOSSIBLE\n");
 }
 
+int getMemoryForGames(MemoryPool *arena, int number_games) {
+  return initMemoryPool(arena, number_games * sizeof(GameData));
+}
+
 GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed) {
   // Options are null state or default state? And then the custom one, but how to distinguish?
   //  ANOTHER VERSION ACCEPTING A STATE AS AN INPUT I SUPPOSE FOR INITIALIZATION;
+  if (game_state == NULL) {
+    return NULL;
+  }
+  // Replace with linear allocator for cache locality
   GameData *game_data = (GameData *)malloc(sizeof(GameData));
+  if (game_data == NULL) {
+    return NULL;
+  }
   memcpy(game_data, game_state, sizeof(GameData));
   int used_cards[CARD_GROUP_SIZE];
   for (int c_type = 0; c_type < CARD_GROUP_SIZE; c_type++) {
     used_cards[c_type] = game_data->hand_plA[c_type] + game_data->hand_plB[c_type] + game_data->market[c_type];
   }
-  if (game_data == NULL || !(checkStateIntegrity(game_state, used_cards) == DATA_OKAY_FLAG)) {
+  if (!(checkStateIntegrity(game_state, used_cards) == DATA_OKAY_FLAG)) {
     return NULL;
   }
   if (!seed) {
@@ -498,10 +511,23 @@ GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed) {
   return game_data;
 }
 
-GameData *initLibGameStateScratch() {
+GameData *initLibGameStateScratch(unsigned int seed) {
+  // Replace with linear allocator for cache locality
   GameData *game_data = (GameData *)malloc(sizeof(GameData));
-  startGame(game_data);
+  startGame(game_data, seed);
   return game_data;
+}
+
+GameData *duplicateLibGameState(GameData *game_state) {
+  if (game_state == NULL) {
+    return NULL;
+  }
+  GameData *dupl_game = (GameData *)malloc(sizeof(GameData));
+  if (dupl_game == NULL) {
+    return NULL;
+  }
+  memcpy(dupl_game, game_state, sizeof(GameData));
+  return dupl_game;
 }
 
 void freeLibGameData(GameData *game_data) {

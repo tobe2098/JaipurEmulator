@@ -2,6 +2,7 @@
 #define PLAYER_INFO_HEADER_JAIPUR
 #include "flags.h"
 #include "game_constants.h"
+#include "lalloc.h"
 #include "ltables.h"
 #include "utils.h"
 
@@ -92,10 +93,10 @@ void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]);
 void setSeed(GameData *game);
 void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]);
 
-void initGameData(GameData *game);
+void initGameData(GameData *game, unsigned int seed);
 int  resetGameData(GameData *game);
 void startRound(GameData *game);
-void startGame(GameData *game);
+void startGame(GameData *game, unsigned int seed);
 void initRound(GameData *game);
 
 int isHandSizeCorrect(int *card_group, int max);
@@ -119,8 +120,11 @@ int isGameOver(PlayerScore *playerA, PlayerScore *playerB);
 int isRoundOver(GameData *game);
 int compRoundWinningPlayer(GameData *game);
 
+int getMemoryForGames(MemoryPool *arena, int number_games);
+
 GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed);
-GameData *initLibGameStateScratch();
+GameData *initLibGameStateScratch(unsigned int seed);
+GameData *duplicateLibGameState(GameData *game_state);
 void      freeLibGameData(GameData *game_data);
 int       processLibAction(GameData *game, int argc, char *argv[], int flags);
 
