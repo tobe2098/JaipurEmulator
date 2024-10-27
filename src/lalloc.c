@@ -30,11 +30,12 @@ int resetMemoryPool(MemoryPool* arena) {
 }
 
 void* mpalloc(MemoryPool* arena, int size) {
-  if (arena->position + size > arena->size) {
+  void*   slice   = &(arena->data[arena->position]);
+  size_mt new_ptr = ((size_mt)slice + sizeof(void*) - 1) & ~(sizeof(void*) - 1);
+  if (new_ptr + size > arena->size) {
     return NULL;
   }
-  void* slice = &(arena->data[arena->position]);
-  arena->position += size;
+  arena->position = size + (new_ptr - (size_mt)slice);
 
-  return slice;
+  return (void*)new_ptr;
 }

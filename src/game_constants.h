@@ -1,6 +1,8 @@
 #ifndef GAME_CONSTANTS_JAIPUR
 #define GAME_CONSTANTS_JAIPUR
 
+#include <stdint.h>
+
 #define TRUE      1
 #define FALSE     0
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -60,6 +62,16 @@
 
 #define PLAYER_A_NUM 0
 #define PLAYER_B_NUM 1
+
+#if defined(__x86_64__) || defined(__ppc64__) || defined(_WIN64) || defined(__aarch64__)
+// 64-bit architecture
+typedef uint64_t size_mt;
+#define SIZE_MT_MAX UINT64_MAX
+#else
+// 32-bit architecture
+typedef uint32_t size_mt;
+#define SIZE_MT_MAX UINT32_MAX
+#endif
 
 // #define PLAYER_A_STRLEN strlen(PLAYER_A)
 // #define PLAYER_B_STRLEN strlen(PLAYER_B)

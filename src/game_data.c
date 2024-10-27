@@ -479,7 +479,22 @@ int compRoundWinningPlayer(GameData *game) {
 }
 
 int getMemoryForGames(MemoryPool *arena, int number_games) {
-  return initMemoryPool(arena, number_games * sizeof(GameData));
+  if (number_games <= 0) {
+    return -1;
+  }
+  size_mt block_size;
+  if (sizeof(GameData) % sizeof(void *) == 0) {
+    // Already aligned, no extra space needed
+    block_size = sizeof(GameData);
+  } else {
+    // Round up to next alignment boundary
+    block_size = (sizeof(GameData) + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
+  }
+  if (number_games > SIZE_MT_MAX / block_size) {
+    return -1;
+  }
+  // We have to compute alignment needs. How much more than sizeof do we need to get alignment?
+  return initMemoryPool(arena, (number_games)*block_size + sizeof(void *));
 }
 
 GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed) {
