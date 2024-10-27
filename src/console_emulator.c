@@ -160,6 +160,9 @@ void gameStatePrint(GameData *game) {
   // printf("<Bonus> Remaining 5 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_5_ptr);
   // Print market
   printCardGroup(game->market, TRUE);
+  // Print camel piles
+  printf("<Camels> %s has: %i camels\n", PLAYER_A, game->hand_plA[camels]);
+  printf("<Camels> %s has: %i camels\n", PLAYER_B, game->hand_plB[camels]);
   while (getchar() != '\n');
   printCardGroup(getActivePlayerHand(game), FALSE);
   // Print hand of new player after enter
