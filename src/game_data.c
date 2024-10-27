@@ -27,6 +27,9 @@ void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]) {
 }
 
 void setSeed(GameData *game) {
+  if (!game->seed) {
+    game->seed = (unsigned int)time(NULL);
+  }
   srand(game->seed);
   for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++) {
     for (int no_token = 0; no_token < MAX_BONUS_TOKENS; no_token++) {
@@ -46,6 +49,9 @@ void setSeed(GameData *game) {
 }
 
 void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]) {
+  if (!game->seed) {
+    game->seed = (unsigned int)time(NULL);
+  }
   int bonus_tokens[BONUS_TOKENS_DATA_ARRAY] = { [0 ... BONUS_TOKENS_DATA_ARRAY - 1] = BONUS_TOKENS_PER_VALUE };
 
   for (int idx = 0; idx < BONUS_TOKENS_DATA_ARRAY; idx++) {
@@ -88,9 +94,6 @@ void initGameData(GameData *game, unsigned int seed) {
   }
   memset(game, 0, sizeof(GameData));
   game->market[camels] = STARTING_MARKET_CAMELS;
-  if (!seed) {
-    game->seed = (unsigned int)time(NULL);
-  }
   setSeed(game);
   game->turn_of         = (rand() & 1);
   game->was_initialized = DATA_WAS_INIT;
@@ -105,7 +108,7 @@ int resetGameData(GameData *game) {
   memset((game->resource_tk_ptrs), 0, sizeof(game->resource_tk_ptrs));
   memset((game->bonus_tk_arrays), 0, sizeof(game->bonus_tk_arrays));
   memset((game->bonus_tk_ptrs), 0, sizeof(game->bonus_tk_ptrs));
-  game->seed = (unsigned int)time(NULL);
+  game->seed = 0;
   setSeed(game);
   game->market[camels] = STARTING_MARKET_CAMELS;
   game->deck_ptr       = 0;
@@ -141,8 +144,14 @@ int isHandSizeCorrect(int *card_group, int max) {
 }
 int checkDataIntegrity(GameData *game) {
   // Only to run in case of data loading, review after finishing data loading/saving
+  // Probably should check that points and tokens are coherent.
+  // Probably should check that seals are coherent.
+  int pointsA = 0, pointsB = 0, tokensA = 0, tokensB = 0, btokensA = 0, btokensB = 0;
   if (game->was_initialized != DATA_WAS_INIT) {
     return DATA_NOT_INIT_FLAG;
+  }
+  if (game->playerA.seals > SEALS_TO_WIN || game->playerA.seals < 0 || game->playerB.seals > SEALS_TO_WIN || game->playerB.seals < 0) {
+    return DATA_CORRUPTED_FLAG;
   }
   int remaining_cards[CARD_GROUP_SIZE] = { 0 };
   for (int ptr = game->deck_ptr; ptr < DECK_SIZE; ptr++) {
@@ -179,6 +188,11 @@ int checkDataIntegrity(GameData *game) {
   return DATA_OKAY_FLAG;
 }
 int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
+  // Probably should check that points and tokens are coherent.
+  int pointsA = 0, pointsB = 0, tokensA = 0, tokensB = 0, btokensA = 0, btokensB = 0;
+  if (state->playerA.seals > SEALS_TO_WIN || state->playerA.seals < 0 || state->playerB.seals > SEALS_TO_WIN || state->playerB.seals < 0) {
+    return DATA_CORRUPTED_FLAG;
+  }
   if (state->cards_in_deck > DECK_SIZE || state->cards_in_deck <= 0) {
     return DATA_CORRUPTED_FLAG;
   }
@@ -259,19 +273,9 @@ int processAction(GameData *game, int argc, char *argv[], int flags) {
   if (game->turn_of == PLAYER_A_NUM) {
     curr_player_score = &(game->playerA);
     curr_player_hand  = game->hand_plA;
-  } else if (game->turn_of == PLAYER_B_NUM) {
+  } else {
     curr_player_score = &(game->playerB);
     curr_player_hand  = game->hand_plB;
-  } else {
-    // if (game->was_initialized == 0) {
-    // startGame(game);
-    // return DATA_NOT_INIT;
-    // } else {
-    // #ifndef DEBUG
-    // printf("Data is corrupted: player turn of %c\n", game->turn_of);
-    // #endif
-    return DATA_CORRUPTED_FLAG;
-    // }
   }
   // flags |= DATA_OKAY_FLAG;
   // printf("Addresses A:%p B:%p, current:%p\n", (void *)playerA, (void *)playerB, (void *)curr_player);
@@ -400,6 +404,7 @@ int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GRO
   no_cards = min(2, no_cards - 3);
   if (game->bonus_tk_ptrs[no_cards] < MAX_BONUS_TOKENS) {
     player_score->points += game->bonus_tk_arrays[no_cards][game->bonus_tk_ptrs[no_cards]];
+    game->bonus_used[game->bonus_tk_arrays[no_cards][game->bonus_tk_ptrs[no_cards]] - 1]++;
     game->bonus_tk_ptrs[no_cards]++;
     player_score->no_bonus_tokens++;
   }
@@ -516,9 +521,6 @@ GameData *initLibGameStateCustom(MemoryPool *arena, GameData *game_state, unsign
   if (!(checkStateIntegrity(game_state, used_cards) == DATA_OKAY_FLAG)) {
     return NULL;
   }
-  if (!seed) {
-    seed = (unsigned int)time(NULL);
-  }
   game_data->was_initialized = 0;
   // initGameData(game_data);
   initGameDataFromState(game_data, seed, used_cards);
@@ -552,7 +554,9 @@ void freeLibGameData(GameData *game_data) {
 int processLibAction(GameData *game, int argc, char *argv[], int flags) {
   int error_print = flags & ERROR_PRINTING_FLAG;
   flags |= checkDataIntegrity(game);
-  flags |= processAction(game, argc, argv, flags);
+  if (flags & DATA_OKAY_FLAG) {
+    flags |= processAction(game, argc, argv, flags);
+  }
   if (flags & TURN_HAPPENED_FLAG) {
     game->turn_of = (game->turn_of + 1) & 1;
   }

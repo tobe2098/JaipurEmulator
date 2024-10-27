@@ -50,17 +50,26 @@ int load_game_data(GameData *game) {
     //                        &playerB->no_bonus_tokens, &playerB->no_goods_tokens, &playerB->camels, &playerB->points, &playerB->seals,
     //                        &game->turn_of, &game->diamond_ptr, &game->gold_ptr, &game->silver_ptr, &game->spice_ptr, &game->cloth_ptr,
     //                        &game->leather_ptr, &game->seed, &game->bonus_tk_ptrs, &game->bonus_4_ptr, &game->bonus_5_ptr);
-    // printf("Items read: %d\n", itemsRead);
+    printf("Items read: %d\n", itemsRead);
     free(buffer);
-    setSeed(game);
 
-    if (itemsRead != JSON_ELEMENTS) {
-      return DATA_CORRUPTED_FLAG;
+    if (itemsRead < JSON_ELEMENTS) {
+      gameStatePrint(game);
+      printf("Only %i elements were read. Knowing the state of the game, would you like to continue like this?[y/n]", itemsRead);
+      char ans = 0;
+      while (ans != 'y' || ans != 'Y' || ans != 'n' || ans != 'N') {
+        printf("Would you like to continue like this?[y/n]");
+        ans = getchar();
+      }
+      if (ans == 'n') {
+        return DATA_CORRUPTED_FLAG;
+      }
     }
   } else {
     // Initialize default game state if no save file exists
     return DATA_NOT_INIT_FLAG;
   }
+  setSeed(game);
   return checkDataIntegrity(game);
 }
 void save_game_data(const GameData *game) {
@@ -116,6 +125,14 @@ int endingChecks(GameData *game) {
   return 0;
 }
 
+int *getActivePlayerHand(GameData *game) {
+  if (game->turn_of == PLAYER_A_NUM) {
+    return game->hand_plA;
+  } else {
+    return game->hand_plB;
+  }
+}
+
 void gameStatePrint(GameData *game) {
   printf("\n");
   printf("<Scores>\n");
@@ -135,9 +152,17 @@ void gameStatePrint(GameData *game) {
   // printGoodsTokenArray("cloth", cloth_tokens, CLOTH_T_SIZE, game->cloth_ptr);
   // printGoodsTokenArray("leather", leather_tokens, LEATHER_T_SIZE, game->leather_ptr);
   // printf("\n");
-  // printf("<Bonus> Remaining 3 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_tk_ptrs);
+  for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++) {
+    printf("<Bonus> Remaining %i card bonus tokens: \t%i\n", barr + 3, MAX_BONUS_TOKENS - game->bonus_tk_ptrs[barr]);
+  }
+  // printf("<Bonus> Remaining 3 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS - game->bonus_tk_ptrs);
   // printf("<Bonus> Remaining 4 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_4_ptr);
   // printf("<Bonus> Remaining 5 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_5_ptr);
+  // Print market
+  printCardGroup(game->market, TRUE);
+  while (getchar() != '\n');
+  printCardGroup(getActivePlayerHand(game), FALSE);
+  // Print hand of new player after enter
   printf("\n");
   printf("<Turn> It is %s's turn now <Turn>\n", getPlayerName(game->turn_of));
   printf("\n");
@@ -170,12 +195,12 @@ int main(int argc, char *argv[]) {
       flags |= endingChecks(&game);
     }
     if (flags & GAME_OVER) {
-      printf("Press any key to start a new game:\n");
-      (void)getchar();
-      startGame(&game);
+      printf("Press Enter to start a new game:\n");
+      while (getchar() != '\n');
+      startGame(&game, 0);
     } else if (flags & ROUND_OVER) {
-      printf("Press any key to start the next round:\n");
-      (void)getchar();
+      printf("Press Enter to start the next round:\n");
+      while (getchar() != '\n');
       startRound(&game);
     }
   }

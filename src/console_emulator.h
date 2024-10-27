@@ -6,7 +6,8 @@
 int  load_game_data(GameData *game);
 void save_game_data(const GameData *game);
 
-int endingChecks(GameData *game);
+int  endingChecks(GameData *game);
+int *getActivePlayerHand(GameData *game);
 
 void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB);
 void roundOverPrint(GameData *game);
