@@ -123,9 +123,9 @@ int compRoundWinningPlayer(GameData *game);
 
 int getMemoryForGames(MemoryPool *arena, int number_games);
 
-GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed);
-GameData *initLibGameStateScratch(unsigned int seed);
-GameData *duplicateLibGameState(GameData *game_state);
+GameData *initLibGameStateCustom(MemoryPool *arena, GameData *game_state, unsigned int seed);
+GameData *initLibGameStateScratch(MemoryPool *arena, unsigned int seed);
+GameData *duplicateLibGameState(MemoryPool *arena, GameData *game_state);
 void      freeLibGameData(GameData *game_data);
 int       processLibAction(GameData *game, int argc, char *argv[], int flags);
 

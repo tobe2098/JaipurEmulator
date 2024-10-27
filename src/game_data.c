@@ -497,14 +497,14 @@ int getMemoryForGames(MemoryPool *arena, int number_games) {
   return initMemoryPool(arena, (number_games)*block_size + sizeof(void *));
 }
 
-GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed) {
+GameData *initLibGameStateCustom(MemoryPool *arena, GameData *game_state, unsigned int seed) {
   // Options are null state or default state? And then the custom one, but how to distinguish?
   //  ANOTHER VERSION ACCEPTING A STATE AS AN INPUT I SUPPOSE FOR INITIALIZATION;
   if (game_state == NULL) {
     return NULL;
   }
   // Replace with linear allocator for cache locality
-  GameData *game_data = (GameData *)malloc(sizeof(GameData));
+  GameData *game_data = (GameData *)mpalloc(arena, sizeof(GameData));
   if (game_data == NULL) {
     return NULL;
   }
@@ -526,18 +526,18 @@ GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed) {
   return game_data;
 }
 
-GameData *initLibGameStateScratch(unsigned int seed) {
+GameData *initLibGameStateScratch(MemoryPool *arena, unsigned int seed) {
   // Replace with linear allocator for cache locality
-  GameData *game_data = (GameData *)malloc(sizeof(GameData));
+  GameData *game_data = (GameData *)mpalloc(arena, sizeof(GameData));
   startGame(game_data, seed);
   return game_data;
 }
 
-GameData *duplicateLibGameState(GameData *game_state) {
+GameData *duplicateLibGameState(MemoryPool *arena, GameData *game_state) {
   if (game_state == NULL) {
     return NULL;
   }
-  GameData *dupl_game = (GameData *)malloc(sizeof(GameData));
+  GameData *dupl_game = (GameData *)mpalloc(arena, sizeof(GameData));
   if (dupl_game == NULL) {
     return NULL;
   }
