@@ -1,8 +1,9 @@
 #ifndef PLAYER_INFO_HEADER_JAIPUR
 #define PLAYER_INFO_HEADER_JAIPUR
+#include "cache.h"
 #include "flags.h"
 #include "game_constants.h"
-#include "lalloc.h"
+// #include "lalloc.h"
 #include "ltables.h"
 #include "utils.h"
 
@@ -23,6 +24,8 @@
 #include <mach-o/dyld.h>
 #include <unistd.h>
 #endif
+
+// #define GAME_DATA_MEMORY_TO_COPY sizeof(GameData) - CACHE_LINE_SIZE
 
 typedef struct PlayerScore {
     int points;
@@ -95,7 +98,7 @@ void setSeed(GameData *game);
 void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]);
 
 void initGameData(GameData *game, unsigned int seed);
-int  resetGameData(GameData *game);
+int  roundSetGameData(GameData *game);
 void startRound(GameData *game);
 void startGame(GameData *game, unsigned int seed);
 void initRound(GameData *game);
@@ -121,11 +124,11 @@ int isGameOver(PlayerScore *playerA, PlayerScore *playerB);
 int isRoundOver(GameData *game);
 int compRoundWinningPlayer(GameData *game);
 
-int getMemoryForGames(MemoryPool *arena, int number_games);
+int getMemoryForGames(int number_games);
 
-GameData *initLibGameStateCustom(MemoryPool *arena, GameData *game_state, unsigned int seed);
-GameData *initLibGameStateScratch(MemoryPool *arena, unsigned int seed);
-GameData *duplicateLibGameState(MemoryPool *arena, GameData *game_state);
+GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed);
+GameData *initLibGameStateScratch(unsigned int seed);
+void      duplicateLibGameState(GameData *game_state_out, GameData *game_state_in);
 void      freeLibGameData(GameData *game_data);
 int       processLibAction(GameData *game, int argc, char *argv[], int flags);
 

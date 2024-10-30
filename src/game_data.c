@@ -94,11 +94,12 @@ void initGameData(GameData *game, unsigned int seed) {
   }
   memset(game, 0, sizeof(GameData));
   game->market[camels] = STARTING_MARKET_CAMELS;
+  game->seed           = seed;
   setSeed(game);
   game->turn_of         = (rand() & 1);
   game->was_initialized = DATA_WAS_INIT;
 }
-int resetGameData(GameData *game) {
+int roundSetGameData(GameData *game) {
   if (game->was_initialized != DATA_WAS_INIT) {
     return DATA_NOT_INIT_FLAG;
   }
@@ -130,7 +131,7 @@ void startGame(GameData *game, unsigned int seed) {
 }
 
 void initRound(GameData *game) {
-  resetGameData(game);
+  roundSetGameData(game);
   startRound(game);
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
@@ -483,33 +484,34 @@ int compRoundWinningPlayer(GameData *game) {
   // printf("ERROR: IT WAS A DRAW! CONGRATULATIONS! THIS IS NORMALLY IMPOSSIBLE\n");
 }
 
-int getMemoryForGames(MemoryPool *arena, int number_games) {
-  if (number_games <= 0) {
-    return -1;
-  }
-  size_mt block_size;
-  if (sizeof(GameData) % sizeof(void *) == 0) {
-    // Already aligned, no extra space needed
-    block_size = sizeof(GameData);
-  } else {
-    // Round up to next alignment boundary
-    block_size = (sizeof(GameData) + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
-  }
-  if (number_games > SIZE_MT_MAX / block_size) {
-    return -1;
-  }
-  // We have to compute alignment needs. How much more than sizeof do we need to get alignment?
-  return initMemoryPool(arena, (number_games)*block_size + sizeof(void *));
-}
+// int getMemoryForGames(PagePool *arena, int number_games) {
+//   if (number_games <= 0) {
+//     return -1;
+//   }
+//   size_mt block_size;
+//   if (sizeof(GameData) % sizeof(void *) == 0) {
+//     // Already aligned, no extra space needed
+//     block_size = sizeof(GameData);
+//   } else {
+//     // Round up to next alignment boundary
+//     block_size = (sizeof(GameData) + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
+//   }
+//   if (number_games > SIZE_MT_MAX / block_size) {
+//     return -1;
+//   }
+//   // We have to compute alignment needs. How much more than sizeof do we need to get alignment?
+//   return initMemoryPool(arena, (number_games)*block_size + sizeof(void *));
+// }
 
-GameData *initLibGameStateCustom(MemoryPool *arena, GameData *game_state, unsigned int seed) {
+GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed) {
   // Options are null state or default state? And then the custom one, but how to distinguish?
   //  ANOTHER VERSION ACCEPTING A STATE AS AN INPUT I SUPPOSE FOR INITIALIZATION;
   if (game_state == NULL) {
     return NULL;
   }
   // Replace with linear allocator for cache locality
-  GameData *game_data = (GameData *)mpalloc(arena, sizeof(GameData));
+  GameData *game_data = (GameData *)malloc(sizeof(GameData));
+  // GameData *game_data = (GameData *)mpalloc(arena, sizeof(GameData));
   if (game_data == NULL) {
     return NULL;
   }
@@ -528,23 +530,20 @@ GameData *initLibGameStateCustom(MemoryPool *arena, GameData *game_state, unsign
   return game_data;
 }
 
-GameData *initLibGameStateScratch(MemoryPool *arena, unsigned int seed) {
+GameData *initLibGameStateScratch(unsigned int seed) {
   // Replace with linear allocator for cache locality
-  GameData *game_data = (GameData *)mpalloc(arena, sizeof(GameData));
+  GameData *game_data = (GameData *)malloc(sizeof(GameData));
+  // GameData *game_data = (GameData *)mpalloc(arena, sizeof(GameData));
   startGame(game_data, seed);
   return game_data;
 }
 
-GameData *duplicateLibGameState(MemoryPool *arena, GameData *game_state) {
-  if (game_state == NULL) {
-    return NULL;
+void duplicateLibGameState(GameData *game_state_dst, GameData *game_state_src) {
+  if (game_state_src == NULL || game_state_dst == NULL) {
+    return;
   }
-  GameData *dupl_game = (GameData *)mpalloc(arena, sizeof(GameData));
-  if (dupl_game == NULL) {
-    return NULL;
-  }
-  memcpy(dupl_game, game_state, sizeof(GameData));
-  return dupl_game;
+  memcpy(game_state_dst, game_state_src, sizeof(GameData));
+  return;
 }
 
 void freeLibGameData(GameData *game_data) {
