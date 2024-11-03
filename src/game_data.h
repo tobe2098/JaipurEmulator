@@ -65,7 +65,8 @@ typedef struct GameData {
 
     int deck_ptr;
     int deck[DECK_SIZE];
-    // Input-output variables only, here is where data is written by user in library
+    // Input-output variables only, here is where data is written by user in library, not in the executable
+    // What is considered the game state, together with the cardgroups and the player scores.
     int cards_in_deck;
     int resource_tks[RESOURCE_TYPES];
     int bonus_tks[BONUS_TOKEN_TYPES];
@@ -128,7 +129,7 @@ int getMemoryForGames(int number_games);
 
 GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed);
 GameData *initLibGameStateScratch(unsigned int seed);
-void      duplicateLibGameState(GameData *game_state_out, GameData *game_state_in);
+void      cloneLibGameState(GameData *game_state_out, GameData *game_state_in);
 void      freeLibGameData(GameData *game_data);
 int       processLibAction(GameData *game, int argc, char *argv[], int flags);
 

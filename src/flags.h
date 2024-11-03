@@ -29,5 +29,6 @@
 #define GAME_OVER             1 << 18
 #define ROUND_OVER            1 << 19
 #define NO_GAME_PRINT_FLAG    1 << 20
+#define TOO_FEW_CARDS_SALE    1 << 21
 // #define UNWRITTEN_ERROR     1 << 15
 #endif

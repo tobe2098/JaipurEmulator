@@ -140,4 +140,7 @@ int printErrors(int flags) {
   if (flags & DATA_NOT_INIT_FLAG) {
     printf("Error: The data was not properly initialized.\n");
   }
+  if (flags & TOO_FEW_CARDS_SALE) {
+    printf("Error: Cannot sell less than 1 card.\n");
+  }
 }
