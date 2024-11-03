@@ -1,12 +1,12 @@
 #ifndef PLAYER_INFO_HEADER_JAIPUR
 #define PLAYER_INFO_HEADER_JAIPUR
-#include "cache.h"
 #include "flags.h"
 #include "game_constants.h"
 // #include "lalloc.h"
 #include "ltables.h"
 #include "utils.h"
 
+#include <stdalign.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +25,7 @@
 #include <unistd.h>
 #endif
 
+#define CACHE_LINE_SIZE 64
 // #define GAME_DATA_MEMORY_TO_COPY sizeof(GameData) - CACHE_LINE_SIZE
 
 typedef struct PlayerScore {
@@ -70,10 +71,12 @@ typedef struct GameData {
     int cards_in_deck;
     int good_tks[GOOD_TYPES];
     int bonus_tks[BONUS_TOKEN_TYPES];
-    int bonus_used[BONUS_TOKENS_DATA_ARRAY];
+    alignas(CACHE_LINE_SIZE) int bonus_used[BONUS_TOKENS_DATA_ARRAY];
+    // int bonus_used[BONUS_TOKENS_DATA_ARRAY];
 
 } GameData;
 
+int a = sizeof(GameData);
 // typedef struct GameState {
 //     // Input-only data-type
 //     int turn_of;
