@@ -38,7 +38,7 @@ INCLUDES := -I$(SRC_DIR)
 
 # Library name and files
 LIB_NAME := gamelib
-LIB_SOURCES := game_data.c ltables.c lalloc.c prints.c utils.c
+LIB_SOURCES := game_data.c ltables.c prints.c utils.c
 LIB_OBJECTS := $(LIB_SOURCES:%.c=$(OBJ_DIR)/%.o)
 LIB_DEPS := $(LIB_OBJECTS:%.o=%.d)
 SHARED_LIB := $(SHARED_LIB_PREFIX)$(LIB_NAME).$(SHARED_LIB_EXT)
