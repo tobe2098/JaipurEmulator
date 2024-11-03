@@ -35,7 +35,7 @@ void randomize_void_array(void *arr, int arr_size, int type_size) {
 }
 
 void find_data_path(char *data_path) {
-  char exe_path[MAX_PATH];
+  char exe_path[MAX_PATH - strlen("\\..\\data\\jaipur_game_state.json")];
   int  size = sizeof(exe_path);
   // Function to get the executable path based on the operating system
 #ifdef _WIN32
@@ -108,7 +108,7 @@ void printErrors(int flags) {
     printf("Error: The data has been corrupted, it does not fit the constraints.\n");
     printf("Data was partially corrupted, use `--reset` to restart the game or manually correct the json.\n");
     printf("Input into the template json file your data manually as an alternative.\n");
-    perror("Data could not be read:");
+    // perror("Data could not be read:");
   }
   if (flags & TOO_FEW_C_MARKET_FLAG) {
     printf("Error: There are not enough cards in the market.\n");

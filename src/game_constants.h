@@ -8,7 +8,7 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 // Rules macros
-#define JSON_ELEMENTS           21
+#define JSON_ELEMENTS           41
 #define GOOD_TYPES              6
 #define BONUS_TOKEN_TYPES       3
 #define MAX_BONUS_TOKENS        6

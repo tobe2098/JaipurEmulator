@@ -64,8 +64,8 @@ typedef struct GameData {
     int bonus_tk_ptrs[BONUS_TOKEN_TYPES];
     int bonus_tk_arrays[BONUS_TOKEN_TYPES][MAX_BONUS_TOKENS];
 
-    int deck_ptr;
-    int deck[DECK_SIZE];
+    int  deck_ptr;
+    char deck[DECK_SIZE];
     // Input-output variables only, here is where data is written by user in library, not in the executable
     // What is considered the game state, together with the cardgroups and the player scores.
     int cards_in_deck;
@@ -76,7 +76,7 @@ typedef struct GameData {
 
 } GameData;
 
-int a = sizeof(GameData);
+// int a = sizeof(GameData);
 // typedef struct GameState {
 //     // Input-only data-type
 //     int turn_of;

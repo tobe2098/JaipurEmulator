@@ -12,7 +12,7 @@ void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB) {
 int loadGameData(GameData *game) {
   char save_file[MAX_PATH];
   find_data_path(save_file);
-  FILE *file = fopen(save_file, "r");
+  FILE *file = fopen(save_file, "rb");
 
   if (file != NULL) {
     fseek(file, 0, SEEK_END);
@@ -23,37 +23,39 @@ int loadGameData(GameData *game) {
     int   counted_size = fread(buffer, 1, file_size, file);
     if (counted_size != file_size) {
       free(buffer);
-      return -1;
+      return DATA_CORRUPTED_FLAG;
     }
     buffer[file_size] = '\0';
     fclose(file);
-    int itemsRead = 0;
+    // int itemsRead = 0;
 
     // printf("Buffer 1 content:\n%s\n", buffer);
     // Parse the JSON-like ure
-    int itemsRead = sscanf(
-      buffer,
-      "{\n"
-      "  \"seed\": %i,\n"
-      "  \"turn_of\": \"%i\",\n"
-      "  \"market\": [%i,%i,%i,%i,%i,%i,%i],\n"
-      "  \"hand_plA\": [%i,%i,%i,%i,%i,%i,%i],\n"
-      "  \"hand_plB\": [%i,%i,%i,%i,%i,%i,%i],\n"
-      "  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n"
-      "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n"
-      "  \"good_tk_ptrs\": [%i,%i,%i,%i,%i,%i],\n"
-      "  \"bonus_tk_ptrs\": [%i,%i,%i],\n"
-      "  \"deck_ptr\": %i\n"
-      "}\n",
-      &(game->seed), &(game->turn_of), &(game->market[diamonds]), &(game->market[golds]), &(game->market[silvers]), &(game->market[spices]),
-      &(game->market[cloths]), &(game->market[leathers]), &(game->market[camels]), &(game->hand_plA[diamonds]), &(game->hand_plA[golds]),
-      &(game->hand_plA[silvers]), &(game->hand_plA[spices]), &(game->hand_plA[cloths]), &(game->hand_plA[leathers]),
-      &(game->hand_plA[camels]), &(game->hand_plB[diamonds]), &(game->hand_plB[golds]), &(game->hand_plB[silvers]),
-      &(game->hand_plB[spices]), &(game->hand_plB[cloths]), &(game->hand_plB[leathers]), &(game->hand_plB[camels]),
-      &(game->playerA.no_bonus_tokens), &(game->playerA.no_goods_tokens), &(game->playerA.points), &(game->playerA.seals),
-      &(game->playerB.no_bonus_tokens), &(game->playerB.no_goods_tokens), &(game->playerB.points), &(game->playerB.seals),
-      &(game->good_tk_ptrs[diamonds]), &(game->good_tk_ptrs[golds]), &(game->good_tk_ptrs[silvers]), &(game->good_tk_ptrs[spices]),
-      &(game->good_tk_ptrs[cloths]), &(game->good_tk_ptrs[leathers]), &(game->good_tk_ptrs[camels]), &(game->deck_ptr));
+    int itemsRead =
+      sscanf(buffer,
+             "{\n"
+             "  \"init\": %i,\n"
+             "  \"seed\": %i,\n"
+             "  \"turn_of\": \"%i\",\n"
+             "  \"market\": [%i,%i,%i,%i,%i,%i,%i],\n"
+             "  \"hand_plA\": [%i,%i,%i,%i,%i,%i,%i],\n"
+             "  \"hand_plB\": [%i,%i,%i,%i,%i,%i,%i],\n"
+             "  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n"
+             "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n"
+             "  \"good_tk_ptrs\": [%i,%i,%i,%i,%i,%i],\n"
+             "  \"bonus_tk_ptrs\": [%i,%i,%i],\n"
+             "  \"deck_ptr\": %i\n"
+             "}\n",
+             &(game->was_initialized), &(game->seed), &(game->turn_of), &(game->market[diamonds]), &(game->market[golds]),
+             &(game->market[silvers]), &(game->market[spices]), &(game->market[cloths]), &(game->market[leathers]), &(game->market[camels]),
+             &(game->hand_plA[diamonds]), &(game->hand_plA[golds]), &(game->hand_plA[silvers]), &(game->hand_plA[spices]),
+             &(game->hand_plA[cloths]), &(game->hand_plA[leathers]), &(game->hand_plA[camels]), &(game->hand_plB[diamonds]),
+             &(game->hand_plB[golds]), &(game->hand_plB[silvers]), &(game->hand_plB[spices]), &(game->hand_plB[cloths]),
+             &(game->hand_plB[leathers]), &(game->hand_plB[camels]), &(game->playerA.no_bonus_tokens), &(game->playerA.no_goods_tokens),
+             &(game->playerA.points), &(game->playerA.seals), &(game->playerB.no_bonus_tokens), &(game->playerB.no_goods_tokens),
+             &(game->playerB.points), &(game->playerB.seals), &(game->good_tk_ptrs[diamonds]), &(game->good_tk_ptrs[golds]),
+             &(game->good_tk_ptrs[silvers]), &(game->good_tk_ptrs[spices]), &(game->good_tk_ptrs[cloths]), &(game->good_tk_ptrs[leathers]),
+             &(game->bonus_tk_ptrs[0]), &(game->bonus_tk_ptrs[1]), &(game->bonus_tk_ptrs[2]), &(game->deck_ptr));
     printf("Items read: %d\n", itemsRead);
     free(buffer);
 
@@ -61,25 +63,28 @@ int loadGameData(GameData *game) {
       gameStatePrint(game);
       printf("Only %i elements were read. Knowing the state of the game, would you like to continue like this?[y/n]", itemsRead);
       char ans = 0;
-      while (ans != 'y' || ans != 'Y' || ans != 'n' || ans != 'N') {
+      while (ans != 'y' && ans != 'Y' && ans != 'n' && ans != 'N') {
         printf("Would you like to continue like this?[y/n]");
         ans = getchar();
       }
-      if (ans == 'n') {
+      if (ans == 'n' || ans == 'N') {
         return DATA_CORRUPTED_FLAG;
+      } else {
+        return 0;
       }
+    } else {
+      setSeed(game);
     }
   } else {
     // Initialize default game state if no save file exists
     return DATA_NOT_INIT_FLAG;
   }
-  setSeed(game);
   return checkDataIntegrity(game);
 }
 void saveGameData(const GameData *game) {
   char save_file[MAX_PATH];
   find_data_path(save_file);
-  FILE *file = fopen(save_file, "w");
+  FILE *file = fopen(save_file, "wb");
   if (file == NULL) {
     perror("Unable to save game state: ");
     return;
@@ -87,6 +92,7 @@ void saveGameData(const GameData *game) {
 
   // Write the JSON-like format for the game state
   fprintf(file, "{\n");
+  fprintf(file, "  \"init\": %i,\n", game->was_initialized);
   fprintf(file, "  \"seed\": %i,\n", game->seed);
   fprintf(file, "  \"turn_of\": \"%i\",\n", game->turn_of);
 
@@ -170,8 +176,8 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  GameData game;
-  game.was_initialized = 0;
+  GameData game = {};
+  // game.was_initialized = 0;
 
   int flags = 0;
   // Load the previous game state from the JSON file
@@ -198,6 +204,9 @@ int main(int argc, char *argv[]) {
       while (getchar() != '\n');
       startRound(&game);
     }
+  } else if (flags & DATA_CORRUPTED_FLAG || flags & DATA_NOT_INIT_FLAG) {
+    game.was_initialized = 0;
+    startGame(&game, 0);
   }
   if (!(flags & NO_GAME_PRINT_FLAG)) {
     gameStatePrint(&game);

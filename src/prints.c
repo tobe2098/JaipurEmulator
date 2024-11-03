@@ -52,11 +52,11 @@ void printCardGroup(int *card_group, int bool_camel) {
   // char line4[8][11];
   // char line5[8][11];
   for (int card_type = 0; card_type < (bool_camel ? CARD_GROUP_SIZE : camels); card_type++) {
-    for (int card_it = 0; card_it < card_group[card_type]; card_it++) {
+    for (int card_it = 0; card_it < card_group[(int)card_type]; card_it++) {
       if (card_counter >= 7) {
         break;
       }
-      char cardChar = enum_to_char_lookup_table[card_type];
+      char cardChar = enum_to_char_lookup_table[(int)card_type];
       snprintf(line_array[0][card_counter], sizeof(line_array[0][card_counter]), "  _____ ");
       snprintf(line_array[1][card_counter], sizeof(line_array[1][card_counter]), " |%c    |", cardChar);
       snprintf(line_array[2][card_counter], sizeof(line_array[2][card_counter]), " |     |");
@@ -67,7 +67,7 @@ void printCardGroup(int *card_group, int bool_camel) {
   }
   for (int line_buffer = 0; line_buffer < 5; line_buffer++) {
     for (int card = 0; card < card_counter; card++) {
-      printf("%s", line_array[line_buffer][card]);
+      printf("%s", line_array[line_buffer][(int)card]);
     }
     printf("\n");
   }

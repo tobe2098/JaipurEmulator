@@ -2,8 +2,8 @@
 void initDeck(GameData *game) {
   int idx = 0;
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
-    for (int card_no = 0; card_no < cards_starting_deck_lookup_table[card_type]; card_no++) {
-      game->deck[idx++] = enum_to_char_lookup_table[card_type];
+    for (int card_no = 0; card_no < cards_starting_deck_lookup_table[(int)card_type]; card_no++) {
+      game->deck[idx++] = enum_to_char_lookup_table[(int)card_type];
     }
   }
 }
@@ -11,16 +11,16 @@ void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]) {
   int arr_ptr = 0;
 
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
-    int no_cards = cards_used[card_type];
+    int no_cards = cards_used[(int)card_type];
     while (no_cards) {
-      game->deck[arr_ptr++] = enum_to_char_lookup_table[card_type];
+      game->deck[arr_ptr++] = enum_to_char_lookup_table[(int)card_type];
       no_cards--;
     }
   }
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
-    int no_cards = no_cards_lookup_table[card_type] - cards_used[card_type];
+    int no_cards = no_cards_lookup_table[(int)card_type] - cards_used[(int)card_type];
     while (no_cards) {
-      game->deck[arr_ptr++] = enum_to_char_lookup_table[card_type];
+      game->deck[arr_ptr++] = enum_to_char_lookup_table[(int)card_type];
       no_cards--;
     }
   }
@@ -38,6 +38,13 @@ void setSeed(GameData *game) {
     randomizeArrayInt(game->bonus_tk_arrays[barr], 0, MAX_BONUS_TOKENS);
   }
   initDeck(game);
+#ifndef DEBUG
+  printf("Deck: ");
+  for (int i = 0; i < DECK_SIZE; i++) {
+    printf("%c,", game->deck[i]);
+  }
+  printf("\n");
+#endif
   randomizeArrayChar(game->deck, 0, DECK_SIZE);
 #ifndef DEBUG
   printf("Deck: ");
@@ -103,9 +110,9 @@ int roundSetGameData(GameData *game) {
   if (game->was_initialized != DATA_WAS_INIT) {
     return DATA_NOT_INIT_FLAG;
   }
-  memset(game->hand_plA, 0, CARD_GROUP_SIZE);
-  memset(game->hand_plB, 0, CARD_GROUP_SIZE);
-  memset(game->market, 0, CARD_GROUP_SIZE);
+  memset(game->hand_plA, 0, sizeof(int) * CARD_GROUP_SIZE);
+  memset(game->hand_plB, 0, sizeof(int) * CARD_GROUP_SIZE);
+  memset(game->market, 0, sizeof(int) * CARD_GROUP_SIZE);
   memset((game->good_tk_ptrs), 0, sizeof(game->good_tk_ptrs));
   memset((game->bonus_tk_arrays), 0, sizeof(game->bonus_tk_arrays));
   memset((game->bonus_tk_ptrs), 0, sizeof(game->bonus_tk_ptrs));
@@ -139,7 +146,7 @@ void initRound(GameData *game) {
 int isHandSizeCorrect(int *card_group, int max) {
   int sum = 0;
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
-    sum += card_group[card_type];
+    sum += card_group[(int)card_type];
   }
   return sum <= max;
 }
@@ -147,7 +154,7 @@ int checkDataIntegrity(GameData *game) {
   // Only to run in case of data loading, review after finishing data loading/saving
   // Probably should check that points and tokens are coherent.
   // Probably should check that seals are coherent.
-  int total_points = 0, total_tokens = 0, total_btokens = 0;
+  int total_tokens = 0, total_btokens = 0;
   if (game->was_initialized != DATA_WAS_INIT) {
     return DATA_NOT_INIT_FLAG;
   }
@@ -156,7 +163,7 @@ int checkDataIntegrity(GameData *game) {
   }
   int remaining_cards[CARD_GROUP_SIZE] = { 0 };
   for (int ptr = game->deck_ptr; ptr < DECK_SIZE; ptr++) {
-    remaining_cards[char_to_enum_lookup_table[game->deck[ptr]]]++;
+    remaining_cards[(int)char_to_enum_lookup_table[(int)game->deck[ptr]]]++;
   }
   if (game->deck_ptr > DECK_SIZE || game->deck_ptr < 0 || game->playerA.seals > 1 || game->playerB.seals > 2) {
     return DATA_CORRUPTED_FLAG;
@@ -174,19 +181,19 @@ int checkDataIntegrity(GameData *game) {
   if ((game->turn_of != PLAYER_A_NUM && game->turn_of != PLAYER_B_NUM)) {
     return DATA_CORRUPTED_FLAG;
   }
-  int not_bound = 0;
+  // int not_bound = 0;
   for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
-    remaining_cards[card_type] +=
-      game->market[card_type] + game->hand_plA[card_type] + game->hand_plB[card_type] + game->good_tk_ptrs[card_type];
-    if (remaining_cards[card_type] > no_cards_lookup_table[card_type]) {
+    remaining_cards[(int)card_type] +=
+      game->market[(int)card_type] + game->hand_plA[(int)card_type] + game->hand_plB[(int)card_type] + game->good_tk_ptrs[(int)card_type];
+    if (remaining_cards[(int)card_type] > no_cards_lookup_table[(int)card_type]) {
       return DATA_CORRUPTED_FLAG;
     }
   }
   for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
-    if (game->good_tk_ptrs[card_type] < 0 || game->good_tk_ptrs[card_type] > good_tokens[card_type].size) {
+    if (game->good_tk_ptrs[(int)card_type] < 0 || game->good_tk_ptrs[(int)card_type] > good_tokens[(int)card_type].size) {
       return DATA_CORRUPTED_FLAG;
     }
-    total_tokens += game->good_tk_ptrs[card_type];
+    total_tokens += game->good_tk_ptrs[(int)card_type];
   }
   if (game->playerA.no_goods_tokens + game->playerB.no_goods_tokens != total_tokens ||
       game->playerA.no_bonus_tokens + game->playerB.no_bonus_tokens != total_btokens) {
@@ -196,7 +203,7 @@ int checkDataIntegrity(GameData *game) {
 }
 int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
   // Probably should check that points and tokens are coherent.
-  int total_points = 0, total_tokens = 0, total_btokens = 0;
+  int total_tokens = 0, total_btokens = 0;
   // Points are left undone for now
   // It cannot be calculated whether the players
   if (state->playerA.seals > SEALS_TO_WIN || state->playerA.seals < 0 || state->playerB.seals > SEALS_TO_WIN || state->playerB.seals < 0) {
@@ -240,7 +247,7 @@ int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
 int computeFinishedGoods(GameData *game) {
   int finished_counter = 0;
   for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
-    finished_counter += (game->good_tk_ptrs[card_type] >= no_cards_lookup_table[card_type] - 1);
+    finished_counter += (game->good_tk_ptrs[(int)card_type] >= no_cards_lookup_table[(int)card_type] - 1);
     // Should be
   }
   return finished_counter;
@@ -316,7 +323,7 @@ int processAction(GameData *game, int argc, char *argv[]) {
     if (no_goods <= 0) {
       return TOO_FEW_CARDS_SALE | NO_GAME_PRINT_FLAG;
     }
-    flags |= cardSale(game, curr_player_score, curr_player_hand, goods, no_goods);
+    flags |= cardSale(game, curr_player_score, curr_player_hand, goods[0], no_goods);
   } else if (strncmp(argv[1], "--exchange", strlen("--exchange")) == 0 || strncmp(argv[1], "-e", strlen("-e")) == 0) {
     // Here the structure of the arguments has to be "--exchange seq num seq" where seq is a sequence of characters
     // Each sequence of characters will be composed of the characters referring to cards
@@ -372,9 +379,9 @@ int processAction(GameData *game, int argc, char *argv[]) {
 }
 
 int drawCardsFromDeck(int card_group[CARD_GROUP_SIZE], GameData *game, int cards) {
-  for (int card = 0; cards && game->deck_ptr < DECK_SIZE; cards--) {
+  for (; cards && game->deck_ptr < DECK_SIZE; cards--) {
     char card = game->deck[game->deck_ptr++];
-    card_group[char_to_enum_lookup_table[card]]++;
+    card_group[(int)char_to_enum_lookup_table[(int)card]]++;
   }
   if (cards) {
     return ROUND_OVER | TURN_HAPPENED_FLAG;
@@ -384,7 +391,7 @@ int drawCardsFromDeck(int card_group[CARD_GROUP_SIZE], GameData *game, int cards
 }
 
 int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char card) {
-  int market_cards = sum_cards_market(market);
+  int market_cards = sumOfCardsGroup(market, FALSE);
   if (market_cards != CARDS_IN_MARKET) {
     if (market_cards > CARDS_IN_MARKET) {
       return TOO_MANY_C_MARKET_FLAG | NO_GAME_PRINT_FLAG;
@@ -392,7 +399,7 @@ int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_S
       return TOO_FEW_C_MARKET_FLAG | NO_GAME_PRINT_FLAG;
     }
   }
-  int card_type_index = char_to_enum_lookup_table[card];
+  int card_type_index = (int)char_to_enum_lookup_table[(int)card];
   if (card_type_index == camels) {
     // printf("Taking an individual camel is not allowed.\n");
     return NOT_ALLOWED_FLAG | NO_GAME_PRINT_FLAG;
@@ -407,14 +414,14 @@ int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_S
 }
 
 int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards) {
-  int card_index = char_to_enum_lookup_table[card_type];
+  int card_index = (int)char_to_enum_lookup_table[(int)card_type];
   if (player_hand[card_index] < no_cards) {
     return TOO_FEW_C_HAND_FLAG;
   }
 
   int end = min(no_cards + game->good_tk_ptrs[card_index], good_tokens[card_index].size);
 
-  int *good_array = good_tokens[card_index].tokens;
+  const int *good_array = good_tokens[card_index].tokens;
 
   for (int token_idx = game->good_tk_ptrs[card_index]; token_idx < end; token_idx++) {
     player_score->points += good_array[token_idx];
@@ -441,25 +448,25 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
   // From the process_args function where this is called we know the strlens of the two char*s are valid (<6)
   int cards_from_hand[CARD_GROUP_SIZE] = { 0 };
   for (int idx = 0; idx < hand_cards_len; idx++) {
-    cards_from_hand[char_to_enum_lookup_table[hand_cards[idx]]]++;
+    cards_from_hand[(int)char_to_enum_lookup_table[(int)hand_cards[idx]]]++;
   }
   cards_from_hand[camels]                = camels_no;
   int cards_from_market[CARD_GROUP_SIZE] = { 0 };
   for (int idx = 0; idx < market_goods_len; idx++) {
-    cards_from_market[char_to_enum_lookup_table[market_idx[idx]]]++;
+    cards_from_market[(int)char_to_enum_lookup_table[(int)market_idx[idx]]]++;
   }
 
   // Check if the exchange from market includes both goods and camels
   if (cards_from_market[camels]) {
     for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
-      if (cards_from_market[card_type] != 0) {
+      if (cards_from_market[(int)card_type] != 0) {
         return MIXING_GOODS_CAMELS | NO_GAME_PRINT_FLAG;
       }
     }
   }
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
-    market[card_type] += cards_from_hand[card_type] - cards_from_market[card_type];
-    player_hand[card_type] += cards_from_market[card_type] - cards_from_hand[card_type];
+    market[(int)card_type] += cards_from_hand[(int)card_type] - cards_from_market[(int)card_type];
+    player_hand[(int)card_type] += cards_from_market[(int)card_type] - cards_from_hand[(int)card_type];
   }
   return TURN_HAPPENED_FLAG;
 }
@@ -473,8 +480,8 @@ int isRoundOver(GameData *game) {
 }
 
 int endingChecks(GameData *game, int flags) {
-  if (isRoundOver(&game) || flags & ROUND_OVER) {
-    if (compRoundWinningPlayer(&game) & DRAW_FLAG) {
+  if (isRoundOver(game) || flags & ROUND_OVER) {
+    if (compRoundWinningPlayer(game) & DRAW_FLAG) {
       return DRAW_FLAG | ROUND_OVER;
     }
     if (isGameOver(&(game->playerA), &(game->playerB))) {
@@ -600,13 +607,13 @@ int processLibAction(GameData *game, int argc, char *argv[], int flags) {
   // int round_end   = flags & ROUND_OVER;
   flags = checkDataIntegrity(game);  // Flags are reset after input is accepted
   if (flags & DATA_OKAY_FLAG) {
-    flags |= endingChecks(&game, 0);
+    flags |= endingChecks(game, 0);
     if (!(flags & GAME_OVER || flags & ROUND_OVER)) {
-      flags |= processAction(&game, argc, argv);
+      flags |= processAction(game, argc, argv);
     }
     if (flags & TURN_HAPPENED_FLAG) {
       game->turn_of = (game->turn_of + 1) & 1;
-      flags |= endingChecks(&game, flags);
+      flags |= endingChecks(game, flags);
     }
     // flags |= processAction(game, argc, argv, flags);
   }
@@ -619,7 +626,7 @@ int processLibAction(GameData *game, int argc, char *argv[], int flags) {
 }
 
 void setGameDataLib(GameData *game_data) {
-  for (int c_type = 0; c_type < CARD_GROUP_SIZE; c_type++) {
+  for (int c_type = 0; c_type < GOOD_TYPES; c_type++) {
     game_data->good_tks[c_type] = good_tokens[c_type].size - game_data->good_tk_ptrs[c_type];
   }
   for (int b_type = 0; b_type < BONUS_TOKEN_TYPES; b_type++) {
