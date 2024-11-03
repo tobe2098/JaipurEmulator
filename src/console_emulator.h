@@ -6,7 +6,6 @@
 int  loadGameData(GameData *game);
 void saveGameData(const GameData *game);
 
-int  endingChecks(GameData *game);
 int *getActivePlayerHand(GameData *game);
 
 void gameStatePrint(GameData *game);

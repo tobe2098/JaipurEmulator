@@ -11,7 +11,7 @@ void randomizeArrayInt(int arr[], int start, int size) {
   }
 }
 
-void randomizeArrayChar(int arr[], int start, int size) {
+void randomizeArrayChar(char arr[], int start, int size) {
   // Function to shuffle an array of chars using Fisher-Yates algorithm, from a starting index to an ending index.
   // Starting index is included in the shuffling, the ending index is not (equivalent to size).
   for (int i = size - 1; i > start; i--) {
@@ -97,7 +97,7 @@ const char *getPlayerName(int player) {
   return NULL;
 }
 
-int printErrors(int flags) {
+void printErrors(int flags) {
   if (flags & TOO_FEW_ARGS_FLAG) {
     printf("Error: Too few arguments.\n");
   }

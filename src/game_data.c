@@ -147,7 +147,7 @@ int checkDataIntegrity(GameData *game) {
   // Only to run in case of data loading, review after finishing data loading/saving
   // Probably should check that points and tokens are coherent.
   // Probably should check that seals are coherent.
-  int pointsA = 0, pointsB = 0, tokensA = 0, tokensB = 0, btokensA = 0, btokensB = 0;
+  int total_points = 0, total_tokens = 0, total_btokens = 0;
   if (game->was_initialized != DATA_WAS_INIT) {
     return DATA_NOT_INIT_FLAG;
   }
@@ -169,6 +169,7 @@ int checkDataIntegrity(GameData *game) {
     if (!(game->bonus_tk_ptrs[tk_type] < MAX_BONUS_TOKENS && game->bonus_tk_ptrs[tk_type] >= 0)) {
       return DATA_CORRUPTED_FLAG;
     }
+    total_btokens += game->bonus_tk_ptrs[tk_type];
   }
   if ((game->turn_of != PLAYER_A_NUM && game->turn_of != PLAYER_B_NUM)) {
     return DATA_CORRUPTED_FLAG;
@@ -185,6 +186,11 @@ int checkDataIntegrity(GameData *game) {
     if (game->resource_tk_ptrs[card_type] < 0 || game->resource_tk_ptrs[card_type] > resource_tokens[card_type].size) {
       return DATA_CORRUPTED_FLAG;
     }
+    total_tokens += game->resource_tk_ptrs[card_type];
+  }
+  if (game->playerA.no_goods_tokens + game->playerB.no_goods_tokens != total_tokens ||
+      game->playerA.no_bonus_tokens + game->playerB.no_bonus_tokens != total_btokens) {
+    return DATA_CORRUPTED_FLAG;
   }
   return DATA_OKAY_FLAG;
 }
@@ -270,15 +276,16 @@ int sumOfCardsGroup(int group[CARD_GROUP_SIZE], int not_camels_bool) {
 //   return card_type_index;
 // }
 
-int processAction(GameData *game, int argc, char *argv[], int flags) {
+int processAction(GameData *game, int argc, char *argv[]) {
   // Expecting DATA_IS_OKAY
   //  In this function, return 0 is no turn action happened, return 1 is a turn action happened, OTHER NUMBERS ARE ERROR CODES.
   //   Go over the code logic (init, init when corrupt, starting a new game, loading, etc)
-  if (argc < 2 || (flags & DATA_CORRUPTED_FLAG) || (flags & DATA_NOT_INIT_FLAG)) {
+  if (argc < 2) {  //| (flags & DATA_CORRUPTED_FLAG) || (flags & DATA_NOT_INIT_FLAG)) { //There are no cases in which these flags make it
     // printf("Addresses A:%p B:%p\n", (void *)playerA, (void *)playerB);
     // gameStatePrint(game);
     return 0;
   }
+  int          flags = 0;
   PlayerScore *curr_player_score;
   int         *curr_player_hand;
   if (game->turn_of == PLAYER_A_NUM) {
@@ -462,7 +469,27 @@ int isGameOver(PlayerScore *playerA, PlayerScore *playerB) {
 }
 
 int isRoundOver(GameData *game) {
-  return computeFinishedResources(game) == FINISHED_GOODS_LIMIT || game->deck_ptr == DECK_SIZE;
+  return computeFinishedResources(game) == FINISHED_GOODS_LIMIT;  // || game->deck_ptr == DECK_SIZE;//Only on drawing
+}
+
+int endingChecks(GameData *game, int flags) {
+  if (isRoundOver(&game) || flags & ROUND_OVER) {
+    if (compRoundWinningPlayer(&game) & DRAW_FLAG) {
+      return DRAW_FLAG | ROUND_OVER;
+    }
+    if (isGameOver(&(game->playerA), &(game->playerB))) {
+      return GAME_OVER;
+    } else {
+      return ROUND_OVER;
+    }
+    // } else {
+    // if (isGameOver(&(game->playerA), &(game->playerB))) {
+    //   gameOverPrint(&(game->playerA), &(game->playerB));
+    //   return GAME_OVER;
+    // }
+    // gameStatePrint(game);
+  }
+  return 0;
 }
 
 int compRoundWinningPlayer(GameData *game) {
@@ -570,12 +597,18 @@ void freeLibGameData(GameData *game_data) {
 
 int processLibAction(GameData *game, int argc, char *argv[], int flags) {
   int error_print = flags & ERROR_PRINTING_FLAG;
-  flags |= checkDataIntegrity(game);
+  // int round_end   = flags & ROUND_OVER;
+  flags = checkDataIntegrity(game);  // Flags are reset after input is accepted
   if (flags & DATA_OKAY_FLAG) {
-    flags |= processAction(game, argc, argv, flags);
-  }
-  if (flags & TURN_HAPPENED_FLAG) {
-    game->turn_of = (game->turn_of + 1) & 1;
+    flags |= endingChecks(&game, 0);
+    if (!(flags & GAME_OVER || flags & ROUND_OVER)) {
+      flags |= processAction(&game, argc, argv);
+    }
+    if (flags & TURN_HAPPENED_FLAG) {
+      game->turn_of = (game->turn_of + 1) & 1;
+      flags |= endingChecks(&game, flags);
+    }
+    // flags |= processAction(game, argc, argv, flags);
   }
   if (error_print) {
     printErrors(flags);

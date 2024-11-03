@@ -28,6 +28,6 @@ void find_data_path(char* data_path);
 
 const char* getPlayerName(int player);
 
-int printErrors(int flags);
+void printErrors(int flags);
 
 #endif

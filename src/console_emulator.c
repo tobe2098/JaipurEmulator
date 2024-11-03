@@ -112,28 +112,6 @@ void saveGameData(const GameData *game) {
   fclose(file);
 }
 
-int endingChecks(GameData *game) {
-  if (isRoundOver(&game)) {
-    if (compRoundWinningPlayer(&game) & DRAW_FLAG) {
-      return DRAW_FLAG | ROUND_OVER;
-    }
-    if (isGameOver(&(game->playerA), &(game->playerB))) {
-      gameOverPrint(&(game->playerA), &(game->playerB));
-      return GAME_OVER;
-    } else {
-      roundOverPrint(game);
-      return ROUND_OVER;
-    }
-    // } else {
-    // if (isGameOver(&(game->playerA), &(game->playerB))) {
-    //   gameOverPrint(&(game->playerA), &(game->playerB));
-    //   return GAME_OVER;
-    // }
-    // gameStatePrint(game);
-  }
-  return 0;
-}
-
 int *getActivePlayerHand(GameData *game) {
   if (game->turn_of == PLAYER_A_NUM) {
     return game->hand_plA;
@@ -203,19 +181,21 @@ int main(int argc, char *argv[]) {
   // Process command-line arguments (e.g., "take_camel", "sell_goods", "draw_from_deck")
   if (flags & DATA_OKAY_FLAG) {
     // computeFinishedResources(&game);
-    flags |= endingChecks(&game);
+    flags |= endingChecks(&game, 0);
     if (!(flags & GAME_OVER || flags & ROUND_OVER)) {
-      flags |= processAction(&game, argc, argv, flags);
+      flags |= processAction(&game, argc, argv);
     }
     if (flags & TURN_HAPPENED_FLAG) {
       game.turn_of = (game.turn_of + 1) & 1;
-      flags |= endingChecks(&game);
+      flags |= endingChecks(&game, flags);
     }
     if (flags & GAME_OVER) {
+      gameOverPrint(&(game.playerA), &(game.playerB));
       printf("<Action> Press Enter to start a new game...\n");
       while (getchar() != '\n');
       startGame(&game, 0);
     } else if (flags & ROUND_OVER) {
+      roundOverPrint(&game);
       printf("<Action> Press Enter to start the next round:\n");
       while (getchar() != '\n');
       startRound(&game);

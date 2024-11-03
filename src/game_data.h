@@ -113,7 +113,7 @@ int sumOfCardsGroup(int group[CARD_GROUP_SIZE], int not_camels_bool);
 // int getCardTypeIndex(int group[CARD_GROUP_SIZE],int card_index_input);
 
 // Expecting DATA_IS_OKAY
-int processAction(GameData *game, int argc, char *argv[], int flags);
+int processAction(GameData *game, int argc, char *argv[]);
 int drawCardsFromDeck(int group[CARD_GROUP_SIZE], GameData *game, int cards);
 int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char card);
 int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
@@ -123,6 +123,7 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
 // Also have to be in the Julia lib interface
 int isGameOver(PlayerScore *playerA, PlayerScore *playerB);
 int isRoundOver(GameData *game);
+int endingChecks(GameData *game, int flags);
 int compRoundWinningPlayer(GameData *game);
 
 int getMemoryForGames(int number_games);
