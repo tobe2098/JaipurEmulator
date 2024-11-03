@@ -6,9 +6,9 @@
 typedef struct {
     int tokens[LARGEST_TOKEN_SIZE];  // Static array instead of a pointer
     int size;                        // Current size of the token array
-} ResourceTokens;
+} GoodTokens;
 
-extern const ResourceTokens resource_tokens[RESOURCE_TYPES];
+extern const GoodTokens good_tokens[GOOD_TYPES];
 
 extern const int enum_to_char_lookup_table[CARD_GROUP_SIZE];
 extern const int no_cards_lookup_table[CARD_GROUP_SIZE];

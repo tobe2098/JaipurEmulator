@@ -58,7 +58,7 @@ typedef struct GameData {
     PlayerScore playerA;
     PlayerScore playerB;
 
-    int resource_tk_ptrs[RESOURCE_TYPES];
+    int good_tk_ptrs[GOOD_TYPES];
 
     int bonus_tk_ptrs[BONUS_TOKEN_TYPES];
     int bonus_tk_arrays[BONUS_TOKEN_TYPES][MAX_BONUS_TOKENS];
@@ -68,7 +68,7 @@ typedef struct GameData {
     // Input-output variables only, here is where data is written by user in library, not in the executable
     // What is considered the game state, together with the cardgroups and the player scores.
     int cards_in_deck;
-    int resource_tks[RESOURCE_TYPES];
+    int good_tks[GOOD_TYPES];
     int bonus_tks[BONUS_TOKEN_TYPES];
     int bonus_used[BONUS_TOKENS_DATA_ARRAY];
 
@@ -85,7 +85,7 @@ typedef struct GameData {
 //     PlayerScore playerA;
 //     PlayerScore playerB;
 
-//     int resource_tks[RESOURCE_TYPES];
+//     int good_tks[GOOD_TYPES];
 //     int bonus_tks[BONUS_TOKEN_TYPES];
 
 //     int cards_in_deck;
@@ -108,7 +108,7 @@ int isHandSizeCorrect(int *card_group, int max);
 int checkDataIntegrity(GameData *game);
 int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]);
 
-int computeFinishedResources(GameData *game);
+int computeFinishedGoods(GameData *game);
 int sumOfCardsGroup(int group[CARD_GROUP_SIZE], int not_camels_bool);
 // int getCardTypeIndex(int group[CARD_GROUP_SIZE],int card_index_input);
 

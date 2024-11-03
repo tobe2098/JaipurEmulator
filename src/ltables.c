@@ -16,7 +16,7 @@ const int enum_to_char_lookup_table[CARD_GROUP_SIZE] = { DIAMOND_CHAR, GOLD_CHAR
                                                          CLOTH_CHAR,   LEATHER_CHAR, CAMEL_CHAR };
 
 // Token definitions
-extern const ResourceTokens resource_tokens[RESOURCE_TYPES] = {
+extern const GoodTokens good_tokens[GOOD_TYPES] = {
   [diamonds] = { { 7, 7, 5, 5, 5, -1, -1, -1, -1 }, DIAMOND_TOKEN_SIZE },  // Diamond Tokens
   [golds]    = { { 6, 6, 5, 5, 5, -1, -1, -1, -1 }, GOLD_TOKEN_SIZE },     // Gold Tokens
   [silvers]  = { { 5, 5, 5, 5, 5, -1, -1, -1, -1 }, SILVER_TOKEN_SIZE },   // Silver Tokens

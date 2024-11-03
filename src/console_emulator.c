@@ -31,30 +31,29 @@ int loadGameData(GameData *game) {
 
     // printf("Buffer 1 content:\n%s\n", buffer);
     // Parse the JSON-like ure
-    int itemsRead =
-      sscanf(buffer,
-             "{\n"
-             "  \"seed\": %i,\n"
-             "  \"turn_of\": \"%i\",\n"
-             "  \"market\": [%i,%i,%i,%i,%i,%i,%i],\n"
-             "  \"hand_plA\": [%i,%i,%i,%i,%i,%i,%i],\n"
-             "  \"hand_plB\": [%i,%i,%i,%i,%i,%i,%i],\n"
-             "  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n"
-             "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n"
-             "  \"resource_tk_ptrs\": [%i,%i,%i,%i,%i,%i],\n"
-             "  \"bonus_tk_ptrs\": [%i,%i,%i],\n"
-             "  \"deck_ptr\": %i\n"
-             "}\n",
-             &(game->seed), &(game->turn_of), &(game->market[diamonds]), &(game->market[golds]), &(game->market[silvers]),
-             &(game->market[spices]), &(game->market[cloths]), &(game->market[leathers]), &(game->market[camels]),
-             &(game->hand_plA[diamonds]), &(game->hand_plA[golds]), &(game->hand_plA[silvers]), &(game->hand_plA[spices]),
-             &(game->hand_plA[cloths]), &(game->hand_plA[leathers]), &(game->hand_plA[camels]), &(game->hand_plB[diamonds]),
-             &(game->hand_plB[golds]), &(game->hand_plB[silvers]), &(game->hand_plB[spices]), &(game->hand_plB[cloths]),
-             &(game->hand_plB[leathers]), &(game->hand_plB[camels]), &(game->playerA.no_bonus_tokens), &(game->playerA.no_goods_tokens),
-             &(game->playerA.points), &(game->playerA.seals), &(game->playerB.no_bonus_tokens), &(game->playerB.no_goods_tokens),
-             &(game->playerB.points), &(game->playerB.seals), &(game->resource_tk_ptrs[diamonds]), &(game->resource_tk_ptrs[golds]),
-             &(game->resource_tk_ptrs[silvers]), &(game->resource_tk_ptrs[spices]), &(game->resource_tk_ptrs[cloths]),
-             &(game->resource_tk_ptrs[leathers]), &(game->resource_tk_ptrs[camels]), &(game->deck_ptr));
+    int itemsRead = sscanf(
+      buffer,
+      "{\n"
+      "  \"seed\": %i,\n"
+      "  \"turn_of\": \"%i\",\n"
+      "  \"market\": [%i,%i,%i,%i,%i,%i,%i],\n"
+      "  \"hand_plA\": [%i,%i,%i,%i,%i,%i,%i],\n"
+      "  \"hand_plB\": [%i,%i,%i,%i,%i,%i,%i],\n"
+      "  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n"
+      "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n"
+      "  \"good_tk_ptrs\": [%i,%i,%i,%i,%i,%i],\n"
+      "  \"bonus_tk_ptrs\": [%i,%i,%i],\n"
+      "  \"deck_ptr\": %i\n"
+      "}\n",
+      &(game->seed), &(game->turn_of), &(game->market[diamonds]), &(game->market[golds]), &(game->market[silvers]), &(game->market[spices]),
+      &(game->market[cloths]), &(game->market[leathers]), &(game->market[camels]), &(game->hand_plA[diamonds]), &(game->hand_plA[golds]),
+      &(game->hand_plA[silvers]), &(game->hand_plA[spices]), &(game->hand_plA[cloths]), &(game->hand_plA[leathers]),
+      &(game->hand_plA[camels]), &(game->hand_plB[diamonds]), &(game->hand_plB[golds]), &(game->hand_plB[silvers]),
+      &(game->hand_plB[spices]), &(game->hand_plB[cloths]), &(game->hand_plB[leathers]), &(game->hand_plB[camels]),
+      &(game->playerA.no_bonus_tokens), &(game->playerA.no_goods_tokens), &(game->playerA.points), &(game->playerA.seals),
+      &(game->playerB.no_bonus_tokens), &(game->playerB.no_goods_tokens), &(game->playerB.points), &(game->playerB.seals),
+      &(game->good_tk_ptrs[diamonds]), &(game->good_tk_ptrs[golds]), &(game->good_tk_ptrs[silvers]), &(game->good_tk_ptrs[spices]),
+      &(game->good_tk_ptrs[cloths]), &(game->good_tk_ptrs[leathers]), &(game->good_tk_ptrs[camels]), &(game->deck_ptr));
     printf("Items read: %d\n", itemsRead);
     free(buffer);
 
@@ -101,9 +100,8 @@ void saveGameData(const GameData *game) {
           game->playerA.no_bonus_tokens, game->playerA.no_goods_tokens, game->playerA.points, game->playerA.seals);
   fprintf(file, "  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n",
           game->playerB.no_bonus_tokens, game->playerB.no_goods_tokens, game->playerB.points, game->playerB.seals);
-  fprintf(file, "  \"resource_tk_ptrs\": [%i,%i,%i,%i,%i,%i],\n", game->resource_tk_ptrs[diamonds], game->resource_tk_ptrs[golds],
-          game->resource_tk_ptrs[silvers], game->resource_tk_ptrs[spices], game->resource_tk_ptrs[cloths],
-          game->resource_tk_ptrs[leathers]);
+  fprintf(file, "  \"good_tk_ptrs\": [%i,%i,%i,%i,%i,%i],\n", game->good_tk_ptrs[diamonds], game->good_tk_ptrs[golds],
+          game->good_tk_ptrs[silvers], game->good_tk_ptrs[spices], game->good_tk_ptrs[cloths], game->good_tk_ptrs[leathers]);
 
   fprintf(file, "  \"bonus_tk_ptrs\": [%i,%i,%i],\n", game->bonus_tk_ptrs[0], game->bonus_tk_ptrs[1], game->bonus_tk_ptrs[2]);
   fprintf(file, "  \"deck_ptr\": %i\n", game->deck_ptr);
@@ -131,9 +129,9 @@ void gameStatePrint(GameData *game) {
   for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++) {
     printf("<Bonus> Remaining %i card bonus tokens: \t%i\n", barr + 3, MAX_BONUS_TOKENS - game->bonus_tk_ptrs[barr]);
   }
-  for (int card_index = 0; card_index < RESOURCE_TYPES; card_index++) {
-    printGoodsTokenArray(enum_to_char_lookup_table[card_index], resource_tokens[card_index].tokens, resource_tokens[card_index].size,
-                         game->resource_tk_ptrs[card_index]);
+  for (int card_index = 0; card_index < GOOD_TYPES; card_index++) {
+    printGoodsTokenArray(enum_to_char_lookup_table[card_index], good_tokens[card_index].tokens, good_tokens[card_index].size,
+                         game->good_tk_ptrs[card_index]);
   }
   // printGoodsTokenArray("diamonds", diamond_tokens, DIAMOND_T_SIZE, game->diamond_ptr);
   // printGoodsTokenArray("gold", gold_tokens, GOLD_T_SIZE, game->gold_ptr);
@@ -180,7 +178,7 @@ int main(int argc, char *argv[]) {
   flags |= loadGameData(&game);
   // Process command-line arguments (e.g., "take_camel", "sell_goods", "draw_from_deck")
   if (flags & DATA_OKAY_FLAG) {
-    // computeFinishedResources(&game);
+    // computeFinishedGoods(&game);
     flags |= endingChecks(&game, 0);
     if (!(flags & GAME_OVER || flags & ROUND_OVER)) {
       flags |= processAction(&game, argc, argv);

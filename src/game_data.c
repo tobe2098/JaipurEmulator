@@ -106,7 +106,7 @@ int roundSetGameData(GameData *game) {
   memset(game->hand_plA, 0, CARD_GROUP_SIZE);
   memset(game->hand_plB, 0, CARD_GROUP_SIZE);
   memset(game->market, 0, CARD_GROUP_SIZE);
-  memset((game->resource_tk_ptrs), 0, sizeof(game->resource_tk_ptrs));
+  memset((game->good_tk_ptrs), 0, sizeof(game->good_tk_ptrs));
   memset((game->bonus_tk_arrays), 0, sizeof(game->bonus_tk_arrays));
   memset((game->bonus_tk_ptrs), 0, sizeof(game->bonus_tk_ptrs));
   game->seed = 0;
@@ -175,18 +175,18 @@ int checkDataIntegrity(GameData *game) {
     return DATA_CORRUPTED_FLAG;
   }
   int not_bound = 0;
-  for (int card_type = 0; card_type < RESOURCE_TYPES; card_type++) {
+  for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
     remaining_cards[card_type] +=
-      game->market[card_type] + game->hand_plA[card_type] + game->hand_plB[card_type] + game->resource_tk_ptrs[card_type];
+      game->market[card_type] + game->hand_plA[card_type] + game->hand_plB[card_type] + game->good_tk_ptrs[card_type];
     if (remaining_cards[card_type] > no_cards_lookup_table[card_type]) {
       return DATA_CORRUPTED_FLAG;
     }
   }
-  for (int card_type = 0; card_type < RESOURCE_TYPES; card_type++) {
-    if (game->resource_tk_ptrs[card_type] < 0 || game->resource_tk_ptrs[card_type] > resource_tokens[card_type].size) {
+  for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
+    if (game->good_tk_ptrs[card_type] < 0 || game->good_tk_ptrs[card_type] > good_tokens[card_type].size) {
       return DATA_CORRUPTED_FLAG;
     }
-    total_tokens += game->resource_tk_ptrs[card_type];
+    total_tokens += game->good_tk_ptrs[card_type];
   }
   if (game->playerA.no_goods_tokens + game->playerB.no_goods_tokens != total_tokens ||
       game->playerA.no_bonus_tokens + game->playerB.no_bonus_tokens != total_btokens) {
@@ -205,16 +205,16 @@ int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
   if (state->cards_in_deck > DECK_SIZE || state->cards_in_deck <= 0) {
     return DATA_CORRUPTED_FLAG;
   }
-  for (int card_idx = 0; card_idx < RESOURCE_TYPES; card_idx++) {
-    if (state->resource_tks[card_idx] > resource_tokens[card_idx].size || state->resource_tks[card_idx] < 0 ||
+  for (int card_idx = 0; card_idx < GOOD_TYPES; card_idx++) {
+    if (state->good_tks[card_idx] > good_tokens[card_idx].size || state->good_tks[card_idx] < 0 ||
         used_cards[card_idx] > no_cards_lookup_table[card_idx] || used_cards[card_idx] < 0) {
       return DATA_CORRUPTED_FLAG;
     }
-    if (!((state->resource_tks[card_idx] == 0 && used_cards[card_idx] >= resource_tokens[card_idx].size) ||
-          used_cards[card_idx] == resource_tokens[card_idx].size - state->resource_tks[card_idx])) {
+    if (!((state->good_tks[card_idx] == 0 && used_cards[card_idx] >= good_tokens[card_idx].size) ||
+          used_cards[card_idx] == good_tokens[card_idx].size - state->good_tks[card_idx])) {
       return DATA_CORRUPTED_FLAG;
     }
-    total_tokens += resource_tokens[card_idx].size - state->resource_tks[card_idx];
+    total_tokens += good_tokens[card_idx].size - state->good_tks[card_idx];
   }
   if (total_tokens != state->playerA.no_goods_tokens + state->playerB.no_goods_tokens) {
     return DATA_CORRUPTED_FLAG;
@@ -237,10 +237,10 @@ int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
   }
   return DATA_OKAY_FLAG;
 }
-int computeFinishedResources(GameData *game) {
+int computeFinishedGoods(GameData *game) {
   int finished_counter = 0;
-  for (int card_type = 0; card_type < RESOURCE_TYPES; card_type++) {
-    finished_counter += (game->resource_tk_ptrs[card_type] >= no_cards_lookup_table[card_type] - 1);
+  for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
+    finished_counter += (game->good_tk_ptrs[card_type] >= no_cards_lookup_table[card_type] - 1);
     // Should be
   }
   return finished_counter;
@@ -412,16 +412,16 @@ int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GRO
     return TOO_FEW_C_HAND_FLAG;
   }
 
-  int end = min(no_cards + game->resource_tk_ptrs[card_index], resource_tokens[card_index].size);
+  int end = min(no_cards + game->good_tk_ptrs[card_index], good_tokens[card_index].size);
 
-  int *resource_array = resource_tokens[card_index].tokens;
+  int *good_array = good_tokens[card_index].tokens;
 
-  for (int token_idx = game->resource_tk_ptrs[card_index]; token_idx < end; token_idx++) {
-    player_score->points += resource_array[token_idx];
+  for (int token_idx = game->good_tk_ptrs[card_index]; token_idx < end; token_idx++) {
+    player_score->points += good_array[token_idx];
   }
 
-  player_score->no_goods_tokens += end - game->resource_tk_ptrs[card_index];
-  game->resource_tk_ptrs[card_index] = end;
+  player_score->no_goods_tokens += end - game->good_tk_ptrs[card_index];
+  game->good_tk_ptrs[card_index] = end;
 
   if (no_cards <= 2) {
     return TURN_HAPPENED_FLAG;
@@ -451,7 +451,7 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
 
   // Check if the exchange from market includes both goods and camels
   if (cards_from_market[camels]) {
-    for (int card_type = 0; card_type < RESOURCE_TYPES; card_type++) {
+    for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
       if (cards_from_market[card_type] != 0) {
         return MIXING_GOODS_CAMELS | NO_GAME_PRINT_FLAG;
       }
@@ -469,7 +469,7 @@ int isGameOver(PlayerScore *playerA, PlayerScore *playerB) {
 }
 
 int isRoundOver(GameData *game) {
-  return computeFinishedResources(game) == FINISHED_GOODS_LIMIT;  // || game->deck_ptr == DECK_SIZE;//Only on drawing
+  return computeFinishedGoods(game) == FINISHED_GOODS_LIMIT;  // || game->deck_ptr == DECK_SIZE;//Only on drawing
 }
 
 int endingChecks(GameData *game, int flags) {
@@ -620,7 +620,7 @@ int processLibAction(GameData *game, int argc, char *argv[], int flags) {
 
 void setGameDataLib(GameData *game_data) {
   for (int c_type = 0; c_type < CARD_GROUP_SIZE; c_type++) {
-    game_data->resource_tks[c_type] = resource_tokens[c_type].size - game_data->resource_tk_ptrs[c_type];
+    game_data->good_tks[c_type] = good_tokens[c_type].size - game_data->good_tk_ptrs[c_type];
   }
   for (int b_type = 0; b_type < BONUS_TOKEN_TYPES; b_type++) {
     game_data->bonus_tks[b_type] = MAX_BONUS_TOKENS - game_data->bonus_tk_ptrs[b_type];
@@ -638,8 +638,8 @@ void initGameDataFromState(GameData *game_data, unsigned int seed, int used_card
 // void set_GameState_from_GameData(GameData *game_data, GameState *game_state) {
 //   memcpy(&(game_data->turn_of), &(game_state->turn_of), sizeof(int) + sizeof(int[CARD_GROUP_SIZE]) * 3 + sizeof(PlayerScore) * 2);
 
-//   for (int resource = 0; resource < RESOURCE_TYPES; resource++) {
-//     game_state->resource_tks[resource] = resource_tokens[resource].size - game_data->resource_tk_ptrs[resource];
+//   for (int good = 0; good < GOOD_TYPES; good++) {
+//     game_state->good_tks[good] = good_tokens[good].size - game_data->good_tk_ptrs[good];
 //   }
 //   for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++) {
 //     game_state->bonus_tks[barr] = MAX_BONUS_TOKENS - game_data->bonus_tk_ptrs[barr];

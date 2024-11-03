@@ -11,7 +11,7 @@
 #define TOO_MANY_C_MARKET_FLAG 1 << 5
 #define TOO_MANY_C_HAND_FLAG   1 << 6
 
-// Because the first 4 bits are free you can use them to point to the lacking resource, and then EXOR to check
+// Because the first 4 bits are free you can use them to point to the lacking good, and then EXOR to check
 
 #define TOO_FEW_C_MARKET_FLAG 1 << 7   // There are not enough cards in the market
 #define TOO_FEW_C_HAND_FLAG   1 << 8   // There are not enough cards in the market
