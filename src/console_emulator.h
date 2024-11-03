@@ -3,8 +3,8 @@
 #include "game_data.h"
 #include "prints.h"
 
-int  load_game_data(GameData *game);
-void save_game_data(const GameData *game);
+int  loadGameData(GameData *game);
+void saveGameData(const GameData *game);
 
 int  endingChecks(GameData *game);
 int *getActivePlayerHand(GameData *game);
