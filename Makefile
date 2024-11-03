@@ -11,33 +11,48 @@ ifeq ($(OS),Windows_NT)
     EXE_EXT := .exe
     SHARED_LIB_FLAGS := -shared
     # Windows commands
-    MKDIR = if not exist $(subst /,\,$1) md $(subst /,\,$1)
-    RM = del /F /Q $(subst /,\,$1)
-    RMDIR = if exist $(subst /,\,$1) rmdir /S /Q $(subst /,\,$1)
+    MKDIR = @if not exist $(subst /,\,$1) (echo Creating directory: $(subst /,\,$1) && md $(subst /,\,$1))
+    RM = @if exist $(subst /,\,$1) (echo Deleting file: $(subst /,\,$1) && del /F /Q $(subst /,\,$1))
+    RMDIR = @if exist $(subst /,\,$1) (echo Removing directory: $(subst /,\,$1) && rmdir /S /Q $(subst /,\,$1))
 else
-    SHARED_LIB_EXT := so
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Darwin)
+        SHARED_LIB_EXT := dylib
+        SHARED_LIB_FLAGS := -dynamiclib -install_name @rpath/$(SHARED_LIB_PREFIX)$(LIB_NAME).$(SHARED_LIB_EXT)
+    else
+        SHARED_LIB_EXT := so
+        SHARED_LIB_FLAGS := -shared -fPIC
+    endif
     SHARED_LIB_PREFIX := lib
     EXE_EXT :=
-    SHARED_LIB_FLAGS := -shared -fPIC
-    MKDIR = mkdir -p $1
-    RM = rm -f $1
-    RMDIR = rm -rf $1
+    #MKDIR = mkdir -p $1
+    MKDIR = @if [ ! -d "$1" ]; then echo "Creating directory: $1" && mkdir -p "$1"; fi
+    #RM = rm -f $1
+    RM = @if [ -f "$1" ]; then echo "Deleting file: $1" && rm -f "$1"; fi
+    #RMDIR = rm -rf $1
+    RMDIR = @if [ -d "$1" ]; then echo "Removing directory: $1" && rm -rf "$1"; fi
 endif
 
 # Compiler settings
 CC := gcc
-CFLAGS := -Wall -Wextra -O2 -fPIC
+CFLAGS := -Wall -Wextra -fPIC
+LDFLAGS :=
 INCLUDES := -I$(SRC_DIR)
 
+# Debug flags
+DEBUG_FLAGS := -DDEBUG -g3 -O0
+
+RELEASE_FLAGS := -O2
+
 # Library name and files
-LIB_NAME := gamelib
+LIB_NAME := jaipur
 LIB_SOURCES := game_data.c ltables.c prints.c utils.c
 LIB_OBJECTS := $(LIB_SOURCES:%.c=$(OBJ_DIR)/%.o)
 LIB_DEPS := $(LIB_OBJECTS:%.o=%.d)
 SHARED_LIB := $(SHARED_LIB_PREFIX)$(LIB_NAME).$(SHARED_LIB_EXT)
 
 # Executable name and files
-EXE_NAME := console_emulator$(EXE_EXT)
+EXE_NAME := jaipur$(EXE_EXT)
 EXE_SOURCES := console_emulator.c
 EXE_OBJECTS := $(EXE_SOURCES:%.c=$(OBJ_DIR)/%.o)
 EXE_DEPS := $(EXE_OBJECTS:%.o=%.d)
