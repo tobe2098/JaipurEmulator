@@ -124,3 +124,5 @@ free_custom_type(output_ptr)
 # Close the library when done
 Libdl.dlclose(lib)
 ```
+## CLI
+Only accepts one argument per call
