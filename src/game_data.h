@@ -118,6 +118,7 @@ int sumOfCardsGroup(int group[CARD_GROUP_SIZE], int not_camels_bool);
 // Expecting DATA_IS_OKAY
 int processAction(GameData *game, int argc, char *argv[]);
 int drawCardsFromDeck(int group[CARD_GROUP_SIZE], GameData *game, int cards);
+int updateMarket(GameData *game);
 int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char card);
 int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
 int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no,

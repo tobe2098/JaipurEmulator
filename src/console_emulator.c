@@ -185,12 +185,14 @@ int main(int argc, char *argv[]) {
   // Process command-line arguments (e.g., "take_camel", "sell_goods", "draw_from_deck")
   if (flags & DATA_OKAY_FLAG) {
     // computeFinishedGoods(&game);
+    flags |= updateMarket(&game);
     flags |= endingChecks(&game, 0);
     if (!(flags & GAME_OVER || flags & ROUND_OVER)) {
       flags |= processAction(&game, argc, argv);
     }
     if (flags & TURN_HAPPENED_FLAG) {
       game.turn_of = (game.turn_of + 1) & 1;
+      flags |= updateMarket(&game);
       flags |= endingChecks(&game, flags);
     }
     if (flags & GAME_OVER) {

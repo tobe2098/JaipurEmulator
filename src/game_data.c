@@ -185,7 +185,8 @@ int checkDataIntegrity(GameData *game) {
   for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
     remaining_cards[(int)card_type] +=
       game->market[(int)card_type] + game->hand_plA[(int)card_type] + game->hand_plB[(int)card_type] + game->good_tk_ptrs[(int)card_type];
-    if (remaining_cards[(int)card_type] > no_cards_lookup_table[(int)card_type]) {
+    if (remaining_cards[(int)card_type] > no_cards_lookup_table[(int)card_type] || game->market[(int)card_type] < 0 ||
+        game->hand_plA[(int)card_type] < 0 || game->hand_plB[(int)card_type] < 0) {
       return DATA_CORRUPTED_FLAG;
     }
   }
@@ -312,7 +313,8 @@ int processAction(GameData *game, int argc, char *argv[]) {
     }
     game->market[camels] = 0;
     curr_player_hand[camels] += camels_no;
-    flags |= drawCardsFromDeck(game->market, game, camels_no);
+    flags |= TURN_HAPPENED_FLAG;
+    // flags |= drawCardsFromDeck(game->market, game, camels_no);
   } else if (strncmp(argv[1], "--sell", strlen("--sell")) == 0 || strncmp(argv[1], "-s", strlen("-s") == 0)) {
     // We assume maximum sale? No
     if (argc < 4) {
@@ -359,11 +361,11 @@ int processAction(GameData *game, int argc, char *argv[]) {
     }
     // int idx=(int)(strtol(argv[2],NULL,10)&INT_MAX);
     flags |= takeCardFromMarket(game->market, curr_player_hand, argv[2][0]);
-    if (flags & TURN_HAPPENED_FLAG) {
-      flags |= drawCardsFromDeck(game->market, game, 1);
-      // } else { // Redundant
-      //   return return_code;
-    }
+    // if (flags & TURN_HAPPENED_FLAG) {
+    //   flags |= drawCardsFromDeck(game->market, game, 1);
+    //   // } else { // Redundant
+    //   //   return return_code;
+    // }
   } else if (strncmp(argv[1], "--state", strlen("--state")) == 0 || strncmp(argv[1], "-s", strlen("-s")) == 0) {
     // gameStatePrint(game);
     return 0;
@@ -384,10 +386,15 @@ int drawCardsFromDeck(int card_group[CARD_GROUP_SIZE], GameData *game, int cards
     card_group[(int)char_to_enum_lookup_table[(int)card]]++;
   }
   if (cards) {
-    return ROUND_OVER | TURN_HAPPENED_FLAG;
+    return ROUND_OVER;
   } else {
-    return TURN_HAPPENED_FLAG;
+    return 0;
   }
+}
+
+int updateMarket(GameData *game) {
+  int total = sumOfCardsGroup(game->market, FALSE);
+  return drawCardsFromDeck(game->market, game, CARDS_IN_MARKET - total);
 }
 
 int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char card) {
@@ -607,12 +614,14 @@ int processLibAction(GameData *game, int argc, char *argv[], int flags) {
   // int round_end   = flags & ROUND_OVER;
   flags = checkDataIntegrity(game);  // Flags are reset after input is accepted
   if (flags & DATA_OKAY_FLAG) {
+    flags |= updateMarket(&game);
     flags |= endingChecks(game, 0);
     if (!(flags & GAME_OVER || flags & ROUND_OVER)) {
       flags |= processAction(game, argc, argv);
     }
     if (flags & TURN_HAPPENED_FLAG) {
       game->turn_of = (game->turn_of + 1) & 1;
+      flags |= updateMarket(&game);
       flags |= endingChecks(game, flags);
     }
     // flags |= processAction(game, argc, argv, flags);
