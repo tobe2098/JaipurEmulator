@@ -22,6 +22,7 @@
 #define SEALS_TO_WIN            2
 
 #define INITIAL_HAND_SIZE       5
+#define MAX_CARDS_HAND          7
 #define STARTING_MARKET_CAMELS  3
 #define CARDS_IN_MARKET         5
 

@@ -30,5 +30,8 @@
 #define ROUND_OVER            1 << 19
 #define NO_GAME_PRINT_FLAG    1 << 20
 #define TOO_FEW_CARDS_SALE    1 << 21
+
+#define CANNOT_SELL_CAMELS    1 << 22
+#define ONLY_PRINT_HAND       1 << 23
 // #define UNWRITTEN_ERROR     1 << 15
 #endif

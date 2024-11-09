@@ -61,7 +61,7 @@ void printCardGroup(int *card_group, int bool_camel) {
       snprintf(line_array[1][card_counter], sizeof(line_array[1][card_counter]), " |%c    |", cardChar);
       snprintf(line_array[2][card_counter], sizeof(line_array[2][card_counter]), " |     |");
       snprintf(line_array[3][card_counter], sizeof(line_array[3][card_counter]), " |    %c|", cardChar);
-      snprintf(line_array[4][card_counter], sizeof(line_array[4][card_counter]), "  -----");
+      snprintf(line_array[4][card_counter], sizeof(line_array[4][card_counter]), "  ----- ");
       card_counter++;
     }
   }

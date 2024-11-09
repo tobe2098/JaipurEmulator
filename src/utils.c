@@ -143,4 +143,7 @@ void printErrors(int flags) {
   if (flags & TOO_FEW_CARDS_SALE) {
     printf("Error: Cannot sell less than 1 card.\n");
   }
+  if (flags & CANNOT_SELL_CAMELS) {
+    printf("Error: Camels cannot be sold.\n");
+  }
 }
