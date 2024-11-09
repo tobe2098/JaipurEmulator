@@ -60,8 +60,8 @@ int loadGameData(GameData *game) {
     free(buffer);
 
     if (itemsRead < JSON_ELEMENTS) {
-      gameStatePrint(game);
-      printf("Only %i elements were read. Knowing the state of the game, would you like to continue like this?[y/n]", itemsRead);
+      dataPrint(game);  // Do something better here
+      printf("Only %i elements were read. Seeing the degree of data loss, would you like to continue like this?[y/n]", itemsRead);
       char ans = 0;
       while (ans != 'y' && ans != 'Y' && ans != 'n' && ans != 'N') {
         printf("Would you like to continue like this?[y/n]");
@@ -116,6 +116,30 @@ void saveGameData(const GameData *game) {
   fclose(file);
 }
 
+void dataPrint(const GameData *game) {
+  printf("{\n");
+  printf("  \"init\": %i,\n", game->was_initialized);
+  printf("  \"seed\": %i,\n", game->seed);
+  printf("  \"turn_of\": \"%i\",\n", game->turn_of);
+
+  printf("  \"market\": [%i,%i,%i,%i,%i,%i,%i],\n", game->market[diamonds], game->market[golds], game->market[silvers],
+         game->market[spices], game->market[cloths], game->market[leathers], game->market[camels]);
+  printf("  \"hand_plA\": [%i,%i,%i,%i,%i,%i,%i],\n", game->hand_plA[diamonds], game->hand_plA[golds], game->hand_plA[silvers],
+         game->hand_plA[spices], game->hand_plA[cloths], game->hand_plA[leathers], game->hand_plA[camels]);
+  printf("  \"hand_plB\": [%i,%i,%i,%i,%i,%i,%i],\n", game->hand_plB[diamonds], game->hand_plB[golds], game->hand_plB[silvers],
+         game->hand_plB[spices], game->hand_plB[cloths], game->hand_plB[leathers], game->hand_plB[camels]);
+  printf("  \"playerA\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n", game->playerA.no_bonus_tokens,
+         game->playerA.no_goods_tokens, game->playerA.points, game->playerA.seals);
+  printf("  \"playerB\": {\"bonus tokens\": %i,\"goods tokens\": %i, \"points\": %i, \"seals\": %i},\n", game->playerB.no_bonus_tokens,
+         game->playerB.no_goods_tokens, game->playerB.points, game->playerB.seals);
+  printf("  \"good_tk_ptrs\": [%i,%i,%i,%i,%i,%i],\n", game->good_tk_ptrs[diamonds], game->good_tk_ptrs[golds], game->good_tk_ptrs[silvers],
+         game->good_tk_ptrs[spices], game->good_tk_ptrs[cloths], game->good_tk_ptrs[leathers]);
+
+  printf("  \"bonus_tk_ptrs\": [%i,%i,%i],\n", game->bonus_tk_ptrs[0], game->bonus_tk_ptrs[1], game->bonus_tk_ptrs[2]);
+  printf("  \"deck_ptr\": %i\n", game->deck_ptr);
+  printf("}\n");
+}
+
 int *getActivePlayerHand(GameData *game) {
   if (game->turn_of == PLAYER_A_NUM) {
     return game->hand_plA;
@@ -133,8 +157,9 @@ void gameStatePrint(GameData *game) {
          game->playerB.no_bonus_tokens, game->playerB.no_goods_tokens);
   printf("\n");
   for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++) {
-    printf("<Bonus> Remaining %i card bonus tokens: \t%i\n", barr + 3, MAX_BONUS_TOKENS - game->bonus_tk_ptrs[barr]);
+    printf("<Bonus> %i card bonus tokens: \t%i\n", barr + 3, MAX_BONUS_TOKENS - game->bonus_tk_ptrs[barr]);
   }
+  printf("\n");
   for (int card_index = 0; card_index < GOOD_TYPES; card_index++) {
     printGoodsTokenArray(enum_to_char_lookup_table[card_index], good_tokens[card_index].tokens, good_tokens[card_index].size,
                          game->good_tk_ptrs[card_index]);
@@ -153,6 +178,7 @@ void gameStatePrint(GameData *game) {
   // Print market
   printCardGroup(game->market, TRUE);
   // Print camel piles
+  printf("\n");
   printf("<Camels> %s has: %i camels\n", PLAYER_A, game->hand_plA[camels]);
   printf("<Camels> %s has: %i camels\n", PLAYER_B, game->hand_plB[camels]);
   printf("\n");
@@ -207,15 +233,22 @@ int main(int argc, char *argv[]) {
       startRound(&game);
     }
   } else if (flags & DATA_CORRUPTED_FLAG || flags & DATA_NOT_INIT_FLAG) {
+#ifdef DEBUG
+    dataPrint(&game);
+#endif
+    while (getchar() != '\n');
     game.was_initialized = 0;
     startGame(&game, 0);
   }
-  if (!(flags & NO_GAME_PRINT_FLAG)) {
+  (void)printErrors(flags);
+  if (!(flags & NO_GAME_PRINT_FLAG) && !(flags & ONLY_PRINT_HAND)) {
     gameStatePrint(&game);
+  } else if (flags & ONLY_PRINT_HAND) {
+    printf("Here is your hand again:\n");
+    printCardGroup(getActivePlayerHand(&game), FALSE);
   }
   // All prints have to be handed here, in console
   // Save the updated state back to the JSON file
   saveGameData(&game);
-  (void)printErrors(flags);
   return 0;
 }
