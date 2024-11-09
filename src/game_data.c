@@ -410,7 +410,7 @@ int processAction(GameData *game, int argc, char *argv[]) {
   } else if (strncmp(argv[1], "--reset", strlen("--reset")) == 0 || strncmp(argv[1], "-r", strlen("-r")) == 0) {
     game->was_initialized = 0;
     // startGame(game);
-    return GAME_OVER | NO_GAME_PRINT_FLAG;
+    return GAME_OVER;
   } else {
     printf("Unknown command: %s\n", argv[1]);
     return NO_GAME_PRINT_FLAG;

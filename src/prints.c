@@ -200,25 +200,26 @@ void printHelp() {
   printf("  --reset||-r                    Restart the game from scratch\n");
   // printf("  --state   -s                    Print the current state of the game. Default argument.\n");
   printf("  --take||-t  <market-card>      Example: -t g\n");
-  printf("-> Take a card from the market. The market draws a card from the deck. Camels not allowed.\n\n");
+  printf("    > Take a card from the market. The market draws a card from the deck. Camels not allowed.\n\n");
+  printf("  --camels||c                    Example: -c 3\n");
+  printf("    >Take all camels from the market. The market draws as many cards\n\n");
+  printf("  --sell <card-type> <value>     Example: --sell d 3\n");
+  printf("    >Sell a number of goods of the specified type. Earn points from them.\n\n");
   printf("  --exchange||-e <hand-cards> <camels> <market-cards> \n");
   printf("                                 Example: -e dg 1 ppp\n");
-  printf("->Change cards in hand and camels for cards in market. Number has to be equal.\n\n");
-  printf("  --camels||c                    Example: -c 3\n");
-  printf("->Take all camels from the market. The market draws as many cards\n\n");
-  printf("  --sell <card-type> <value>     Example: --sell d 3\n");
-  printf("->Sell a number of goods of the specified type. Earn points from them.\n\n");
+  printf("    >Change cards in hand and camels for cards in market. Number has to be equal.\n\n");
   printf("Card types and their respective characters:\n");
   printf("Diamonds: =d=, golds: =g=, Silvers: =s=, Spice: =p=, Cloth: =h=, Leather: =l=, Camels: =c=\n");
 }
 
-void print_rules() {
-  printf("Notes on rules:\n");
+void printRules() {
+  printf("\nNotes:\n");
   printf("- Goods cards are non-camel cards.\n");
   printf("- A player cannot have more than 7 goods cards in hand.\n");
   printf("- Each player starts with five cards. The face-down deck starts with 40 cards.\n");
-  printf("1. The game starts with three camels and two other cards in the market.\n");
-  printf("2. On your turn you can either trade with the market or sell goods in your hand.\n");
+  printf("\nRules:\n");
+  printf("\n1. The game starts with three camels and two other cards in the market.\n");
+  printf("\n2. On your turn you can either trade with the market or sell goods in your hand.\n");
   printf("  -Trade: Cards from hand and from the camel herd (your camels) can be traded with the market's goods cards.\n");
   printf("  -Trade: Take a single goods card from the market. The market draws a card from the deck.\n");
   printf("  -Trade: Take all the camels. The market draws as many cards from the deck.\n");
@@ -226,6 +227,7 @@ void print_rules() {
   printf("  *If you sell 3 or more cards you receive a random bonus token according to that number if there are any remaining.\n");
   printf("  *Bonus tokens give 1,2 or 3 points if you sold 3 cards, 4,5 or 6 if 4 cards or 7,8 or 9 if 5 cards.\n");
   printf(
-    "3. The game ends when there are no cards left in the draw pile when attempting to draw or the tokens of three goods are finished.\n");
-  printf("4. \n");
+    "\n3. The game ends when there are no cards left in the draw pile when attempting to draw or the tokens of three goods are "
+    "finished.\n");
+  printf("\n\n");
 }

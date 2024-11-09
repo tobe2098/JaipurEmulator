@@ -13,7 +13,7 @@ void printVersion();
 void printNewRoundMessage(int player);
 void printWinner(int player);
 void printHelp();
-void print_rules();
+void printRules();
 
 void printCardGroup(int* card_group, int bool_camel);
 

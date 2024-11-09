@@ -191,14 +191,14 @@ void gameStatePrint(GameData *game) {
   // INTRODUCE KEY PRESS FOR HAND SECRECY, maybe a console clearing before state
 }
 int main(int argc, char *argv[]) {
-  if (argc == 2 && (strncmp(argv[1], "--help", strlen("--help")) || strncmp(argv[1], "-h", strlen("-h"))) == 0) {
+  if (argc == 2 && (strncmp(argv[1], "--help", strlen("--help")) == 0 || strncmp(argv[1], "-h", strlen("-h")) == 0)) {
     printHelp();
     return 0;
-  } else if (argc == 2 && (strncmp(argv[1], "--version", strlen("--version")) || strncmp(argv[1], "-v", strlen("-v"))) == 0) {
+  } else if (argc == 2 && (strncmp(argv[1], "--version", strlen("--version")) == 0 || strncmp(argv[1], "-v", strlen("-v")) == 0)) {
     printVersion();
     return 0;
-  } else if (argc == 2 && (strncmp(argv[1], "--rules", strlen("--rules")) || strncmp(argv[1], "-u", strlen("-u"))) == 0) {
-    print_rules();
+  } else if (argc == 2 && (strncmp(argv[1], "--rules", strlen("--rules")) == 0 || strncmp(argv[1], "-u", strlen("-u")) == 0)) {
+    printRules();
     return 0;
   }
 
