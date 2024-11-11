@@ -8,10 +8,14 @@ const int cards_starting_deck_lookup_table[CARD_GROUP_SIZE] = { DIAMONDS_STARTIN
                                                                 SPICE_STARTING_DECK,    CLOTH_STARTING_DECK, LEATHER_STARTING_DECK,
                                                                 CAMELS_STARTING_DECK };
 
-const int char_to_enum_lookup_table[LAST_USEFUL_CHAR + 1] = {  //[0 ... LAST_USEFUL_CHAR] = -1,
-  [DIAMOND_CHAR] = diamonds, [GOLD_CHAR] = golds,       [SILVER_CHAR] = silvers, [SPICE_CHAR] = spices,
-  [CLOTH_CHAR] = cloths,     [LEATHER_CHAR] = leathers, [CAMEL_CHAR] = camels
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverride-init"
+const int char_to_enum_lookup_table[LAST_USEFUL_CHAR + 1] = {
+  [0 ... LAST_USEFUL_CHAR] = -1, [DIAMOND_CHAR] = diamonds, [GOLD_CHAR] = golds,   [SILVER_CHAR] = silvers, [SPICE_CHAR] = spices,
+  [CLOTH_CHAR] = cloths,         [LEATHER_CHAR] = leathers, [CAMEL_CHAR] = camels, [NULL_CHAR] = null_card
 };
+#pragma GCC diagnostic pop
+
 const int enum_to_char_lookup_table[CARD_GROUP_SIZE] = { DIAMOND_CHAR, GOLD_CHAR,    SILVER_CHAR, SPICE_CHAR,
                                                          CLOTH_CHAR,   LEATHER_CHAR, CAMEL_CHAR };
 

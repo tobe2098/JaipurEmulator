@@ -1,13 +1,13 @@
 {
   "init": 1,
-  "seed": 1731188546,
+  "seed": 1731266850,
   "turn_of": "0",
-  "market": [0,0,0,0,0,0,5],
-  "hand_plA": [0,0,1,2,0,1,1],
-  "hand_plB": [1,0,0,3,1,0,0],
-  "playerA": {"bonus tokens": 0,"goods tokens": 0, "points": 0, "seals": 0},
-  "playerB": {"bonus tokens": 0,"goods tokens": 0, "points": 0, "seals": 0},
-  "good_tk_ptrs": [0,0,0,0,0,0],
-  "bonus_tk_ptrs": [0,0,0],
-  "deck_ptr": 12
+  "market": [0,0,1,1,0,1,2],
+  "hand_plA": [2,0,0,0,0,2,2],
+  "hand_plB": [0,0,1,0,4,1,0],
+  "playerA": {"bonus tokens": 1,"goods tokens": 4, "points": 28, "seals": 0},
+  "playerB": {"bonus tokens": 1,"goods tokens": 3, "points": 13, "seals": 0},
+  "good_tk_ptrs": [0,4,0,3,0,0],
+  "bonus_tk_ptrs": [1,1,0],
+  "deck_ptr": 21
 }

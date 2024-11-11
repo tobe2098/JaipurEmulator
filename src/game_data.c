@@ -106,7 +106,7 @@ void initGameData(GameData *game, unsigned int seed) {
   game->turn_of         = (rand() & 1);
   game->was_initialized = DATA_WAS_INIT;
 }
-int roundSetGameData(GameData *game) {
+int initRoundGameData(GameData *game) {
   if (game->was_initialized != DATA_WAS_INIT) {
     return DATA_NOT_INIT_FLAG;
   }
@@ -137,8 +137,8 @@ void startGame(GameData *game, unsigned int seed) {
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
 
-void initRound(GameData *game) {
-  roundSetGameData(game);
+void startNextRound(GameData *game) {
+  initRoundGameData(game);
   startRound(game);
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
@@ -157,7 +157,7 @@ int checkDataIntegrity(GameData *game) {
   int total_tokens = 0, total_btokens = 0;
   if (game->was_initialized != DATA_WAS_INIT) {
 #ifdef DEBUG
-    printf("1\n");
+    printf("1, state:%i\n", game->was_initialized);
 #endif
     return DATA_NOT_INIT_FLAG;
   }
@@ -202,7 +202,7 @@ int checkDataIntegrity(GameData *game) {
   // int not_bound = 0;
   for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
 #ifdef DEBUG
-    if (card_type == 3) {
+    if (card_type == 8) {
       printf("%i\n", remaining_cards[card_type]);
     }
 #endif
@@ -325,7 +325,7 @@ int processAction(GameData *game, int argc, char *argv[]) {
     // gameStatePrint(game);
     return 0;
   }
-  int          flags = 0;
+  int          flags = 0, arg_ptr = FIRST_ARGUMENT_INDEX;
   PlayerScore *curr_player_score;
   int         *curr_player_hand;
   if (game->turn_of == PLAYER_A_NUM) {
@@ -338,7 +338,7 @@ int processAction(GameData *game, int argc, char *argv[]) {
   // flags |= DATA_OKAY_FLAG;
   // printf("Addresses A:%p B:%p, current:%p\n", (void *)playerA, (void *)playerB, (void *)curr_player);
 
-  if (strncmp(argv[1], "--camels", strlen("--camels")) == 0 || strncmp(argv[1], "-c", strlen("-c")) == 0) {
+  if (strncmp(argv[arg_ptr], "--camels", strlen("--camels")) == 0 || strncmp(argv[arg_ptr], "-c", strlen("-c")) == 0) {
     int camels_no = game->market[camels];
     if (camels_no == 0) {
       return NO_CAMELS | NO_GAME_PRINT_FLAG;
@@ -347,13 +347,18 @@ int processAction(GameData *game, int argc, char *argv[]) {
     curr_player_hand[camels] += camels_no;
     flags |= TURN_HAPPENED_FLAG;
     // flags |= drawCardsFromDeck(game->market, game, camels_no);
-  } else if (strncmp(argv[1], "--sell", strlen("--sell")) == 0 || strncmp(argv[1], "-s", strlen("-s")) == 0) {
+  } else if (strncmp(argv[arg_ptr], "--sell", strlen("--sell")) == 0 || strncmp(argv[arg_ptr], "-s", strlen("-s")) == 0) {
     // We assume maximum sale? No
     if (argc < 4) {
       return TOO_FEW_ARGS_FLAG | NO_GAME_PRINT_FLAG;
     }
-    char *goods    = argv[2];
-    int   no_goods = atoi(argv[3]);
+#ifdef DEBUG
+    if (arg_ptr > FIRST_ARGUMENT_INDEX) {
+      return LOGIC_ERROR_FLAG | NO_GAME_PRINT_FLAG;
+    }
+#endif
+    char *goods    = argv[++arg_ptr];
+    int   no_goods = atoi(argv[++arg_ptr]);
     if (no_goods <= 0) {
       return TOO_FEW_CARDS_SALE | NO_GAME_PRINT_FLAG;
     }
@@ -361,22 +366,27 @@ int processAction(GameData *game, int argc, char *argv[]) {
       return NO_GAME_PRINT_FLAG | CANNOT_SELL_CAMELS;
     }
     flags |= cardSale(game, curr_player_score, curr_player_hand, goods[0], no_goods);
-  } else if (strncmp(argv[1], "--exchange", strlen("--exchange")) == 0 || strncmp(argv[1], "-e", strlen("-e")) == 0) {
-    // Here the structure of the arguments has to be "--exchange seq num seq" where seq is a sequence of characters
+  } else if (strncmp(argv[arg_ptr], "--exchange", strlen("--exchange")) == 0 || strncmp(argv[arg_ptr], "-e", strlen("-e")) == 0) {
+    // Here the structure of the arguments has to be "--exchange seq seq" where seq is a sequence of characters
     // Each sequence of characters will be composed of the characters referring to cards
-    if (argc < 5) {
+    if (argc < 4) {
       return TOO_FEW_ARGS_FLAG | NO_GAME_PRINT_FLAG;
     }
-    char *hand_cards             = argv[2];
-    int   hand_cards_len         = strlen(hand_cards);
-    int   camels_no              = atoi(argv[3]);
-    char *market_goods_positions = argv[4];
-    int   market_goods_len       = strlen(market_goods_positions);
-    if (camels_no > curr_player_hand[camels]) {
-      // printf("Cannot exchange more camels than owned");
-      return TOO_FEW_C_HAND_FLAG | NO_GAME_PRINT_FLAG;
+#ifdef DEBUG
+    if (arg_ptr > FIRST_ARGUMENT_INDEX) {
+      return LOGIC_ERROR_FLAG | NO_GAME_PRINT_FLAG;
     }
-    if (hand_cards_len + camels_no != market_goods_len) {
+#endif
+    char *hand_cards     = argv[++arg_ptr];
+    int   hand_cards_len = strlen(hand_cards);
+    // int   camels_no              = atoi(argv[3]);
+    char *market_goods_positions = argv[++arg_ptr];
+    int   market_goods_len       = strlen(market_goods_positions);
+    // if (camels_no > curr_player_hand[camels]) {
+    //   // printf("Cannot exchange more camels than owned");
+    //   return TOO_FEW_C_HAND_FLAG | NO_GAME_PRINT_FLAG;
+    // }
+    if (hand_cards_len != market_goods_len) {
       // printf("Number of cards from hand and market to be exchanged do not match");
       return ARGS_MISS_MATCH_FLAG | NO_GAME_PRINT_FLAG;
     }
@@ -384,11 +394,9 @@ int processAction(GameData *game, int argc, char *argv[]) {
       // printf("The market has only 5 cards, do not input more than 5 positions.");
       return ARG_OVERFLOW_FLAG | NO_GAME_PRINT_FLAG;
     }
-    if (sumOfCardsGroup(curr_player_hand, TRUE) + camels_no > MAX_CARDS_HAND) {
-      return TOO_MANY_C_HAND_FLAG | NO_GAME_PRINT_FLAG;
-    }
-    flags |= cardExchange(game->market, curr_player_hand, hand_cards, market_goods_positions, camels_no, hand_cards_len, market_goods_len);
-  } else if (strncmp(argv[1], "--take", strlen("--take")) == 0 || strncmp(argv[1], "-t", strlen("-t")) == 0) {
+
+    flags |= cardExchange(game->market, curr_player_hand, hand_cards, market_goods_positions, hand_cards_len, market_goods_len);
+  } else if (strncmp(argv[arg_ptr], "--take", strlen("--take")) == 0 || strncmp(argv[arg_ptr], "-t", strlen("-t")) == 0) {
     if (sumOfCardsGroup(curr_player_hand, TRUE) >= MAX_CARDS_HAND) {
       // printf("Error, hand is full");
       return TOO_MANY_C_HAND_FLAG | NO_GAME_PRINT_FLAG;
@@ -397,22 +405,27 @@ int processAction(GameData *game, int argc, char *argv[]) {
       // printf("Too few arguments.\n");
       return TOO_FEW_ARGS_FLAG | NO_GAME_PRINT_FLAG;
     }
+#ifdef DEBUG
+    if (arg_ptr > FIRST_ARGUMENT_INDEX) {
+      return LOGIC_ERROR_FLAG | NO_GAME_PRINT_FLAG;
+    }
+#endif
     // int idx=(int)(strtol(argv[2],NULL,10)&INT_MAX);
-    flags |= takeCardFromMarket(game->market, curr_player_hand, argv[2][0]);
+    flags |= takeCardFromMarket(game->market, curr_player_hand, argv[++arg_ptr][0]);
     // if (flags & TURN_HAPPENED_FLAG) {
     //   flags |= drawCardsFromDeck(game->market, game, 1);
     //   // } else { // Redundant
     //   //   return return_code;
     // }
-  } else if (strncmp(argv[1], "--state", strlen("--state")) == 0 || strncmp(argv[1], "-S", strlen("-S")) == 0) {
+  } else if (strncmp(argv[arg_ptr], "--state", strlen("--state")) == 0 || strncmp(argv[arg_ptr], "-S", strlen("-S")) == 0) {
     // gameStatePrint(game);
     return 0;
-  } else if (strncmp(argv[1], "--reset", strlen("--reset")) == 0 || strncmp(argv[1], "-r", strlen("-r")) == 0) {
+  } else if (strncmp(argv[arg_ptr], "--reset", strlen("--reset")) == 0 || strncmp(argv[arg_ptr], "-r", strlen("-r")) == 0) {
     game->was_initialized = 0;
     // startGame(game);
     return GAME_OVER;
   } else {
-    printf("Unknown command: %s\n", argv[1]);
+    printf("Unknown command: %s\n", argv[arg_ptr]);
     return NO_GAME_PRINT_FLAG;
   }
   return flags;
@@ -445,6 +458,9 @@ int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_S
     }
   }
   int card_type_index = (int)char_to_enum_lookup_table[(int)card];
+  if (card_type_index == -1) {
+    return CARD_DOES_NOT_EXIST | NO_GAME_PRINT_FLAG;
+  }
   if (card_type_index == camels) {
     // printf("Taking an individual camel is not allowed.\n");
     return NOT_ALLOWED_FLAG | NO_GAME_PRINT_FLAG;
@@ -463,7 +479,9 @@ int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GRO
   if (player_hand[card_index] < no_cards) {
     return TOO_FEW_C_HAND_FLAG | ONLY_PRINT_HAND;
   }
-
+  if (card_index == -1) {
+    return CARD_DOES_NOT_EXIST | NO_GAME_PRINT_FLAG;
+  }
   int end = min(no_cards + game->good_tk_ptrs[card_index], good_tokens[card_index].size);
 
   const int *good_array = good_tokens[card_index].tokens;
@@ -489,26 +507,32 @@ int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GRO
   return TURN_HAPPENED_FLAG;
 }
 
-int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_cards, char *market_idx, int camels_no,
-                 int hand_cards_len, int market_goods_len) {
+int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_cards, char *market_idx, int hand_cards_len,
+                 int market_goods_len) {
   // From the process_args function where this is called we know the strlens of the two char*s are valid (<6)
   int cards_from_hand[CARD_GROUP_SIZE] = { 0 };
   for (int idx = 0; idx < hand_cards_len; idx++) {
-    cards_from_hand[(int)char_to_enum_lookup_table[(int)hand_cards[idx]]]++;
+    int card_index = (int)char_to_enum_lookup_table[(int)hand_cards[idx]];
+    if (card_index == -1) {
+      return CARD_DOES_NOT_EXIST | NO_GAME_PRINT_FLAG;
+    }
+    cards_from_hand[card_index]++;
   }
-  cards_from_hand[camels]                = camels_no;
   int cards_from_market[CARD_GROUP_SIZE] = { 0 };
   for (int idx = 0; idx < market_goods_len; idx++) {
-    cards_from_market[(int)char_to_enum_lookup_table[(int)market_idx[idx]]]++;
+    int card_index = (int)char_to_enum_lookup_table[(int)market_idx[idx]];
+    if (card_index == -1) {
+      return CARD_DOES_NOT_EXIST | NO_GAME_PRINT_FLAG;
+    }
+    cards_from_market[card_index]++;
   }
 
   // Check if the exchange from market includes both goods and camels
   if (cards_from_market[camels]) {
-    for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
-      if (cards_from_market[(int)card_type] != 0) {
-        return MIXING_GOODS_CAMELS | NO_GAME_PRINT_FLAG;
-      }
-    }
+    return MIXING_GOODS_CAMELS | NO_GAME_PRINT_FLAG;
+  }
+  if (sumOfCardsGroup(player_hand, TRUE) + cards_from_hand[camels] > MAX_CARDS_HAND) {
+    return TOO_MANY_C_HAND_FLAG | NO_GAME_PRINT_FLAG;
   }
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
     market[(int)card_type] += cards_from_hand[(int)card_type] - cards_from_market[(int)card_type];

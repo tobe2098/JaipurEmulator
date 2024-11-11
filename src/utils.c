@@ -102,7 +102,7 @@ void printErrors(int flags) {
     printf("Error: Too few arguments.\n");
   }
   if (flags & MIXING_GOODS_CAMELS) {
-    printf("Error: You are attempting to trade cards for both camels and goods.\n");
+    printf("Error: You are attempting to trade cards for camels.\n");
   }
   if (flags & DATA_CORRUPTED_FLAG) {
     printf("Error: The data has been corrupted, it does not fit the constraints.\n");
@@ -145,5 +145,8 @@ void printErrors(int flags) {
   }
   if (flags & CANNOT_SELL_CAMELS) {
     printf("Error: Camels cannot be sold.\n");
+  }
+  if (flags & CARD_DOES_NOT_EXIST) {
+    printf("Error: A card in the input does not exist");
   }
 }

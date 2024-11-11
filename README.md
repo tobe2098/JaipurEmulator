@@ -126,3 +126,10 @@ Libdl.dlclose(lib)
 ```
 ## CLI
 Only accepts one argument per call
+
+
+## To do
+### v1.0.1 of emulator
+(Ship library before this)
+- Change paradigm so that you can just call the exe once and loop over the turns. Will need loading, new game and saving game. 
+- File names will need a bigger buffer probably, and fixed max length.

@@ -9,6 +9,7 @@
 
 // Rules macros
 #define JSON_ELEMENTS           41
+#define FIRST_ARGUMENT_INDEX    1
 #define GOOD_TYPES              6
 #define BONUS_TOKEN_TYPES       3
 #define MAX_BONUS_TOKENS        6
@@ -46,20 +47,22 @@
 
 // Data macros
 // d = diamonds, g = gold, s = silver, p = spice, h = cloth, l = leather, c = camel
-#define DIAMOND_CHAR 'd'
-#define GOLD_CHAR    'g'
-#define SILVER_CHAR  's'
-#define SPICE_CHAR   'p'
-#define CLOTH_CHAR   'h'
-#define LEATHER_CHAR 'l'
-#define CAMEL_CHAR   'c'
+#define DIAMOND_CHAR    'd'
+#define GOLD_CHAR       'g'
+#define SILVER_CHAR     's'
+#define SPICE_CHAR      'p'
+#define CLOTH_CHAR      'h'
+#define LEATHER_CHAR    'l'
+#define CAMEL_CHAR      'c'
+#define NULL_CHAR       'N'
+#define TOKEN_USED_CHAR '_'
 
 #define LAST_USEFUL_CHAR \
-  MAX(DIAMOND_CHAR, MAX(GOLD_CHAR, MAX(SILVER_CHAR, MAX(SPICE_CHAR, MAX(CLOTH_CHAR, MAX(LEATHER_CHAR, CAMEL_CHAR))))))
+  MAX(DIAMOND_CHAR, MAX(GOLD_CHAR, MAX(SILVER_CHAR, MAX(SPICE_CHAR, MAX(CLOTH_CHAR, MAX(LEATHER_CHAR, MAX(CAMEL_CHAR, NULL_CHAR)))))))
 
 // Custom names macros
-#define PLAYER_A     "Lizzard-Tron"
-#define PLAYER_B     "Croc-Terminator"
+#define PLAYER_A     "Player A"
+#define PLAYER_B     "Player B"
 
 #define PLAYER_A_NUM 0
 #define PLAYER_B_NUM 1
@@ -87,6 +90,7 @@ typedef enum card_index {
   leathers = 5,
   camels   = 6,
   CARD_GROUP_SIZE,
+  null_card
 } card_index;
 
 // extern const int bonus_template_3[MAX_BONUS_TOKENS];

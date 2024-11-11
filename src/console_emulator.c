@@ -56,10 +56,13 @@ int loadGameData(GameData *game) {
              &(game->playerB.points), &(game->playerB.seals), &(game->good_tk_ptrs[diamonds]), &(game->good_tk_ptrs[golds]),
              &(game->good_tk_ptrs[silvers]), &(game->good_tk_ptrs[spices]), &(game->good_tk_ptrs[cloths]), &(game->good_tk_ptrs[leathers]),
              &(game->bonus_tk_ptrs[0]), &(game->bonus_tk_ptrs[1]), &(game->bonus_tk_ptrs[2]), &(game->deck_ptr));
+#ifdef DEBUG
     printf("Items read: %d\n", itemsRead);
+#endif
     free(buffer);
 
     if (itemsRead < JSON_ELEMENTS) {
+      printf("Read data was:\n");
       dataPrint(game);  // Do something better here
       printf("Only %i elements were read. Seeing the degree of data loss, would you like to continue like this?[y/n]", itemsRead);
       char ans = 0;
@@ -191,13 +194,16 @@ void gameStatePrint(GameData *game) {
   // INTRODUCE KEY PRESS FOR HAND SECRECY, maybe a console clearing before state
 }
 int main(int argc, char *argv[]) {
-  if (argc == 2 && (strncmp(argv[1], "--help", strlen("--help")) == 0 || strncmp(argv[1], "-h", strlen("-h")) == 0)) {
+  if (argc == 2 && (strncmp(argv[FIRST_ARGUMENT_INDEX], "--help", strlen("--help")) == 0 ||
+                    strncmp(argv[FIRST_ARGUMENT_INDEX], "-h", strlen("-h")) == 0)) {
     printHelp();
     return 0;
-  } else if (argc == 2 && (strncmp(argv[1], "--version", strlen("--version")) == 0 || strncmp(argv[1], "-v", strlen("-v")) == 0)) {
+  } else if (argc == 2 && (strncmp(argv[FIRST_ARGUMENT_INDEX], "--version", strlen("--version")) == 0 ||
+                           strncmp(argv[FIRST_ARGUMENT_INDEX], "-v", strlen("-v")) == 0)) {
     printVersion();
     return 0;
-  } else if (argc == 2 && (strncmp(argv[1], "--rules", strlen("--rules")) == 0 || strncmp(argv[1], "-u", strlen("-u")) == 0)) {
+  } else if (argc == 2 && (strncmp(argv[FIRST_ARGUMENT_INDEX], "--rules", strlen("--rules")) == 0 ||
+                           strncmp(argv[FIRST_ARGUMENT_INDEX], "-u", strlen("-u")) == 0)) {
     printRules();
     return 0;
   }
@@ -230,7 +236,7 @@ int main(int argc, char *argv[]) {
       roundOverPrint(&game);
       printf("<Action> Press Enter to start the next round:\n");
       while (getchar() != '\n');
-      startRound(&game);
+      startNextRound(&game);
     }
   } else if (flags & DATA_CORRUPTED_FLAG || flags & DATA_NOT_INIT_FLAG) {
 #ifdef DEBUG

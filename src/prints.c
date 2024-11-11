@@ -1,10 +1,10 @@
 #include "prints.h"
 
 void printGoodsTokenArray(char name, const int *array, int size, int cutoff) {
-  printf("<Goods> Remaining =%c= tokens:  \t", name);
+  printf("<Goods> Remaining [%c] tokens:  \t", name);
   for (int i = 0; i < size; i++) {
     if (i < cutoff) {
-      printf(" * ");  // Three spaces
+      printf(" %c ", TOKEN_USED_CHAR);  // Three spaces
     } else {
       printf(" %i ", array[i]);
     }
@@ -64,6 +64,18 @@ void printCardGroup(int *card_group, int bool_camel) {
       snprintf(line_array[4][card_counter], sizeof(line_array[4][card_counter]), "  ----- ");
       card_counter++;
     }
+  }
+  if (card_counter == 0) {
+    printf(".------------------------------------------------------------------.\n");
+    printf("| _   _                 _   _                            _         |\n");
+    printf("|| | | | __ _ _ __   __| | (_)___    ___ _ __ ___  _ __ | |_ _   _ |\n");
+    printf("|| |_| |/ _` | '_ \\ / _` | | / __|  / _ \\ '_ ` _ \\| '_ \\| __| | | ||\n");
+    printf("||  _  | (_| | | | | (_| | | \\__ \\ |  __/ | | | | | |_) | |_| |_| ||\n");
+    printf("||_| |_|\\__,_|_| |_|\\__,_| |_|___/  \\___|_| |_| |_| .__/ \\__|\\__, ||\n");
+    printf("|                                                 |_|        |___/ |\n");
+    printf("'------------------------------------------------------------------'\n");
+    printf("\n");
+    return;
   }
   for (int line_buffer = 0; line_buffer < 5; line_buffer++) {
     for (int card = 0; card < card_counter; card++) {
@@ -209,7 +221,8 @@ void printHelp() {
   printf("                                 Example: -e dg 1 ppp\n");
   printf("    >Change cards in hand and camels for cards in market. Number has to be equal.\n\n");
   printf("Card types and their respective characters:\n");
-  printf("Diamonds: =d=, golds: =g=, Silvers: =s=, Spice: =p=, Cloth: =h=, Leather: =l=, Camels: =c=\n");
+  printf("Diamonds: [%c], golds: [%c], Silvers: [%c], Spice: [%c], Cloth: [%c], Leather: [%c], Camels: [%c]\n", DIAMOND_CHAR, GOLD_CHAR,
+         SILVER_CHAR, SPICE_CHAR, CLOTH_CHAR, LEATHER_CHAR, CAMEL_CHAR);
 }
 
 void printRules() {

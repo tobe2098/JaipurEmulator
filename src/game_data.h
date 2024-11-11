@@ -102,10 +102,10 @@ void setSeed(GameData *game);
 void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]);
 
 void initGameData(GameData *game, unsigned int seed);
-int  roundSetGameData(GameData *game);
+int  initRoundGameData(GameData *game);
 void startRound(GameData *game);
 void startGame(GameData *game, unsigned int seed);
-void initRound(GameData *game);
+void startNextRound(GameData *game);
 
 int isHandSizeCorrect(int *card_group, int max);
 int checkDataIntegrity(GameData *game);
@@ -121,8 +121,8 @@ int drawCardsFromDeck(int group[CARD_GROUP_SIZE], GameData *game, int cards);
 int updateMarket(GameData *game);
 int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char card);
 int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
-int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int camels_no,
-                 int hand_idx_len, int market_goods_positions_len);
+int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int hand_idx_len,
+                 int market_goods_positions_len);
 
 // Also have to be in the Julia lib interface
 int isGameOver(PlayerScore *playerA, PlayerScore *playerB);
