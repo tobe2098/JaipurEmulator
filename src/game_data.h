@@ -102,10 +102,10 @@ void setSeed(GameData *game);
 void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]);
 
 void initGameData(GameData *game, unsigned int seed);
-int  initRoundGameData(GameData *game);
+int  initRoundGameData(GameData *game, int seed);
 void startRound(GameData *game);
 void startGame(GameData *game, unsigned int seed);
-void startNextRound(GameData *game);
+void startNextRound(GameData *game, int seed);
 
 int isHandSizeCorrect(int *card_group, int max);
 int checkDataIntegrity(GameData *game);

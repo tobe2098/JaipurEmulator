@@ -106,20 +106,20 @@ void initGameData(GameData *game, unsigned int seed) {
   game->turn_of         = (rand() & 1);
   game->was_initialized = DATA_WAS_INIT;
 }
-int initRoundGameData(GameData *game) {
+int initRoundGameData(GameData *game, int seed) {
   if (game->was_initialized != DATA_WAS_INIT) {
     return DATA_NOT_INIT_FLAG;
   }
-  memset(game->hand_plA, 0, sizeof(int) * CARD_GROUP_SIZE);
-  memset(game->hand_plB, 0, sizeof(int) * CARD_GROUP_SIZE);
-  memset(game->market, 0, sizeof(int) * CARD_GROUP_SIZE);
-  memset((game->good_tk_ptrs), 0, sizeof(game->good_tk_ptrs));
-  memset((game->bonus_tk_arrays), 0, sizeof(game->bonus_tk_arrays));
-  memset((game->bonus_tk_ptrs), 0, sizeof(game->bonus_tk_ptrs));
-  game->seed = 0;
+  int sealsA = game->playerA.seals, sealsB = game->playerB.seals;
+  int turn = game->turn_of;
+  memset(game, 0, sizeof(GameData));
+  game->was_initialized = DATA_WAS_INIT;
+  game->turn_of         = turn;
+  game->playerA.seals   = sealsA;
+  game->playerB.seals   = sealsB;
+  game->seed            = seed;
   setSeed(game);
-  game->market[camels] = STARTING_MARKET_CAMELS;
-  game->deck_ptr       = 0;
+  game->market[camels] = STARTING_MARKET_CAMELS;  // It is assumed these cards are drawn already in initDeck
   return DATA_OKAY_FLAG;
 }
 void startRound(GameData *game) {
@@ -137,8 +137,8 @@ void startGame(GameData *game, unsigned int seed) {
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
 
-void startNextRound(GameData *game) {
-  initRoundGameData(game);
+void startNextRound(GameData *game, int seed) {
+  initRoundGameData(game, seed);
   startRound(game);
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
@@ -185,7 +185,7 @@ int checkDataIntegrity(GameData *game) {
     return DATA_CORRUPTED_FLAG;
   }
   for (int tk_type = 0; tk_type < BONUS_TOKEN_TYPES; tk_type++) {
-    if (!(game->bonus_tk_ptrs[tk_type] < MAX_BONUS_TOKENS && game->bonus_tk_ptrs[tk_type] >= 0)) {
+    if (!(game->bonus_tk_ptrs[tk_type] <= MAX_BONUS_TOKENS && game->bonus_tk_ptrs[tk_type] >= 0)) {
 #ifdef DEBUG
       printf("5\n");
 #endif
@@ -503,13 +503,15 @@ int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GRO
     game->bonus_tk_ptrs[no_cards]++;
     player_score->no_bonus_tokens++;
   }
+#ifdef DEBUG
   printf("Should be done.\n");
+#endif
   return TURN_HAPPENED_FLAG;
 }
 
 int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_cards, char *market_idx, int hand_cards_len,
                  int market_goods_len) {
-  // From the process_args function where this is called we know the strlens of the two char*s are valid (<6)
+  // Read args
   int cards_from_hand[CARD_GROUP_SIZE] = { 0 };
   for (int idx = 0; idx < hand_cards_len; idx++) {
     int card_index = (int)char_to_enum_lookup_table[(int)hand_cards[idx]];
@@ -526,14 +528,25 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
     }
     cards_from_market[card_index]++;
   }
-
-  // Check if the exchange from market includes both goods and camels
+  // Check args
+  // Check if the exchange from market includes camels
   if (cards_from_market[camels]) {
     return MIXING_GOODS_CAMELS | NO_GAME_PRINT_FLAG;
   }
+  // Check if the exchange will overflow the hand
   if (sumOfCardsGroup(player_hand, TRUE) + cards_from_hand[camels] > MAX_CARDS_HAND) {
-    return TOO_MANY_C_HAND_FLAG | NO_GAME_PRINT_FLAG;
+    return TOO_MANY_C_HAND_FLAG | ONLY_PRINT_HAND;
   }
+  // Check if there are enough cards in each card group
+  for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
+    if (market[card_type] < cards_from_market[card_type]) {
+      return TOO_FEW_C_MARKET_FLAG | ONLY_PRINT_MARKET;
+    }
+    if (player_hand[card_type] < cards_from_hand[card_type]) {
+      return TOO_FEW_C_HAND_FLAG | ONLY_PRINT_HAND;
+    }
+  }
+  // Perform the exchange
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
     market[(int)card_type] += cards_from_hand[(int)card_type] - cards_from_market[(int)card_type];
     player_hand[(int)card_type] += cards_from_market[(int)card_type] - cards_from_hand[(int)card_type];

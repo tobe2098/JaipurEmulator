@@ -35,5 +35,6 @@
 #define ONLY_PRINT_HAND       1 << 23
 #define CARD_DOES_NOT_EXIST   1 << 24
 #define LOGIC_ERROR_FLAG      1 << 25
+#define ONLY_PRINT_MARKET     1 << 26
 // #define UNWRITTEN_ERROR     1 << 15
 #endif

@@ -106,7 +106,7 @@ void printErrors(int flags) {
   }
   if (flags & DATA_CORRUPTED_FLAG) {
     printf("Error: The data has been corrupted, it does not fit the constraints.\n");
-    printf("Data was partially corrupted, use `--reset` to restart the game or manually correct the json.\n");
+    printf("Data was partially corrupted, it was automatically reset.\n");
     printf("Input into the template json file your data manually as an alternative.\n");
     // perror("Data could not be read:");
   }

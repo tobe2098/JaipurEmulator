@@ -1,5 +1,12 @@
 #include "console_emulator.h"
 void roundOverPrint(GameData *game) {
+  printf("With a score of %i against %i...\n", game->playerA.points, game->playerB.points);
+  if (game->playerA.points == game->playerB.points) {
+    printf("And a number of bonus tokens of %i against %i...\n", game->playerA.no_bonus_tokens, game->playerB.no_bonus_tokens);
+    if (game->playerA.no_bonus_tokens == game->playerB.no_bonus_tokens) {
+      printf("And a number of goods tokens of %i against %i...\n", game->playerA.no_goods_tokens, game->playerB.no_goods_tokens);
+    }
+  }
   printNewRoundMessage(((game->turn_of + 1) & 1));
 }
 void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB) {
@@ -152,6 +159,9 @@ int *getActivePlayerHand(GameData *game) {
 }
 
 void gameStatePrint(GameData *game) {
+#ifdef DEBUG
+  printf("Seed: %u", game->seed);
+#endif
   printf("\n");
   printf("<Scores>\n");
   printf("<%s> Points:%i, Seals of excellence:%i, Bonus tokens:%i, Goods tokens:%i\n", PLAYER_A, game->playerA.points, game->playerA.seals,
@@ -179,6 +189,8 @@ void gameStatePrint(GameData *game) {
   // printf("<Bonus> Remaining 4 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_4_ptr);
   // printf("<Bonus> Remaining 5 card bonus tokens: \t%i\n", MAX_BONUS_TOKENS-game->bonus_5_ptr);
   // Print market
+  printf("\n");
+  printf("<Deck> Cards remaining: %i\n", DECK_SIZE - game->deck_ptr);
   printCardGroup(game->market, TRUE);
   // Print camel piles
   printf("\n");
@@ -236,7 +248,7 @@ int main(int argc, char *argv[]) {
       roundOverPrint(&game);
       printf("<Action> Press Enter to start the next round:\n");
       while (getchar() != '\n');
-      startNextRound(&game);
+      startNextRound(&game, 0);
     }
   } else if (flags & DATA_CORRUPTED_FLAG || flags & DATA_NOT_INIT_FLAG) {
 #ifdef DEBUG
@@ -247,11 +259,14 @@ int main(int argc, char *argv[]) {
     startGame(&game, 0);
   }
   (void)printErrors(flags);
-  if (!(flags & NO_GAME_PRINT_FLAG) && !(flags & ONLY_PRINT_HAND)) {
-    gameStatePrint(&game);
-  } else if (flags & ONLY_PRINT_HAND) {
-    printf("Here is your hand again:\n");
+  if (flags & ONLY_PRINT_HAND) {
+    printf("Here is your HAND again:\n");
     printCardGroup(getActivePlayerHand(&game), FALSE);
+  } else if (flags & ONLY_PRINT_MARKET) {
+    printf("Here is the MARKET again: \n");
+    printCardGroup((game.market), TRUE);
+  } else if (!(flags & NO_GAME_PRINT_FLAG)) {
+    gameStatePrint(&game);
   }
   // All prints have to be handed here, in console
   // Save the updated state back to the JSON file
