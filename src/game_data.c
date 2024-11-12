@@ -143,13 +143,6 @@ void startNextRound(GameData *game, int seed) {
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
 
-int isHandSizeCorrect(int *card_group, int max) {
-  int sum = 0;
-  for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
-    sum += card_group[(int)card_type];
-  }
-  return sum <= max;
-}
 int checkDataIntegrity(GameData *game) {
   // Only to run in case of data loading, review after finishing data loading/saving
   // Probably should check that points and tokens are coherent.
@@ -266,6 +259,9 @@ int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
     int sum = 0;
     for (int tk = barr * 3; tk < (barr + 1) * 3; tk++) {
       sum += state->bonus_used[tk];
+    }
+    if (sum != state->bonus_tk_ptrs[barr] || sum > MAX_BONUS_TOKENS || sum < 0) {
+      return DATA_CORRUPTED_FLAG;
     }
     if (sum != MAX_BONUS_TOKENS - state->bonus_tks[barr]) {
       return DATA_CORRUPTED_FLAG;
@@ -637,7 +633,7 @@ int compRoundWinningPlayer(GameData *game) {
 //   return initMemoryPool(arena, (number_games)*block_size + sizeof(void *));
 // }
 
-GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed) {
+GameData *initLibGameDataCustom(GameData *game_state, unsigned int seed) {
   // Options are null state or default state? And then the custom one, but how to distinguish?
   //  ANOTHER VERSION ACCEPTING A STATE AS AN INPUT I SUPPOSE FOR INITIALIZATION;
   // Be very clear on how to use this (create struct to set the game state)
@@ -665,7 +661,7 @@ GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed) {
   return game_data;
 }
 
-GameData *initLibGameStateScratch(unsigned int seed) {
+GameData *initLibGameDataScratch(unsigned int seed) {
   // Replace with linear allocator for cache locality
   GameData *game_data = (GameData *)malloc(sizeof(GameData));
   // GameData *game_data = (GameData *)mpalloc(arena, sizeof(GameData));
@@ -673,7 +669,7 @@ GameData *initLibGameStateScratch(unsigned int seed) {
   return game_data;
 }
 
-void cloneLibGameState(GameData *game_state_dst, GameData *game_state_src) {
+void cloneLibGameData(GameData *game_state_dst, GameData *game_state_src) {
   if (game_state_src == NULL || game_state_dst == NULL) {
     return;
   }

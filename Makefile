@@ -5,10 +5,10 @@ OBJ_DIR := bin/obj
 
 
 # Force Windows command interpreter
+SHARED_LIB_PREFIX := lib
 ifeq ($(OS),Windows_NT)
     SHELL := cmd.exe
     SHARED_LIB_EXT := dll
-    SHARED_LIB_PREFIX :=
     EXE_EXT := .exe
     SHARED_LIB_FLAGS := -shared
     # Windows commands
@@ -20,12 +20,11 @@ else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Darwin)
         SHARED_LIB_EXT := dylib
-        SHARED_LIB_FLAGS := -dynamiclib -install_name @rpath/$(SHARED_LIB_PREFIX)$(LIB_NAME).$(SHARED_LIB_EXT)
+        SHARED_LIB_FLAGS := -dynamiclib -install_name @rpath/$(LIB_NAME).$(SHARED_LIB_EXT)
     else
         SHARED_LIB_EXT := so
         SHARED_LIB_FLAGS := -shared
     endif
-    SHARED_LIB_PREFIX := lib
     EXE_EXT :=
     MKDIR = @if [ ! -d "$1" ]; then echo "Creating directory: $1" && mkdir -p "$1"; fi
     RM = @if [ -f "$1" ]; then echo "Deleting file: $1" && rm -f "$1"; fi
@@ -49,12 +48,12 @@ SHARED_LIB_FLAGS += $(RELEASE_FLAGS)
 # Library name and files
 EXE_BASE := jaipur
 
-LIB_BASE := lib$(EXE_BASE)
+LIB_BASE := $(EXE_BASE)
 LIB_NAME := $(SHARED_LIB_PREFIX)$(LIB_BASE)
 LIB_SOURCES := game_data.c ltables.c prints.c utils.c
 LIB_OBJECTS := $(LIB_SOURCES:%.c=$(OBJ_DIR)/%.o)
 LIB_DEPS := $(LIB_OBJECTS:%.o=%.d)
-SHARED_LIB := $(SHARED_LIB_PREFIX)$(LIB_NAME).$(SHARED_LIB_EXT)
+SHARED_LIB := $(LIB_NAME).$(SHARED_LIB_EXT)
 
 # Executable name and files
 # Executable name and files

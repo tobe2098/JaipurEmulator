@@ -35,17 +35,6 @@ typedef struct PlayerScore {
     int seals;
 } PlayerScore;
 
-// typedef struct CardGroup{
-//     int diamonds;
-//     int golds;
-//     int silvers;
-//     int spices;
-//     int cloths;
-//     int leathers;
-//     int camels; //Not in enforced hand-size
-// CHANGE THIS TO ARRAY INDEXED BY ENUM
-// } CardGroup;
-
 typedef struct GameData {
     int          was_initialized;
     unsigned int seed;
@@ -76,26 +65,6 @@ typedef struct GameData {
 
 } GameData;
 
-// int a = sizeof(GameData);
-// typedef struct GameState {
-//     // Input-only data-type
-//     int turn_of;
-
-//     int market[CARD_GROUP_SIZE];
-//     int hand_plA[CARD_GROUP_SIZE];
-//     int hand_plB[CARD_GROUP_SIZE];
-
-//     PlayerScore playerA;
-//     PlayerScore playerB;
-
-//     int good_tks[GOOD_TYPES];
-//     int bonus_tks[BONUS_TOKEN_TYPES];
-
-//     int cards_in_deck;
-//     // GameData *game_data;
-
-// } GameState;
-
 void initDeck(GameData *game);
 void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]);
 void setSeed(GameData *game);
@@ -107,7 +76,6 @@ void startRound(GameData *game);
 void startGame(GameData *game, unsigned int seed);
 void startNextRound(GameData *game, int seed);
 
-int isHandSizeCorrect(int *card_group, int max);
 int checkDataIntegrity(GameData *game);
 int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]);
 
@@ -130,11 +98,11 @@ int isRoundOver(GameData *game);
 int endingChecks(GameData *game, int flags);
 int compRoundWinningPlayer(GameData *game);
 
-int getMemoryForGames(int number_games);
+// int getMemoryForGames(int number_games);
 
-GameData *initLibGameStateCustom(GameData *game_state, unsigned int seed);
-GameData *initLibGameStateScratch(unsigned int seed);
-void      cloneLibGameState(GameData *game_state_out, GameData *game_state_in);
+GameData *initLibGameDataCustom(GameData *game_state, unsigned int seed);
+GameData *initLibGameDataScratch(unsigned int seed);
+void      cloneLibGameData(GameData *game_state_out, GameData *game_state_in);
 void      freeLibGameData(GameData *game_data);
 int       processLibAction(GameData *game, int argc, char *argv[], int flags);
 

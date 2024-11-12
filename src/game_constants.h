@@ -15,7 +15,6 @@
 #define MAX_BONUS_TOKENS        6
 #define BONUS_TOKENS_DATA_ARRAY 9
 #define BONUS_TOKENS_PER_VALUE  2
-#define DECK_SIZE               52  // 53 would include the string termination character
 
 #define FINISHED_GOODS_LIMIT    3
 #define CAMEL_TOKEN_VAL         5
@@ -24,8 +23,10 @@
 
 #define INITIAL_HAND_SIZE       5
 #define MAX_CARDS_HAND          7
+
 #define STARTING_MARKET_CAMELS  3
 #define CARDS_IN_MARKET         5
+#define DECK_SIZE               55 - STARTING_MARKET_CAMELS  // 53 would include the string termination character
 
 #define DIAMONDS_STARTING_DECK  6
 #define GOLD_STARTING_DECK      6
