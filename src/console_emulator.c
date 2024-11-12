@@ -10,6 +10,13 @@ void roundOverPrint(GameData *game) {
   printNewRoundMessage(((game->turn_of + 1) & 1));
 }
 void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB) {
+  printf("With a score of %i against %i...\n", playerA->points, playerB->points);
+  if (playerA->points == playerB->points) {
+    printf("And a number of bonus tokens of %i against %i...\n", playerA->no_bonus_tokens, playerB->no_bonus_tokens);
+    if (playerA->no_bonus_tokens == playerB->no_bonus_tokens) {
+      printf("And a number of goods tokens of %i against %i...\n", playerA->no_goods_tokens, playerB->no_goods_tokens);
+    }
+  }
   if (playerA->seals == SEALS_TO_WIN) {
     printWinningTrophy(PLAYER_A_NUM);
   } else if (playerB->seals == SEALS_TO_WIN) {
@@ -235,7 +242,6 @@ int main(int argc, char *argv[]) {
       flags |= processAction(&game, argc, argv);
     }
     if (flags & TURN_HAPPENED_FLAG) {
-      game.turn_of = (game.turn_of + 1) & 1;
       flags |= updateMarket(&game);
       flags |= endingChecks(&game, flags);
     }
@@ -249,6 +255,8 @@ int main(int argc, char *argv[]) {
       printf("<Action> Press Enter to start the next round:\n");
       while (getchar() != '\n');
       startNextRound(&game, 0);
+    } else {
+      game.turn_of = (game.turn_of + 1) & 1;
     }
   } else if (flags & DATA_CORRUPTED_FLAG || flags & DATA_NOT_INIT_FLAG) {
 #ifdef DEBUG

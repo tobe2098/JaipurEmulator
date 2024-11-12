@@ -85,6 +85,7 @@ void printCardGroup(int *card_group, int bool_camel) {
   }
 }
 void printWinningTrophy(int player) {
+  printf("<Winner> %s has obtained the %i excellence seals!\n", getPlayerName(player), SEALS_TO_WIN);
   printf("                        xxxxxxXXXxxxXx                         \n");
   printf("                  xxxXXxxxxxxxxxxxXxxxxxxxxx                   \n");
   printf("                xxxxxxxxxxxxxx+++xxxxxxxxxxxxxx                \n");

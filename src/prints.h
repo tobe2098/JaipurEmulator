@@ -3,6 +3,7 @@
 #include "config.h"
 #include "flags.h"
 #include "ltables.h"
+#include "utils.h"
 
 #include <stdio.h>
 
