@@ -226,7 +226,9 @@ int main(int argc, char *argv[]) {
     printRules();
     return 0;
   }
-
+#ifndef DEBUG
+  system("reset");
+#endif
   GameData game = {};
   // game.was_initialized = 0;
 

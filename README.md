@@ -126,7 +126,7 @@ Libdl.dlclose(lib)
 ```
 ## CLI
 Only accepts one argument per call
-
+- The windows executable assumes that msys2 is installed. More concretely, it assumes that reset.exe (from Unix) is found in the PATH. If it is not, it might not be possible to run the executable.
 
 ## To do
 ### v1.0.1 of emulator

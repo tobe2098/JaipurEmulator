@@ -3,6 +3,8 @@
 #include "game_data.h"
 #include "prints.h"
 
+#include <stdlib.h>
+
 int  loadGameData(GameData *game);
 void saveGameData(const GameData *game);
 void dataPrint(const GameData *game);
