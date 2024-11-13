@@ -7,6 +7,7 @@
 #include "utils.h"
 
 #include <stdalign.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +36,7 @@ typedef struct PlayerScore {
     int seals;
 } PlayerScore;
 
+// #pragma pack(push, 1)  // Disable padding
 typedef struct GameData {
     int          was_initialized;
     unsigned int seed;
@@ -60,10 +62,11 @@ typedef struct GameData {
     int cards_in_deck;
     int good_tks[GOOD_TYPES];
     int bonus_tks[BONUS_TOKEN_TYPES];
-    alignas(CACHE_LINE_SIZE) int bonus_used[BONUS_TOKENS_DATA_ARRAY];
-    // int bonus_used[BONUS_TOKENS_DATA_ARRAY];
+    // alignas(CACHE_LINE_SIZE) int bonus_used[BONUS_TOKENS_DATA_ARRAY];
+    int bonus_used[BONUS_TOKENS_DATA_ARRAY];
 
-} GameData;
+} GameData;  // Possibly 8 byte aligned
+// #pragma pack(pop)
 
 void initDeck(GameData *game);
 void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]);

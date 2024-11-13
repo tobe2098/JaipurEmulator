@@ -1,5 +1,8 @@
 import .Sys
 import Libdl
+import Pkg
+Pkg
+
 # Determine the appropriate library file name based on the operating system
 libname = ""
 if Sys.iswindows()
@@ -65,7 +68,7 @@ const SILVER_TOKEN_SIZE=SILVER_STARTING_DECK-1
 const SPICE_TOKEN_SIZE=SPICE_STARTING_DECK-1
 const CLOTH_TOKEN_SIZE=CLOTH_STARTING_DECK-1
 const LEATHER_TOKEN_SIZE=LEATHER_STARTING_DECK-1
-const DECK_SIZE = 55-CAMELS_STARTING_DECK #Assumes three camels are already out
+const DECK_SIZE = 55-CAMELS_STARTING_MARKET #Assumes three camels are already out
 const CARD_GROUP_SIZE=7
 const diamonds=0
 const golds=1
@@ -82,9 +85,10 @@ struct PlayerScore
   no_goods_tokens::Cint
   seals::Cint
 end
-
-Base.isbitstype(::Type{PlayerScore}) = true
-Base.isbits(::PlayerScore) = true
+# println(Core.sizeof(PlayerScore))
+# println(Base.isbitstype(PlayerScore))
+# Base.isbitstype(::Type{PlayerScore}) = true
+# Base.isbits(::PlayerScore) = true
 
 struct  GameData 
     init::Cint #State
@@ -112,11 +116,24 @@ struct  GameData
     bonus_tks::NTuple{BONUS_TOKEN_TYPES,Cint} #State
     bonus_used::NTuple{BONUS_TOKENS_DATA_ARRAY,Cint} #State
 end
+# game_data=GameData
+# for (i, field) in enumerate(fieldnames(GameData))
+#     offset = fieldoffset(GameData, i)
+#     println("Field: $(field), Offset: $(offset), Type: $(fieldtype(GameData, field))")
+# end
+@assert(Core.sizeof(GameData)==368)
 
-Base.isbitstype(::Type{GameData}) = true
-Base.isbits(::GameData) = true
+# println(Base.isbitstype(GameData))
+# println(Core.sizeof(GameData))
+
+# println(Base.isbitstype(GameData))
 
 initGameData = Libdl.dlsym(library, :initLibGameDataScratch)
+freeGameData = Libdl.dlsym(library, :freeLibGameData)
+freeGameData = Libdl.dlsym(library, :freeLibGameData)
+freeGameData = Libdl.dlsym(library, :freeLibGameData)
+freeGameData = Libdl.dlsym(library, :freeLibGameData)
+freeGameData = Libdl.dlsym(library, :freeLibGameData)
 freeGameData = Libdl.dlsym(library, :freeLibGameData)
 
 function create_game_data()::Ptr{GameData}
@@ -125,6 +142,22 @@ end
 function free_game_data(ptr::Ptr{GameData})::Cvoid
     return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
 end
+function free_game_data(ptr::Ptr{GameData})::Cvoid
+    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
+end
+function free_game_data(ptr::Ptr{GameData})::Cvoid
+    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
+end
+function free_game_data(ptr::Ptr{GameData})::Cvoid
+    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
+end
+function free_game_data(ptr::Ptr{GameData})::Cvoid
+    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
+end
+function free_game_data(ptr::Ptr{GameData})::Cvoid
+    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
+end
+#Tests
 game_data_ptr=create_game_data()
 # Convert the pointer to a Julia struct
 if game_data_ptr == C_NULL

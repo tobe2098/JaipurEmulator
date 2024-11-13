@@ -213,6 +213,26 @@ void gameStatePrint(GameData *game) {
   // INTRODUCE KEY PRESS FOR HAND SECRECY, maybe a console clearing before state
 }
 int main(int argc, char *argv[]) {
+#ifdef DEBUG
+  printf("Size of GameData: %zu bytes\n", sizeof(GameData));
+  printf("Offset of was_initialized: %zu bytes\n", offsetof(GameData, was_initialized));
+  printf("Offset of seed: %zu bytes\n", offsetof(GameData, seed));
+  printf("Offset of turn_of: %zu bytes\n", offsetof(GameData, turn_of));
+  printf("Offset of market: %zu bytes\n", offsetof(GameData, market));
+  printf("Offset of hand_plA: %zu bytes\n", offsetof(GameData, hand_plA));
+  printf("Offset of hand_plB: %zu bytes\n", offsetof(GameData, hand_plB));
+  printf("Offset of playerA: %zu bytes\n", offsetof(GameData, playerA));
+  printf("Offset of playerB: %zu bytes\n", offsetof(GameData, playerB));
+  printf("Offset of good_tk_ptrs: %zu bytes\n", offsetof(GameData, good_tk_ptrs));
+  printf("Offset of bonus_tk_ptrs: %zu bytes\n", offsetof(GameData, bonus_tk_ptrs));
+  printf("Offset of bonus_tk_arrays: %zu bytes\n", offsetof(GameData, bonus_tk_arrays));
+  printf("Offset of deck_ptr: %zu bytes\n", offsetof(GameData, deck_ptr));
+  printf("Offset of deck: %zu bytes\n", offsetof(GameData, deck));
+  printf("Offset of cards_in_deck: %zu bytes\n", offsetof(GameData, cards_in_deck));
+  printf("Offset of good_tks: %zu bytes\n", offsetof(GameData, good_tks));
+  printf("Offset of bonus_tks: %zu bytes\n", offsetof(GameData, bonus_tks));
+  printf("Offset of bonus_used: %zu bytes\n", offsetof(GameData, bonus_used));
+#endif
   if (argc == 2 && (strncmp(argv[FIRST_ARGUMENT_INDEX], "--help", strlen("--help")) == 0 ||
                     strncmp(argv[FIRST_ARGUMENT_INDEX], "-h", strlen("-h")) == 0)) {
     printHelp();
