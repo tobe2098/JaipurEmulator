@@ -1,7 +1,5 @@
 import .Sys
 import Libdl
-import Pkg
-Pkg
 
 # Determine the appropriate library file name based on the operating system
 libname = ""
@@ -15,13 +13,13 @@ end
 
 # Check if the library file exists and try to load it
 if isfile(libname)
-    println("File exists at $libname")
+    # println("File exists at $libname")
     global library = Libdl.dlopen_e(libname)
     if library == C_NULL
         println("Failed to load library.")
     else
         println("Library loaded successfully.")
-        println("Performing a test.")
+        println("Testing the dynamic library...")
 
         local c_array = Vector{Cint}(undef, 7)
         local test_result=0
@@ -32,7 +30,11 @@ if isfile(libname)
 
         sumOfCardsGroup_func = Libdl.dlsym(library, :sumOfCardsGroup)
         result = test_result==ccall(sumOfCardsGroup_func, Cint, (Ptr{Cint}, Cint), c_array, 0)
-        println("The test resulted in a $result value.")
+        if result
+            println("The test passed.")
+        else
+            println("The test failed.")
+        end
     end
 else
     error("Library not found at $libname")
@@ -78,6 +80,42 @@ const cloths=4
 const leather=5
 const camels=6
 
+#Info/data flags
+
+const DATA_WAS_INIT          =1 << 0 
+const TURN_HAPPENED_FLAG     =1 << 1
+
+const DATA_NOT_INIT_FLAG     =1 << 2
+const TOO_FEW_ARGS_FLAG      =1 << 3
+const ERROR_PRINTING_FLAG    =1 << 4
+const TOO_MANY_C_MARKET_FLAG =1 << 5
+const TOO_MANY_C_HAND_FLAG   =1 << 6
+
+
+const TOO_FEW_C_MARKET_FLAG =1 << 7  
+const TOO_FEW_C_HAND_FLAG   =1 << 8  
+const ARGS_MISS_MATCH_FLAG  =1 << 9   
+const ARG_OVERFLOW_FLAG     =1 << 10  
+
+const NOT_ALLOWED_FLAG      =1 << 11
+const MISSING_CARD_FLAG     =1 << 12
+const MIXING_GOODS_CAMELS   =1 << 13
+const DATA_CORRUPTED_FLAG   =1 << 14
+const DATA_OKAY_FLAG        =1 << 15
+const DRAW_FLAG             =1 << 16
+
+const NO_CAMELS             =1 << 17
+const GAME_OVER             =1 << 18
+const ROUND_OVER            =1 << 19
+const NO_GAME_PRINT_FLAG    =1 << 20
+const TOO_FEW_CARDS_SALE    =1 << 21
+
+const CANNOT_SELL_CAMELS    =1 << 22
+const ONLY_PRINT_HAND       =1 << 23
+const CARD_DOES_NOT_EXIST   =1 << 24
+const LOGIC_ERROR_FLAG      =1 << 25
+const ONLY_PRINT_MARKET     =1 << 26
+
 #Define the data struct for the library
 struct PlayerScore 
   points::Cint
@@ -96,8 +134,8 @@ struct  GameData
     turn_of::Cint #State
     
     market::NTuple{CARD_GROUP_SIZE,Cint} #State
-    hand_plA::NTuple{CARD_GROUP_SIZE,Cint} #State/secret
-    hand_plB::NTuple{CARD_GROUP_SIZE,Cint} #State/secret
+    hand_plA::NTuple{CARD_GROUP_SIZE,Cint} #State
+    hand_plB::NTuple{CARD_GROUP_SIZE,Cint} #State
     
     playerA::PlayerScore #State
     playerB::PlayerScore #State
@@ -128,45 +166,52 @@ end
 
 # println(Base.isbitstype(GameData))
 
-initGameData = Libdl.dlsym(library, :initLibGameDataScratch)
-freeGameData = Libdl.dlsym(library, :freeLibGameData)
-freeGameData = Libdl.dlsym(library, :freeLibGameData)
-freeGameData = Libdl.dlsym(library, :freeLibGameData)
-freeGameData = Libdl.dlsym(library, :freeLibGameData)
-freeGameData = Libdl.dlsym(library, :freeLibGameData)
+initGameDataScratch = Libdl.dlsym(library, :initLibGameDataScratch)
+initGameDataCustom = Libdl.dlsym(library, :initLibGameDataCustom)
+cloneGameData = Libdl.dlsym(library, :cloneLibGameData)
+processAction = Libdl.dlsym(library, :processLibAction)
 freeGameData = Libdl.dlsym(library, :freeLibGameData)
 
-function create_game_data()::Ptr{GameData}
-    return ccall(initGameData, Ptr{GameData}, (Cuint,),0)
+function create_game_data(seed::Cuint=Cuint(0))::Ptr{GameData}
+    #Function wrapper to create a random game.
+    #All allocations in the library are currently handled by malloc()
+    #Seed=0 will give you a random seed
+    return ccall(initGameDataScratch, Ptr{GameData}, (Cuint,),seed)
 end
-function free_game_data(ptr::Ptr{GameData})::Cvoid
-    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
+
+function duplicate_game_data(game_ptr::Ptr{GameData},seed::Cuint=Cuint(0))::Ptr{GameData}
+    #Function wrapper to create a game in the same public state, but different secret state.
+    #All allocations in the library are currently handled by malloc()
+    #Seed=0 will give you a random seed
+    return ccall(initGameDataCustom, Ptr{GameData}, (Ptr{GameData},Cuint),game_ptr,seed)
 end
-function free_game_data(ptr::Ptr{GameData})::Cvoid
-    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
+
+function clone_game_data(game_ptr::Ptr{GameData})::Ptr{GameData}
+    #Function wrapper to create an exact copy of the game
+    #All allocations in the library are currently handled by malloc()
+    return ccall(cloneGameData, Ptr{GameData}, (Ptr{GameData},),game_ptr)
 end
-function free_game_data(ptr::Ptr{GameData})::Cvoid
-    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
+
+function process_game_action(game_ptr::Ptr{GameData},argc::Cint, argv::Vector{Cstring},error_flag::Cint)::Cint
+    #Function wrapper to perform actions in the game
+    #It returns an int with flag bits set. Look in the constants for checking
+    return ccall(processAction, Cint, (Ptr{GameData},Cint,Vector{Cstring},Cint),game_ptr,argc,argv, error_flag)
 end
-function free_game_data(ptr::Ptr{GameData})::Cvoid
-    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
-end
-function free_game_data(ptr::Ptr{GameData})::Cvoid
-    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
-end
-function free_game_data(ptr::Ptr{GameData})::Cvoid
-    return ccall(freeGameData, Cvoid, (Ptr{GameData},),ptr)
+
+function free_game_data(game_ptr::Ptr{GameData})::Cvoid
+    return ccall(freeGameData, Cvoid, (Ptr{GameData},),game_ptr)
 end
 #Tests
-game_data_ptr=create_game_data()
+game_data_ptr=create_game_data(Cuint(0))
 # Convert the pointer to a Julia struct
 if game_data_ptr == C_NULL
     error("Failed to allocate GameData struct")
 end
 # game_data = unsafe_load(game_data_ptr)
-was_initialized_ptr = Ptr{Cint}(game_data_ptr)
-was_initialized = unsafe_load(was_initialized_ptr)
-println("was_initialized: $was_initialized")
+game_data = unsafe_load(game_data_ptr)
+println("game_data: $game_data")
+data=Cuint(42)
+println("Cuint: $data")
 # println(unsafe_load(game_data_ptr::Ptr{Cint},1))
 free_game_data(game_data_ptr)
 

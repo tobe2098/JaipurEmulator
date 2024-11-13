@@ -560,13 +560,14 @@ int isRoundOver(GameData *game) {
 
 int endingChecks(GameData *game, int flags) {
   if (isRoundOver(game) || flags & ROUND_OVER) {
-    if (compRoundWinningPlayer(game) & DRAW_FLAG) {
-      return DRAW_FLAG | ROUND_OVER;
+    flags |= compRoundWinningPlayer(game);
+    if (flags & DRAW_FLAG) {
+      return flags | ROUND_OVER;
     }
     if (isGameOver(&(game->playerA), &(game->playerB))) {
-      return GAME_OVER;
+      return flags | GAME_OVER;
     } else {
-      return ROUND_OVER;
+      return flags | ROUND_OVER;
     }
     // } else {
     // if (isGameOver(&(game->playerA), &(game->playerB))) {
@@ -586,32 +587,45 @@ int compRoundWinningPlayer(GameData *game) {
     playerB->points += CAMEL_TOKEN_VAL;
   }
   if (playerA->points > playerB->points) {
-    playerA->seals++;
-    game->turn_of = PLAYER_B_NUM;
+    // playerA->seals++;
+    // game->turn_of = PLAYER_B_NUM;
+    return PLAYER_A_WINS;
   } else if (playerA->points < playerB->points) {
-    playerB->seals++;
-    game->turn_of = PLAYER_A_NUM;
+    // playerB->seals++;
+    // game->turn_of = PLAYER_A_NUM;
+    return 0;
   }
-  return 0;
   if (playerA->no_bonus_tokens > playerB->no_bonus_tokens) {
-    playerA->seals++;
-    game->turn_of = PLAYER_B_NUM;
+    // playerA->seals++;
+    // game->turn_of = PLAYER_B_NUM;
+    return PLAYER_A_WINS;
   } else if (playerA->no_bonus_tokens < playerB->no_bonus_tokens) {
-    playerB->seals++;
-    game->turn_of = PLAYER_A_NUM;
+    // playerB->seals++;
+    // game->turn_of = PLAYER_A_NUM;
+    return 0;
   }
-  return 0;
   if (playerA->no_goods_tokens > playerB->no_goods_tokens) {
-    playerA->seals++;
-    game->turn_of = PLAYER_B_NUM;
+    // playerA->seals++;
+    // game->turn_of = PLAYER_B_NUM;
+    return PLAYER_A_WINS;
   } else if (playerA->no_goods_tokens < playerB->no_goods_tokens) {
-    playerB->seals++;
-    game->turn_of = PLAYER_A_NUM;
+    // playerB->seals++;
+    // game->turn_of = PLAYER_A_NUM;
+    return 0;
   } else {
     return DRAW_FLAG;
   }
-  return 0;
   // printf("ERROR: IT WAS A DRAW! CONGRATULATIONS! THIS IS NORMALLY IMPOSSIBLE\n");
+}
+
+void giveRewards(GameData *game, int flags) {
+  if (flags & PLAYER_A_WINS) {
+    game->turn_of = PLAYER_B_NUM;
+    game->playerA.seals++;
+  } else {
+    game->turn_of = PLAYER_A_NUM;
+    game->playerB.seals++;
+  }
 }
 
 // int getMemoryForGames(PagePool *arena, int number_games) {
@@ -669,12 +683,16 @@ GameData *initLibGameDataScratch(unsigned int seed) {
   return game_data;
 }
 
-void cloneLibGameData(GameData *game_state_dst, GameData *game_state_src) {
-  if (game_state_src == NULL || game_state_dst == NULL) {
-    return;
+GameData *cloneLibGameData(GameData *game_data_src) {
+  if (game_data_src == NULL) {
+    return NULL;
   }
-  memcpy(game_state_dst, game_state_src, sizeof(GameData));
-  return;
+  GameData *game_data_out = (GameData *)malloc(sizeof(GameData));
+  if (game_data_out == NULL) {
+    return NULL;
+  }
+  memcpy(game_data_out, game_data_src, sizeof(GameData));
+  return game_data_out;
 }
 
 void freeLibGameData(GameData *game_data) {

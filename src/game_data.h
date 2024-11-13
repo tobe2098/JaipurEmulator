@@ -96,16 +96,17 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
                  int market_goods_positions_len);
 
 // Also have to be in the Julia lib interface
-int isGameOver(PlayerScore *playerA, PlayerScore *playerB);
-int isRoundOver(GameData *game);
-int endingChecks(GameData *game, int flags);
-int compRoundWinningPlayer(GameData *game);
+int  isGameOver(PlayerScore *playerA, PlayerScore *playerB);
+int  isRoundOver(GameData *game);
+int  endingChecks(GameData *game, int flags);
+int  compRoundWinningPlayer(GameData *game);
+void giveRewards(GameData *game, int flags);
 
 // int getMemoryForGames(int number_games);
 
 GameData *initLibGameDataCustom(GameData *game_state, unsigned int seed);
 GameData *initLibGameDataScratch(unsigned int seed);
-void      cloneLibGameData(GameData *game_state_out, GameData *game_state_in);
+GameData *cloneLibGameData(GameData *game_state_src);
 void      freeLibGameData(GameData *game_data);
 int       processLibAction(GameData *game, int argc, char *argv[], int flags);
 
