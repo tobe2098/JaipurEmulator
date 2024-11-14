@@ -2,19 +2,21 @@ import .Sys
 import Libdl
 
 # Determine the appropriate library file name based on the operating system
-libname = ""
+libname = "libjaipur"
+
 if Sys.iswindows()
-    libname = abspath("bin", "libjaipur.dll")
+    library_name=libname*".dll"
+    library_name = joinpath("bin", library_name)
 elseif Sys.islinux()
-    libname = "./bin/libjaipur.so"
+    library_name = "./bin/libjaipur.so"
 else
-    libname = "./bin/libjaipur.dylib"
+    library_name = "./bin/libjaipur.dylib"
 end
 
 # Check if the library file exists and try to load it
-if isfile(libname)
+if isfile(library_name)
     # println("File exists at $libname")
-    global library = Libdl.dlopen_e(libname)
+    global library = Libdl.dlopen_e(library_name)
     if library == C_NULL
         println("Failed to load library.")
     else
@@ -37,7 +39,7 @@ if isfile(libname)
         end
     end
 else
-    error("Library not found at $libname")
+    error("Library not found at $library_name")
 end
 #Constants
 # Define the necessary constants
@@ -115,6 +117,7 @@ const ONLY_PRINT_HAND       =1 << 23
 const CARD_DOES_NOT_EXIST   =1 << 24
 const LOGIC_ERROR_FLAG      =1 << 25
 const ONLY_PRINT_MARKET     =1 << 26
+const PLAYER_A_WINS         =1 << 27
 
 #Define the data struct for the library
 struct PlayerScore 
