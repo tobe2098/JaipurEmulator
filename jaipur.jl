@@ -74,13 +74,13 @@ const CLOTH_TOKEN_SIZE=CLOTH_STARTING_DECK-1
 const LEATHER_TOKEN_SIZE=LEATHER_STARTING_DECK-1
 const DECK_SIZE = 55-CAMELS_STARTING_MARKET #Assumes three camels are already out
 const CARD_GROUP_SIZE=7
-const diamonds=0
-const golds=1
-const silvers=2
-const spices=3
-const cloths=4
-const leather=5
-const camels=6
+const diamonds=0 +1#Julia indexing is 1-based
+const golds=1+1#Julia indexing is 1-based
+const silvers=2+1#Julia indexing is 1-based
+const spices=3+1#Julia indexing is 1-based
+const cloths=4+1#Julia indexing is 1-based
+const leather=5+1#Julia indexing is 1-based
+const camels=6+1#Julia indexing is 1-based
 
 #Info/data flags
 
@@ -168,53 +168,120 @@ end
 # println(Core.sizeof(GameData))
 
 # println(Base.isbitstype(GameData))
-
-initGameDataScratch = Libdl.dlsym(library, :initLibGameDataScratch)
-initGameDataCustom = Libdl.dlsym(library, :initLibGameDataCustom)
-cloneGameData = Libdl.dlsym(library, :cloneLibGameData)
-processAction = Libdl.dlsym(library, :processLibAction)
-freeGameData = Libdl.dlsym(library, :freeLibGameData)
+# initGameDataScratch = Libdl.dlsym(library, :initLibGameDataScratch)
+# initGameDataCustom = Libdl.dlsym(library, :initLibGameDataCustom)
+# cloneGameData = Libdl.dlsym(library, :cloneLibGameData)
+# processAction = Libdl.dlsym(library, :processLibAction)
+# freeGameData = Libdl.dlsym(library, :freeLibGameData)
 
 function create_game_data(seed::Cuint=Cuint(0))::Ptr{GameData}
     #Function wrapper to create a random game.
     #All allocations in the library are currently handled by malloc()
     #Seed=0 will give you a random seed
-    return ccall(initGameDataScratch, Ptr{GameData}, (Cuint,),seed)
+    output_ptr=@ccall libname.initLibGameDataScratch(seed::Cuint)::Ptr{GameData}
+    if output_ptr == C_NULL # Could not allocate memory
+        throw(OutOfMemoryError())
+    end
+    return output_ptr
 end
 
-function duplicate_game_data(game_ptr::Ptr{GameData},seed::Cuint=Cuint(0))::Ptr{GameData}
+function duplicate_game_data(game_ptr::Ptr{GameData},seed::Int64=0)::Ptr{GameData}
     #Function wrapper to create a game in the same public state, but different secret state.
     #All allocations in the library are currently handled by malloc()
     #Seed=0 will give you a random seed
-    return ccall(initGameDataCustom, Ptr{GameData}, (Ptr{GameData},Cuint),game_ptr,seed)
+    output_ptr=@ccall libname.initLibGameDataCustom(game_ptr::Ptr{GameData},seed::Cuint)::Ptr{GameData}
+    if output_ptr == C_NULL # Could not allocate memory
+        throw(OutOfMemoryError())
+    end
+    return output_ptr
 end
 
 function clone_game_data(game_ptr::Ptr{GameData})::Ptr{GameData}
     #Function wrapper to create an exact copy of the game
     #All allocations in the library are currently handled by malloc()
-    return ccall(cloneGameData, Ptr{GameData}, (Ptr{GameData},),game_ptr)
+    output_ptr=@ccall libname.cloneLibGameData(game_ptr::Ptr{GameData})::Ptr{GameData}
+    if output_ptr == C_NULL # Could not allocate memory
+        throw(OutOfMemoryError())
+    end
+    return output_ptr
 end
 
-function process_game_action(game_ptr::Ptr{GameData},argc::Cint, argv::Vector{Cstring},error_flag::Cint)::Cint
+function process_game_action(game_ptr::Ptr{GameData}, argv::Vector{String},error_flag::Cint)::Cint
     #Function wrapper to perform actions in the game
     #It returns an int with flag bits set. Look in the constants for checking
-    return ccall(processAction, Cint, (Ptr{GameData},Cint,Vector{Cstring},Cint),game_ptr,argc,argv, error_flag)
+    pushfirst!(argv,"jaipur")
+    return @ccall libname.processLibAction(game_ptr::Ptr{GameData},length(argv)::Cint,argv::Ptr{Ptr{UInt8}},error_flag::Cint)::Cint
 end
+
+function reset_game(game_ptr::Ptr{GameData},seed::Int64=0)::Cvoid
+    #Restart the game from scratch with the given seed (or random if seed is 0)
+    return  @ccall libname.startGame(game_ptr::Ptr{GameData},seed::Cuint)::Cvoid
+end
+
+function reset_round(game_ptr::Ptr{GameData},seed::Int64=0)::Cvoid
+    #Same as reset_game, but seals are kept between rounds, and the turn is determined by the non-winning player
+    return  @ccall libname.startNextRound(game_ptr::Ptr{GameData},seed::Cuint)::Cvoid
+end
+
+
+function is_round_over(flag::Int32)::Bool
+    return flag&ROUND_OVER !=0
+end
+
+function is_game_over(flag::Int32)::Bool
+    return flag&GAME_OVER !=0
+end
+
+
+function did_player_A_win(flag::Int32)::Bool
+    return flag&PLAYER_A_WINS !=0
+end
+
+
+function round_management(game_ptr::Ptr{GameData})::Cvoid
+    return ccall(freeGameData, Cvoid, (Ptr{GameData},),game_ptr)
+end
+
 
 function free_game_data(game_ptr::Ptr{GameData})::Cvoid
     return ccall(freeGameData, Cvoid, (Ptr{GameData},),game_ptr)
 end
+
+function print_set_bit_positions(n::Cint)
+    positions = []  # Array to store positions of set bits
+    pos = 0         # Bit position counter
+
+    while n > 0
+        if n & 1 == 1
+            push!(positions, pos)  # Record the position if bit is set
+        end
+        n >>= 1      # Shift bits to the right
+        pos += 1     # Increment position counter
+    end
+
+    println("Set bit positions: ", positions)
+end
+
 #Tests
-game_data_ptr=create_game_data(Cuint(0))
+game_data_ptr=create_game_data(Cuint(42))
+
 # Convert the pointer to a Julia struct
 if game_data_ptr == C_NULL
     error("Failed to allocate GameData struct")
 end
+action="-e"
+hand_card="l"
+market_card="p"
+action_arr=[action,hand_card,market_card]
+
+flag=process_game_action2(game_data_ptr, action_arr,Cint(ERROR_PRINTING_FLAG))
 # game_data = unsafe_load(game_data_ptr)
 game_data = unsafe_load(game_data_ptr)
+println(game_data.seed)
 println("game_data: $game_data")
-data=Cuint(42)
-println("Cuint: $data")
+flag_str=bitstring(flag)
+println("Flag: $flag_str")
+print_set_bit_positions(flag)
 # println(unsafe_load(game_data_ptr::Ptr{Cint},1))
 free_game_data(game_data_ptr)
 
