@@ -96,7 +96,7 @@ int loadGameData(GameData *game) {
     // Initialize default game state if no save file exists
     return DATA_NOT_INIT_FLAG;
   }
-  return checkDataIntegrity(game);
+  return checkDataIntegrity(game) | DATA_WAS_INIT;
 }
 void saveGameData(const GameData *game) {
   char save_file[MAX_PATH];

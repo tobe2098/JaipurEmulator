@@ -152,7 +152,7 @@ int checkDataIntegrity(GameData *game) {
 #ifdef DEBUG
     printf("1, state:%i\n", game->was_initialized);
 #endif
-    return DATA_NOT_INIT_FLAG;
+    return DATA_CORRUPTED_FLAG;
   }
   if (game->playerA.seals > SEALS_TO_WIN || game->playerA.seals < 0 || game->playerB.seals > SEALS_TO_WIN || game->playerB.seals < 0) {
 #ifdef DEBUG
