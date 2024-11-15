@@ -695,8 +695,12 @@ GameData *cloneLibGameData(GameData *game_data_src) {
   return game_data_out;
 }
 
-void freeLibGameData(GameData *game_data) {
+GameData *freeLibGameData(GameData *game_data) {
+  if (game_data == NULL) {
+    return NULL;
+  }
   free(game_data);
+  return NULL;
 }
 
 int processLibAction(GameData *game, int argc, char *argv[], int flags) {

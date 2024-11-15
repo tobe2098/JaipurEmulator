@@ -107,7 +107,7 @@ void giveRewards(GameData *game, int flags);
 GameData *initLibGameDataCustom(GameData *game_state, unsigned int seed);
 GameData *initLibGameDataScratch(unsigned int seed);
 GameData *cloneLibGameData(GameData *game_state_src);
-void      freeLibGameData(GameData *game_data);
+GameData *freeLibGameData(GameData *game_data);
 int       processLibAction(GameData *game, int argc, char *argv[], int flags);
 
 void setGameDataLib(GameData *game_data);

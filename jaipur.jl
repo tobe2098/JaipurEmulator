@@ -119,6 +119,23 @@ const LOGIC_ERROR_FLAG      =1 << 25
 const ONLY_PRINT_MARKET     =1 << 26
 const PLAYER_A_WINS         =1 << 27
 
+#Actions
+const EXCHANGE_STR="-e"
+const TAKE_GOOD_STR="-t"
+const SELL_GOOD_STR="-s"
+const TAKE_CAMELS_STR="-c"
+
+#Card strings
+const DIAMOND_STR="d"
+const GOLD_STR="g"
+const SILVER_STR="s"
+const SPICE_STR="p"
+const CLOTH_STR="h"
+const LEATHER_STR="l"
+const CAMELS_STR="c"
+
+
+
 #Define the data struct for the library
 struct PlayerScore 
   points::Cint
@@ -206,23 +223,47 @@ function clone_game_data(game_ptr::Ptr{GameData})::Ptr{GameData}
     return output_ptr
 end
 
-function process_game_action(game_ptr::Ptr{GameData}, argv::Vector{String},error_flag::Cint)::Cint
+function process_game_action(game_ptr::Ptr{GameData}, argv::Vector{String},error_print::Bool)::Cint
     #Function wrapper to perform actions in the game
     #It returns an int with flag bits set. Look in the constants for checking
+    if game_ptr == C_NULL # Could not allocate memory
+        throw(UndefVarError("`game_ptr` not properly allocated GameData"))
+    end
+    #The function assumes that a non-null pointer is a correctly allocated GameData
+    error_flag=0
+    if error_print
+        error_flag=ERROR_PRINTING_FLAG
+    end
     pushfirst!(argv,"jaipur")
     return @ccall libname.processLibAction(game_ptr::Ptr{GameData},length(argv)::Cint,argv::Ptr{Ptr{UInt8}},error_flag::Cint)::Cint
 end
 
 function reset_game(game_ptr::Ptr{GameData},seed::Int64=0)::Cvoid
     #Restart the game from scratch with the given seed (or random if seed is 0)
+    if game_ptr == C_NULL # Could not allocate memory
+        throw(UndefVarError("`game_ptr` not properly allocated GameData"))
+    end
+    #The function assumes that a non-null pointer is a correctly allocated GameData
     return  @ccall libname.startGame(game_ptr::Ptr{GameData},seed::Cuint)::Cvoid
 end
 
 function reset_round(game_ptr::Ptr{GameData},seed::Int64=0)::Cvoid
+    if game_ptr == C_NULL # Could not allocate memory
+        throw(UndefVarError("`game_ptr` not properly allocated GameData"))
+    end
+    #The function assumes that a non-null pointer is a correctly allocated GameData
     #Same as reset_game, but seals are kept between rounds, and the turn is determined by the non-winning player
     return  @ccall libname.startNextRound(game_ptr::Ptr{GameData},seed::Cuint)::Cvoid
 end
 
+function give_rewards(game_ptr::Ptr{GameData},flags::Cint)::Cvoid
+    #Same as reset_game, but seals are kept between rounds, and the turn is determined by the non-winning player
+    if game_ptr == C_NULL # Could not allocate memory
+        throw(UndefVarError("`game_ptr` not properly allocated GameData"))
+    end
+    #The function assumes that a non-null pointer is a correctly allocated GameData
+    return  @ccall libname.giveRewards(game_ptr::Ptr{GameData},flags::Cint)::Cvoid
+end
 
 function is_round_over(flag::Int32)::Bool
     return flag&ROUND_OVER !=0
@@ -238,13 +279,31 @@ function did_player_A_win(flag::Int32)::Bool
 end
 
 
-function round_management(game_ptr::Ptr{GameData})::Cvoid
-    return ccall(freeGameData, Cvoid, (Ptr{GameData},),game_ptr)
+function round_management(game_ptr::Ptr{GameData},flags::Cint)::Cvoid
+    if is_round_over(flags)
+        if is_game_over(flags)
+            print("The game is over,")
+            reset_game(game_ptr)
+        else
+            print("The round is over, ")
+            give_rewards(game_ptr,flags)
+            reset_round(game_ptr)
+        end
+        if did_player_A_win(flags)
+            print("player A won!\n")
+        else
+            print("player B won!\n")
+        end
+    end
 end
 
 
-function free_game_data(game_ptr::Ptr{GameData})::Cvoid
-    return ccall(freeGameData, Cvoid, (Ptr{GameData},),game_ptr)
+function free_game_data(game_ptr::Ptr{GameData})::Ptr{GameData}
+    if game_ptr == C_NULL # Could not allocate memory
+        throw(UndefVarError("`game_ptr` not properly allocated GameData"))
+    end
+    #The function assumes that a non-null pointer is a correctly allocated GameData
+    return  @ccall libname.freeLibGameData(game_ptr::Ptr{GameData})::Ptr{GameData}
 end
 
 function print_set_bit_positions(n::Cint)
@@ -274,7 +333,7 @@ hand_card="l"
 market_card="p"
 action_arr=[action,hand_card,market_card]
 
-flag=process_game_action2(game_data_ptr, action_arr,Cint(ERROR_PRINTING_FLAG))
+flag=process_game_action(game_data_ptr, action_arr,true)
 # game_data = unsafe_load(game_data_ptr)
 game_data = unsafe_load(game_data_ptr)
 println(game_data.seed)
@@ -283,6 +342,10 @@ flag_str=bitstring(flag)
 println("Flag: $flag_str")
 print_set_bit_positions(flag)
 # println(unsafe_load(game_data_ptr::Ptr{Cint},1))
-free_game_data(game_data_ptr)
-
+# ref=Ref{Ptr{GameData}}(game_data_ptr)
+# ptr=Base.unsafe_convert(Ptr{Ptr{GameData}},ref)
+# println(unsafe_load(ptr))
+game_data_ptr=free_game_data(game_data_ptr)
+println(game_data_ptr)
+# println(unsafe_load(ptr))
 # Libdl.dlclose(library)

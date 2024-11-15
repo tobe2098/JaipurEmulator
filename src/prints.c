@@ -212,14 +212,13 @@ void printHelp() {
   printf("  --rules||-u                    Show the game's rules\n");
   printf("  --reset||-r                    Restart the game from scratch\n");
   // printf("  --state   -s                    Print the current state of the game. Default argument.\n");
-  printf("  --take||-t  <market-card>      Example: -t g\n");
+  printf("  --take||-t  <market-card>    |  Example: -t g\n");
   printf("    > Take a card from the market. The market draws a card from the deck. Camels not allowed.\n\n");
-  printf("  --camels||c                    Example: -c 3\n");
+  printf("  --camels||c                  |  Example: -c 3\n");
   printf("    >Take all camels from the market. The market draws as many cards\n\n");
-  printf("  --sell <card-type> <value>     Example: --sell d 3\n");
+  printf("  --sell <card-type> <value>   |  Example: --sell d 3\n");
   printf("    >Sell a number of goods of the specified type. Earn points from them.\n\n");
-  printf("  --exchange||-e <hand-cards> <camels> <market-cards> \n");
-  printf("                                 Example: -e dg 1 ppp\n");
+  printf("  --exchange||-e <hand-cards> <camels> <market-cards> | Example: -e dg 1 ppp\n");
   printf("    >Change cards in hand and camels for cards in market. Number has to be equal.\n\n");
   printf("Card types and their respective characters:\n");
   printf("Diamonds: [%c], golds: [%c], Silvers: [%c], Spice: [%c], Cloth: [%c], Leather: [%c], Camels: [%c]\n", DIAMOND_CHAR, GOLD_CHAR,
