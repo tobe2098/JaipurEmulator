@@ -21,7 +21,7 @@ if isfile(library_name)
         println("Failed to load library.")
     else
         println("Library loaded successfully.")
-        println("Testing the dynamic library...")
+        print("Testing the dynamic library linking...")
 
         local c_array = Vector{Cint}(undef, 7)
         local test_result=0
@@ -32,11 +32,10 @@ if isfile(library_name)
 
         sumOfCardsGroup_func = Libdl.dlsym(library, :sumOfCardsGroup)
         result = test_result==ccall(sumOfCardsGroup_func, Cint, (Ptr{Cint}, Cint), c_array, 0)
-        if result
-            println("The test passed.")
-        else
-            println("The test failed.")
+        if  !result
+            error("The test of the dynamic library failed")
         end
+        print("OK\n")
     end
 else
     error("Library not found at $library_name")
@@ -82,42 +81,39 @@ const cloths=4+1#Julia indexing is 1-based
 const leather=5+1#Julia indexing is 1-based
 const camels=6+1#Julia indexing is 1-based
 
+const PLAYER_A_NUM =0
+const PLAYER_B_NUM =1
+
 #Info/data flags
 
-const DATA_WAS_INIT          =1 << 0 
-const TURN_HAPPENED_FLAG     =1 << 1
-
-const DATA_NOT_INIT_FLAG     =1 << 2
-const TOO_FEW_ARGS_FLAG      =1 << 3
-const ERROR_PRINTING_FLAG    =1 << 4
-const TOO_MANY_C_MARKET_FLAG =1 << 5
-const TOO_MANY_C_HAND_FLAG   =1 << 6
-
-
-const TOO_FEW_C_MARKET_FLAG =1 << 7  
-const TOO_FEW_C_HAND_FLAG   =1 << 8  
-const ARGS_MISS_MATCH_FLAG  =1 << 9   
-const ARG_OVERFLOW_FLAG     =1 << 10  
-
-const NOT_ALLOWED_FLAG      =1 << 11
-const MISSING_CARD_FLAG     =1 << 12
-const MIXING_GOODS_CAMELS   =1 << 13
-const DATA_CORRUPTED_FLAG   =1 << 14
-const DATA_OKAY_FLAG        =1 << 15
-const DRAW_FLAG             =1 << 16
-
-const NO_CAMELS             =1 << 17
-const GAME_OVER             =1 << 18
-const ROUND_OVER            =1 << 19
-const NO_GAME_PRINT_FLAG    =1 << 20
-const TOO_FEW_CARDS_SALE    =1 << 21
-
-const CANNOT_SELL_CAMELS    =1 << 22
-const ONLY_PRINT_HAND       =1 << 23
-const CARD_DOES_NOT_EXIST   =1 << 24
-const LOGIC_ERROR_FLAG      =1 << 25
-const ONLY_PRINT_MARKET     =1 << 26
-const PLAYER_A_WINS         =1 << 27
+const DATA_WAS_INIT::Cint          =1 << 0 
+const TURN_HAPPENED_FLAG::Cint     =1 << 1
+const DATA_NOT_INIT_FLAG::Cint     =1 << 2
+const TOO_FEW_ARGS_FLAG::Cint      =1 << 3
+const ERROR_PRINTING_FLAG::Cint    =1 << 4
+const TOO_MANY_C_MARKET_FLAG::Cint =1 << 5
+const TOO_MANY_C_HAND_FLAG::Cint   =1 << 6
+const TOO_FEW_C_MARKET_FLAG::Cint  =1 << 7  
+const TOO_FEW_C_HAND_FLAG::Cint    =1 << 8  
+const ARGS_MISS_MATCH_FLAG::Cint   =1 << 9   
+const ARG_OVERFLOW_FLAG::Cint      =1 << 10  
+const NOT_ALLOWED_FLAG::Cint       =1 << 11
+const MISSING_CARD_FLAG::Cint      =1 << 12
+const MIXING_GOODS_CAMELS::Cint    =1 << 13
+const DATA_CORRUPTED_FLAG::Cint    =1 << 14
+const DATA_OKAY_FLAG::Cint         =1 << 15
+const DRAW_FLAG::Cint              =1 << 16
+const NO_CAMELS::Cint              =1 << 17
+const GAME_OVER::Cint              =1 << 18
+const ROUND_OVER::Cint             =1 << 19
+const NO_GAME_PRINT_FLAG::Cint     =1 << 20
+const TOO_FEW_CARDS_SALE::Cint     =1 << 21
+const CANNOT_SELL_CAMELS::Cint     =1 << 22
+const ONLY_PRINT_HAND::Cint        =1 << 23
+const CARD_DOES_NOT_EXIST::Cint    =1 << 24
+const LOGIC_ERROR_FLAG::Cint       =1 << 25
+const ONLY_PRINT_MARKET::Cint      =1 << 26
+const PLAYER_A_WINS::Cint          =1 << 27
 
 #Actions
 const EXCHANGE_STR="-e"
@@ -278,74 +274,265 @@ function did_player_A_win(flag::Int32)::Bool
     return flag&PLAYER_A_WINS !=0
 end
 
+function game_over_print()
+    print("The game is over, ")
+end
 
-function round_management(game_ptr::Ptr{GameData},flags::Cint)::Cvoid
+function round_over_print()
+    print("The round is over, ")
+end
+
+function player_A_wins()
+    print("player A won!\n")
+end
+
+function player_B_wins()
+    print("player B won!\n")
+end
+
+function round_management(game_ptr::Ptr{GameData},flags::Cint, round_print::Function=round_over_print,game_print::Function=game_over_print,player_A_p::Function=player_A_wins,player_B_p::Function=player_B_wins)::Cvoid
+    #This will automatically handle round and game finishing
     if is_round_over(flags)
         if is_game_over(flags)
-            print("The game is over,")
+            game_print()
             reset_game(game_ptr)
         else
-            print("The round is over, ")
+            round_print()
             give_rewards(game_ptr,flags)
             reset_round(game_ptr)
         end
         if did_player_A_win(flags)
-            print("player A won!\n")
+            player_A_p()
         else
-            print("player B won!\n")
+            player_B_p()
         end
     end
 end
 
 
 function free_game_data(game_ptr::Ptr{GameData})::Ptr{GameData}
-    if game_ptr == C_NULL # Could not allocate memory
+    # To free
+    if game_ptr == C_NULL # Memory was not allocated or already freed
         throw(UndefVarError("`game_ptr` not properly allocated GameData"))
     end
-    #The function assumes that a non-null pointer is a correctly allocated GameData
+    #The function assumes that a non-null pointer is a C-allocated pointer
+    #Returns the null pointer to reassign to your pointer
     return  @ccall libname.freeLibGameData(game_ptr::Ptr{GameData})::Ptr{GameData}
 end
 
-function print_set_bit_positions(n::Cint)
+function flag_set_bit_positions(flag::Cint)
+    flag_str=bitstring(flag)
+    println("Flag: $flag_str")
+    # For debugging
     positions = []  # Array to store positions of set bits
     pos = 0         # Bit position counter
 
-    while n > 0
-        if n & 1 == 1
+    while flag > 0
+        if flag & 1 == 1
             push!(positions, pos)  # Record the position if bit is set
         end
-        n >>= 1      # Shift bits to the right
+        flag >>= 1      # Shift bits to the right
         pos += 1     # Increment position counter
     end
 
-    println("Set bit positions: ", positions)
+    println("Flag bit positions: ", positions)
 end
-
-#Tests
+function flag_identifiers(flag::Cint)
+    if DATA_WAS_INIT&flag>0
+        println("Data was initialized")
+    end 
+    if TURN_HAPPENED_FLAG&flag>0
+        println("Turn happened")
+    end
+    if DATA_NOT_INIT_FLAG&flag>0
+        println("Data was not initialized")
+    end
+    if TOO_FEW_ARGS_FLAG&flag>0
+        println("Too few arguments for the action")
+    end
+    if ERROR_PRINTING_FLAG&flag>0
+        println("Printing errors flag")
+    end
+    if TOO_MANY_C_MARKET_FLAG&flag>0
+        println("Too many cards in the market")
+    end
+    if TOO_MANY_C_HAND_FLAG&flag>0
+        println("Too many cards in hand")
+    end
+    if TOO_FEW_C_MARKET_FLAG&flag>0
+        println("Too few cards in the market")
+    end 
+    if TOO_FEW_C_HAND_FLAG&flag>0
+        println("Too few cards in hand")
+    end 
+    if ARGS_MISS_MATCH_FLAG&flag>0
+        println("Number of exchanged cards does not match")
+    end  
+    if ARG_OVERFLOW_FLAG&flag>0
+        println("Cannot use more than 5 cards for exchanges")
+    end  
+    if NOT_ALLOWED_FLAG&flag>0
+        println("The action is not allowed")
+    end
+    if MISSING_CARD_FLAG&flag>0
+        println("The market does not have that card")
+    end
+    if MIXING_GOODS_CAMELS&flag>0
+        println("You cannot trade cards for camels")
+    end
+    if DATA_CORRUPTED_FLAG&flag>0
+        println("The data is corrupt, does not conform to boundaries")
+    end
+    if DATA_OKAY_FLAG&flag>0
+        println("The data is okay")
+    end
+    if DRAW_FLAG&flag>0
+        println("The round was drawn")
+    end
+    if NO_CAMELS&flag>0
+        println("There are no camels in the market")
+    end
+    if GAME_OVER&flag>0
+        println("The game is over")
+    end
+    if ROUND_OVER&flag>0
+        println("The round is over")
+    end
+    if NO_GAME_PRINT_FLAG&flag>0
+        println("Do not print the game state (ignore this)")
+    end
+    if TOO_FEW_CARDS_SALE&flag>0
+        println("Cannot sell less than 1 card")
+    end
+    if CANNOT_SELL_CAMELS&flag>0
+        println("Cannot sell camels")
+    end
+    if ONLY_PRINT_HAND&flag>0
+        println("Print only the hand (ignore this)")
+    end
+    if CARD_DOES_NOT_EXIST&flag>0
+        println("Card does not exist")
+    end
+    if ONLY_PRINT_MARKET&flag>0
+        println("Print only the market (ignore this)")
+    end
+    if PLAYER_A_WINS&flag>0
+        println("Player A won, if not player B won. Only interpret if round over.")
+    end 
+end
+# Tests for the library's functionality
+# println("Testing the library's functionality...")
+## Test the pointer is allocated
+print("Testing pointer allocation...")
 game_data_ptr=create_game_data(Cuint(42))
-
-# Convert the pointer to a Julia struct
 if game_data_ptr == C_NULL
-    error("Failed to allocate GameData struct")
+    error("Failed to allocate GameData struct in the library test")
 end
-action="-e"
-hand_card="l"
-market_card="p"
-action_arr=[action,hand_card,market_card]
-
-flag=process_game_action(game_data_ptr, action_arr,true)
-# game_data = unsafe_load(game_data_ptr)
+print("OK\n")
+## Test loading the data into Julia struct
+print("Testing unsafe_load'ing...")
 game_data = unsafe_load(game_data_ptr)
-println(game_data.seed)
-println("game_data: $game_data")
-flag_str=bitstring(flag)
-println("Flag: $flag_str")
-print_set_bit_positions(flag)
+if game_data.seed!=Cuint(42) || game_data.init!=1
+    error("The data was not properly unsafe_load'ed into Julia")
+end
+print("OK\n")
+## Test the data was properly initialized
+print("Testing data initialization...")
+flag=process_game_action(game_data_ptr, String[],true)
+game_data = unsafe_load(game_data_ptr)
+if flag&DATA_OKAY_FLAG==0 || game_data.seed!=Cuint(42)
+    # flag_identifiers(flag)
+    error("The data was not properly initialized in the library test")
+end
+print("OK\n")
+
+## Test the exchange function works
+print("Testing exchange action...")
+action=EXCHANGE_STR
+hand_card=LEATHER_STR
+market_card=SPICE_STR
+action_arr=[action,hand_card,market_card]
+flag=process_game_action(game_data_ptr, action_arr,true)
+game_data = unsafe_load(game_data_ptr)
+if  flag&DATA_OKAY_FLAG==0||flag&TURN_HAPPENED_FLAG ==0||game_data.hand_plB[spices]!=Cint(2)
+    # flag_identifiers(flag)
+    error("The exchange action test failed in the library test")
+end
+print("OK\n")
+## Test the take camels function works
+print("Testing take all camels action...")
+action=TAKE_CAMELS_STR
+action_arr=[action]
+flag=process_game_action(game_data_ptr, action_arr,true)
+game_data = unsafe_load(game_data_ptr)
+if  flag&DATA_OKAY_FLAG==0||flag&TURN_HAPPENED_FLAG ==0 || game_data.hand_plA[camels]!=Cint(3)
+    # flag_identifiers(flag)
+    error("The take all camels action test failed in the library test")
+end
+print("OK\n")
+
+## Test the take goods function works
+print("Testing take single good action...")
+action=TAKE_GOOD_STR
+market_card=DIAMOND_STR
+action_arr=[action,market_card]
+flag=process_game_action(game_data_ptr, action_arr,true)
+game_data = unsafe_load(game_data_ptr)
+if  flag&DATA_OKAY_FLAG==0||flag&TURN_HAPPENED_FLAG ==0||game_data.hand_plB[diamonds]!=Cint(2)
+    flag_identifiers(flag)
+    error("The take single good action test failed in the library test")
+end
+print("OK\n")
+
+## Test the sell goods function works
+print("Testing sell goods action...")
+action=SELL_GOOD_STR
+hand_card=LEATHER_STR
+number_of_sold_cards=string(2)
+action_arr=[action,hand_card,number_of_sold_cards]
+flag=process_game_action(game_data_ptr, action_arr,true)
+game_data = unsafe_load(game_data_ptr)
+if  flag&DATA_OKAY_FLAG==0||flag&TURN_HAPPENED_FLAG ==0 || game_data.playerA.points!=Cint(7)
+    flag_identifiers(flag)
+    error("The sell goods action test failed in the library test")
+end
+print("OK\n")
+
+# println("game_data: $game_data")
+
+## Test round management
+print("Testing round over state...")
+flag|=ROUND_OVER
+round_management(game_data_ptr, flag,() -> nothing,() -> nothing,() -> nothing,() -> nothing)
+game_data=unsafe_load(game_data_ptr)
+if game_data.turn_of!=PLAYER_A_NUM || game_data.playerB.seals!=1 
+    error("The test of round over failed in the library test")
+end
+print("OK\n")
+
+print("Testing game over state...")
+flag|=ROUND_OVER
+flag|=GAME_OVER
+flag|=PLAYER_A_WINS
+round_management(game_data_ptr, flag,() -> nothing,() -> nothing,() -> nothing,() -> nothing)
+game_data=unsafe_load(game_data_ptr)
+if  game_data.playerB.seals!=0 
+    error("The test of round over failed in the library test")
+end
+print("OK\n")
+
+# flag_set_bit_positions(flag)
 # println(unsafe_load(game_data_ptr::Ptr{Cint},1))
 # ref=Ref{Ptr{GameData}}(game_data_ptr)
 # ptr=Base.unsafe_convert(Ptr{Ptr{GameData}},ref)
 # println(unsafe_load(ptr))
+# println(unsafe_load(game_data_ptr).turn_of)
+print("Testing pointer freeing...")
 game_data_ptr=free_game_data(game_data_ptr)
-println(game_data_ptr)
+if game_data_ptr!=C_NULL
+    error("The pointer was not properly freed.")
+end
+print("OK\n")
+println("All the tests passed.")
 # println(unsafe_load(ptr))
 # Libdl.dlclose(library)
