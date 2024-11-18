@@ -243,8 +243,11 @@ int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
         used_cards[card_idx] > no_cards_lookup_table[card_idx] || used_cards[card_idx] < 0) {
       return DATA_CORRUPTED_FLAG;
     }
-    if (!((state->good_tks[card_idx] == 0 && used_cards[card_idx] >= good_tokens[card_idx].size) ||
-          used_cards[card_idx] == good_tokens[card_idx].size - state->good_tks[card_idx])) {
+    // if (!((state->good_tks[card_idx] == 0 && used_cards[card_idx] >= good_tokens[card_idx].size) ||
+    //       used_cards[card_idx] == good_tokens[card_idx].size - state->good_tks[card_idx])) {
+    //   return DATA_CORRUPTED_FLAG;
+    // }
+    if ((good_tokens[card_idx].size - state->good_tks[card_idx]) + used_cards[card_idx] > no_cards_lookup_table[card_idx]) {
       return DATA_CORRUPTED_FLAG;
     }
     total_tokens += good_tokens[card_idx].size - state->good_tks[card_idx];

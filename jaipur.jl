@@ -99,8 +99,8 @@ struct PlayerScore
 end
 
 struct  GameData 
-    init::Cint #State
-    seed::Cuint #Secret
+    init::Cint 
+    seed::Cuint 
     turn_of::Cint #State
     
     market::NTuple{CARD_GROUP_SIZE,Cint} #State
