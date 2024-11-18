@@ -247,7 +247,9 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 #ifndef DEBUG
-  system("reset");
+#ifdef CLEAR_SCREEN
+  system("clear");
+#endif
 #endif
   GameData game = {};
   // game.was_initialized = 0;
@@ -267,7 +269,9 @@ int main(int argc, char *argv[]) {
       flags |= updateMarket(&game);
       flags |= endingChecks(&game, flags);
     }
-    if (flags & GAME_OVER) {
+    if (flags & RESET_GAME_FLAG) {
+      startGame(&game, 0);
+    } else if (flags & GAME_OVER) {
       gameOverPrint(&(game.playerA), &(game.playerB));
       printf("<Action> Press Enter to start a new game...\n");
       while (getchar() != '\n');
@@ -287,9 +291,7 @@ int main(int argc, char *argv[]) {
     while (getchar() != '\n');
     game.was_initialized = 0;
     startGame(&game, 0);
-  }
-  (void)printErrors(flags);
-  if (flags & ONLY_PRINT_HAND) {
+  } else if (flags & ONLY_PRINT_HAND) {
     printf("Here is your HAND again:\n");
     printCardGroup(getActivePlayerHand(&game), FALSE);
   } else if (flags & ONLY_PRINT_MARKET) {
@@ -298,6 +300,7 @@ int main(int argc, char *argv[]) {
   } else if (!(flags & NO_GAME_PRINT_FLAG)) {
     gameStatePrint(&game);
   }
+  (void)printErrors(flags);
   // All prints have to be handed here, in console
   // Save the updated state back to the JSON file
   saveGameData(&game);

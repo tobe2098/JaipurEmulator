@@ -41,9 +41,9 @@ INCLUDES := -I$(SRC_DIR) -Iinclude # Include directories
 # Debug flags
 DEBUG_FLAGS := -DDEBUG -g3 -O0
 
-RELEASE_FLAGS := -O3 -march=native #Remove architecture for the general binaries
+RELEASE_FLAGS := -O3 -march=native -DCLEAR_SCREEN #Remove architecture for the general binaries
 
-SHARED_LIB_FLAGS_OBJ := $(RELEASE_FLAGS)
+SHARED_LIB_FLAGS_OBJ := $(RELEASE_FLAGS) -DLIBRARY
 SHARED_LIB_FLAGS += $(RELEASE_FLAGS)
 # Library name and files
 EXE_BASE := jaipur

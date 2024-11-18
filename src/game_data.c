@@ -413,13 +413,15 @@ int processAction(GameData *game, int argc, char *argv[]) {
     //   // } else { // Redundant
     //   //   return return_code;
     // }
+#ifndef LIBRARY
   } else if (strncmp(argv[arg_ptr], "--state", strlen("--state")) == 0 || strncmp(argv[arg_ptr], "-S", strlen("-S")) == 0) {
     // gameStatePrint(game);
     return 0;
   } else if (strncmp(argv[arg_ptr], "--reset", strlen("--reset")) == 0 || strncmp(argv[arg_ptr], "-r", strlen("-r")) == 0) {
     game->was_initialized = 0;
     // startGame(game);
-    return GAME_OVER;
+    return RESET_GAME_FLAG;
+#endif
   } else {
     printf("Unknown command: %s\n", argv[arg_ptr]);
     return NO_GAME_PRINT_FLAG;
