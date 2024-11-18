@@ -42,7 +42,7 @@ else
     error("Library not found at $library_name")
 end
 print("Testing pointer allocation...")
-game_data_ptr=create_game_data(Cuint(42))
+game_data_ptr=create_game_data(42)
 if game_data_ptr == C_NULL
     error("Failed to allocate GameData struct in the library test")
 end
@@ -67,12 +67,12 @@ print("OK\n")
 ## Test the exchange function works
 print("Testing exchange action...")
 action=EXCHANGE_STR
-hand_card=LEATHER_STR
-market_card=SPICE_STR
+hand_card=LEATHER_STR*DIAMOND_STR
+market_card=SPICE_STR*LEATHER_STR
 action_arr=[action,hand_card,market_card]
 flag=process_game_action(game_data_ptr, action_arr,true)
 game_data = unsafe_load(game_data_ptr)
-if  flag&DATA_OKAY_FLAG==0||flag&TURN_HAPPENED_FLAG ==0||game_data.hand_plB[spices]!=Cint(2)
+if  flag&DATA_OKAY_FLAG==0||flag&TURN_HAPPENED_FLAG ==0||game_data.hand_plB[spices]!=Cint(2)||game_data.hand_plB[leather]!=Cint(1)||game_data.hand_plB[diamonds]!=Cint(0)
     # flag_identifiers(flag)
     error("The exchange action test failed in the library test")
 end
@@ -96,7 +96,7 @@ market_card=DIAMOND_STR
 action_arr=[action,market_card]
 flag=process_game_action(game_data_ptr, action_arr,true)
 game_data = unsafe_load(game_data_ptr)
-if  flag&DATA_OKAY_FLAG==0||flag&TURN_HAPPENED_FLAG ==0||game_data.hand_plB[diamonds]!=Cint(2)
+if  flag&DATA_OKAY_FLAG==0||flag&TURN_HAPPENED_FLAG ==0||game_data.hand_plB[diamonds]!=Cint(1)
     flag_identifiers(flag)
     error("The take single good action test failed in the library test")
 end
@@ -110,7 +110,7 @@ number_of_sold_cards=string(2)
 action_arr=[action,hand_card,number_of_sold_cards]
 flag=process_game_action(game_data_ptr, action_arr,true)
 game_data = unsafe_load(game_data_ptr)
-if  flag&DATA_OKAY_FLAG==0||flag&TURN_HAPPENED_FLAG ==0 || game_data.playerA.points!=Cint(7)
+if  flag&DATA_OKAY_FLAG==0||flag&TURN_HAPPENED_FLAG ==0 || game_data.playerA.points!=Cint(7)||game_data.hand_plB[leather]!=Cint(1)
     flag_identifiers(flag)
     error("The sell goods action test failed in the library test")
 end
@@ -121,7 +121,7 @@ print("OK\n")
 ## Test round management
 print("Testing round over state...")
 flag|=ROUND_OVER
-round_management(game_data_ptr, flag,() -> nothing,() -> nothing,() -> nothing,() -> nothing)
+auto_round_management(game_data_ptr, flag,() -> nothing,() -> nothing,() -> nothing,() -> nothing)
 game_data=unsafe_load(game_data_ptr)
 if game_data.turn_of!=PLAYER_A_NUM || game_data.playerB.seals!=1 
     error("The test of round over failed in the library test")
@@ -132,7 +132,7 @@ print("Testing game over state...")
 flag|=ROUND_OVER
 flag|=GAME_OVER
 flag|=PLAYER_A_WINS
-round_management(game_data_ptr, flag,() -> nothing,() -> nothing,() -> nothing,() -> nothing)
+auto_round_management(game_data_ptr, flag,() -> nothing,() -> nothing,() -> nothing,() -> nothing)
 game_data=unsafe_load(game_data_ptr)
 if  game_data.playerB.seals!=0 
     error("The test of round over failed in the library test")

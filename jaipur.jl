@@ -1,4 +1,43 @@
+import .Sys
+import Libdl
 #Constants
+libname = "libjaipur"
+
+if Sys.iswindows()
+    library_name=libname*".dll"
+    library_name = joinpath("bin", library_name)
+elseif Sys.islinux()
+    library_name = "./bin/libjaipur.so"
+else
+    library_name = "./bin/libjaipur.dylib"
+end
+
+# Check if the library file exists and try to load it
+if isfile(library_name)
+    # println("File exists at $libname")
+    global library = Libdl.dlopen_e(library_name)
+    if library == C_NULL
+        println("Library is not there.")
+    else
+        # println("Library loaded successfully.")
+        # print("Testing the dynamic library linking...")
+
+        local c_array = Vector{Cint}(undef, 7)
+        local test_result=0
+        for i in 1:7
+            c_array[i] = i
+            test_result+=i
+        end
+
+        sumOfCardsGroup_func = Libdl.dlsym(library, :sumOfCardsGroup)
+        result = test_result==ccall(sumOfCardsGroup_func, Cint, (Ptr{Cint}, Cint), c_array, 0)
+        if  !result
+            error("Something went wrong with the library")
+        end
+    end
+else
+    error("Library not found at $library_name")
+end
 # Define the necessary constants
 const TRUE =1
 const FALSE =0
@@ -93,8 +132,8 @@ const CAMELS_STR="c"
 #Define the data structs for the library
 struct PlayerScore 
   points::Cint
-  no_bonus_tokens::Cint
-  no_goods_tokens::Cint
+  no_bonus_tokens::Cint #State
+  no_goods_tokens::Cint #State
   seals::Cint
 end
 
@@ -110,16 +149,16 @@ struct  GameData
     playerA::PlayerScore #State
     playerB::PlayerScore #State
     
-    good_tk_ptrs::NTuple{GOOD_TYPES,Cint} #State
+    good_tk_ptrs::NTuple{GOOD_TYPES,Cint}
     
-    bonus_tk_ptrs::NTuple{BONUS_TOKEN_TYPES,Cint} #State
+    bonus_tk_ptrs::NTuple{BONUS_TOKEN_TYPES,Cint} 
     bonus_tk_arrays::NTuple{BONUS_TOKEN_TYPES, NTuple{MAX_BONUS_TOKENS, Cint}}#Secret
 
-    deck_ptr::Cint #State
+    deck_ptr::Cint 
     deck::NTuple{DECK_SIZE,Cchar}#Secret
+    cards_in_deck::Cint
     
     #This are input vars only
-    cards_in_deck::Cint #State
     good_tks::NTuple{GOOD_TYPES,Cint} #State
     bonus_tks::NTuple{BONUS_TOKEN_TYPES,Cint} #State
     bonus_used::NTuple{BONUS_TOKENS_DATA_ARRAY,Cint} #State
@@ -127,7 +166,7 @@ end
 
 @assert(Core.sizeof(GameData)==368)
 
-function create_game_data(seed::Cuint=Cuint(0))::Ptr{GameData}
+function create_game_data(seed::Int64=0)::Ptr{GameData}
     #Function wrapper to create a random game.
     #All allocations in the library are currently handled by malloc()
     #Seed=0 will give you a random seed
@@ -159,14 +198,14 @@ function clone_game_data(game_ptr::Ptr{GameData})::Ptr{GameData}
     return output_ptr
 end
 
-function process_game_action(game_ptr::Ptr{GameData}, argv::Vector{String},error_print::Bool)::Cint
+function process_game_action(game_ptr::Ptr{GameData}, argv::Vector{String},error_print::Bool=false)::Cint
     #Function wrapper to perform actions in the game
     #It returns an int with flag bits set. Look in the constants for checking
     if game_ptr == C_NULL # Could not allocate memory
         throw(UndefVarError("`game_ptr` not properly allocated GameData"))
     end
     #The function assumes that a non-null pointer is a correctly allocated GameData
-    error_flag=0
+    error_flag=Cint(0)
     if error_print
         error_flag=ERROR_PRINTING_FLAG
     end
@@ -230,7 +269,7 @@ function player_B_wins()
     print("player B won!\n")
 end
 
-function round_management(game_ptr::Ptr{GameData},flags::Cint, round_print::Function=round_over_print,game_print::Function=game_over_print,player_A_p::Function=player_A_wins,player_B_p::Function=player_B_wins)::Cvoid
+function auto_round_management(game_ptr::Ptr{GameData},flags::Cint, round_print::Function=round_over_print,game_print::Function=game_over_print,player_A_p::Function=player_A_wins,player_B_p::Function=player_B_wins)::Cvoid
     #This will automatically handle round and game finishing
     if is_round_over(flags)
         if is_game_over(flags)

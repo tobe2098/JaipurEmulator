@@ -17,6 +17,7 @@ void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]) {
       no_cards--;
     }
   }
+  game->deck_ptr = arr_ptr;
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
     int no_cards = no_cards_lookup_table[(int)card_type] - cards_used[(int)card_type];
     while (no_cards) {
@@ -233,14 +234,17 @@ int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
   // Points are left undone for now
   // It cannot be calculated whether the players
   if (state->playerA.seals > SEALS_TO_WIN || state->playerA.seals < 0 || state->playerB.seals > SEALS_TO_WIN || state->playerB.seals < 0) {
-    return DATA_CORRUPTED_FLAG;
-  }
-  if (state->cards_in_deck > DECK_SIZE || state->cards_in_deck <= 0) {
+#ifdef DEBUG
+    printf("Seals\n");
+#endif
     return DATA_CORRUPTED_FLAG;
   }
   for (int card_idx = 0; card_idx < GOOD_TYPES; card_idx++) {
     if (state->good_tks[card_idx] > good_tokens[card_idx].size || state->good_tks[card_idx] < 0 ||
         used_cards[card_idx] > no_cards_lookup_table[card_idx] || used_cards[card_idx] < 0) {
+#ifdef DEBUG
+      printf("Size tokens and cards\n");
+#endif
       return DATA_CORRUPTED_FLAG;
     }
     // if (!((state->good_tks[card_idx] == 0 && used_cards[card_idx] >= good_tokens[card_idx].size) ||
@@ -248,15 +252,24 @@ int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
     //   return DATA_CORRUPTED_FLAG;
     // }
     if ((good_tokens[card_idx].size - state->good_tks[card_idx]) + used_cards[card_idx] > no_cards_lookup_table[card_idx]) {
+#ifdef DEBUG
+      printf("Total cards out of deck exceed the max cards\n");
+#endif
       return DATA_CORRUPTED_FLAG;
     }
     total_tokens += good_tokens[card_idx].size - state->good_tks[card_idx];
   }
   if (total_tokens != state->playerA.no_goods_tokens + state->playerB.no_goods_tokens) {
+#ifdef DEBUG
+    printf("Total tokens is given is not the sum of the tokens of players.\n");
+#endif
     return DATA_CORRUPTED_FLAG;
   }
   for (int barr = 0; barr < BONUS_TOKEN_TYPES; barr++) {
     if (state->bonus_tks[barr] > MAX_BONUS_TOKENS || state->bonus_tks[barr] < 0) {
+#ifdef DEBUG
+      printf("Bonus tokens out of bounds\n");
+#endif
       return DATA_CORRUPTED_FLAG;
     }
     int sum = 0;
@@ -264,14 +277,23 @@ int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
       sum += state->bonus_used[tk];
     }
     if (sum != state->bonus_tk_ptrs[barr] || sum > MAX_BONUS_TOKENS || sum < 0) {
+#ifdef DEBUG
+      printf("Sum of used bonus is not the pointer\n");
+#endif
       return DATA_CORRUPTED_FLAG;
     }
     if (sum != MAX_BONUS_TOKENS - state->bonus_tks[barr]) {
+#ifdef DEBUG
+      printf("Sum does not coincide with the pile\n");
+#endif
       return DATA_CORRUPTED_FLAG;
     }
     total_btokens += sum;
   }
   if (total_btokens != state->playerA.no_bonus_tokens + state->playerB.no_bonus_tokens) {
+#ifdef DEBUG
+    printf("The total of bonus tokens does not coincide with player tokens\n");
+#endif
     return DATA_CORRUPTED_FLAG;
   }
   return DATA_OKAY_FLAG;
@@ -670,13 +692,15 @@ GameData *initLibGameDataCustom(GameData *game_state, unsigned int seed) {
   for (int c_type = 0; c_type < CARD_GROUP_SIZE; c_type++) {
     used_cards[c_type] = game_data->hand_plA[c_type] + game_data->hand_plB[c_type] + game_data->market[c_type];
   }
-  if (!(checkStateIntegrity(game_state, used_cards) == DATA_OKAY_FLAG)) {
+  int integrity = checkStateIntegrity(game_state, used_cards);
+  if (!(integrity == DATA_OKAY_FLAG)) {
     return NULL;
   }
   game_data->was_initialized = 0;
   // initGameData(game_data);
   initGameDataFromState(game_data, seed, used_cards);
   // If the round is finished by the last action, do not reset the state
+  setGameDataLib(game_data);
   return game_data;
 }
 
@@ -685,6 +709,7 @@ GameData *initLibGameDataScratch(unsigned int seed) {
   GameData *game_data = (GameData *)malloc(sizeof(GameData));
   // GameData *game_data = (GameData *)mpalloc(arena, sizeof(GameData));
   startGame(game_data, seed);
+  setGameDataLib(game_data);
   return game_data;
 }
 

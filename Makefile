@@ -23,7 +23,7 @@ else
         SHARED_LIB_FLAGS := -dynamiclib -install_name @rpath/$(LIB_NAME).$(SHARED_LIB_EXT)
     else
         SHARED_LIB_EXT := so
-        SHARED_LIB_FLAGS := -shared
+        SHARED_LIB_FLAGS := -shared -fPIC
     endif
     EXE_EXT :=
     MKDIR = @if [ ! -d "$1" ]; then echo "Creating directory: $1" && mkdir -p "$1"; fi
@@ -33,7 +33,7 @@ endif
 
 # Compiler settings
 CC := gcc
-CFLAGS := -Wall -Wextra -Werror -fPIC
+CFLAGS := -Wall -Wextra -Werror
 
 LDFLAGS :=
 INCLUDES := -I$(SRC_DIR) -Iinclude # Include directories
@@ -41,10 +41,13 @@ INCLUDES := -I$(SRC_DIR) -Iinclude # Include directories
 # Debug flags
 DEBUG_FLAGS := -DDEBUG -g3 -O0
 
-RELEASE_FLAGS := -O3 -march=native -DCLEAR_SCREEN #Remove architecture for the general binaries
+RELEASE_FLAGS := -O3 -march=native #Remove architecture for the general binaries
+SHARED_LIB_FLAGS_OBJ := $(RELEASE_FLAGS) -DLIBRARY #-DDEBUG
 
-SHARED_LIB_FLAGS_OBJ := $(RELEASE_FLAGS) -DLIBRARY
-SHARED_LIB_FLAGS += $(RELEASE_FLAGS)
+RELEASE_FLAGS += -DCLEAR_SCREEN #Remove architecture for the general binaries
+
+# SHARED_LIB_FLAGS_OBJ := $(RELEASE_FLAGS) -DLIBRARY #-DDEBUG
+# SHARED_LIB_FLAGS += $(RELEASE_FLAGS)
 # Library name and files
 EXE_BASE := jaipur
 
@@ -79,7 +82,7 @@ debug: directories $(BIN_DIR)/$(EXE_NAME_DEBUG)
 # release: CFLAGS += $(RELEASE_FLAGS)
 release: directories $(BIN_DIR)/$(EXE_NAME_RELEASE)
 
-lib: CFLAGS += $(SHARED_LIB_FLAGS)
+# lib: CFLAGS += $(SHARED_LIB_FLAGS)
 lib: directories $(BIN_DIR)/$(SHARED_LIB)
 
 print-debug:
