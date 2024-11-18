@@ -1,0 +1,13 @@
+{
+  "init": 1,
+  "seed": 1731872304,
+  "turn_of": "1",
+  "market": [0,0,0,1,0,1,3],
+  "hand_plA": [1,1,1,0,0,1,1],
+  "hand_plB": [0,0,1,1,1,2,0],
+  "playerA": {"bonus tokens": 0,"goods tokens": 0, "points": 0, "seals": 0},
+  "playerB": {"bonus tokens": 0,"goods tokens": 0, "points": 0, "seals": 0},
+  "good_tk_ptrs": [0,0,0,0,0,0],
+  "bonus_tk_ptrs": [0,0,0],
+  "deck_ptr": 12
+}
