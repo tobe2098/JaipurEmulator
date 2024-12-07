@@ -6,7 +6,7 @@
 #define TRUE      1
 #define FALSE     0
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
-
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 // Rules macros
 #define JSON_ELEMENTS           41
 #define FIRST_ARGUMENT_INDEX    1

@@ -505,7 +505,7 @@ int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GRO
   if (card_index == -1) {
     return CARD_DOES_NOT_EXIST | NO_GAME_PRINT_FLAG;
   }
-  int end = min(no_cards + game->good_tk_ptrs[card_index], good_tokens[card_index].size);
+  int end = MIN(no_cards + game->good_tk_ptrs[card_index], good_tokens[card_index].size);
 
   const int *good_array = good_tokens[card_index].tokens;
 
@@ -519,7 +519,7 @@ int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GRO
   if (no_cards <= 2) {
     return TURN_HAPPENED_FLAG;
   }
-  no_cards = min(2, no_cards - 3);
+  no_cards = MIN(2, no_cards - 3);
   if (game->bonus_tk_ptrs[no_cards] < MAX_BONUS_TOKENS) {
     player_score->points += game->bonus_tk_arrays[no_cards][game->bonus_tk_ptrs[no_cards]];
     game->bonus_used[game->bonus_tk_arrays[no_cards][game->bonus_tk_ptrs[no_cards]] - 1]++;

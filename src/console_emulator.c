@@ -248,7 +248,8 @@ int main(int argc, char *argv[]) {
   }
 #ifndef DEBUG
 #ifdef CLEAR_SCREEN
-  system("clear");
+  int ignore = system("clear");
+  (void)ignore;
 #endif
 #endif
   GameData game = {};
@@ -281,7 +282,7 @@ int main(int argc, char *argv[]) {
       printf("<Action> Press Enter to start the next round:\n");
       while (getchar() != '\n');
       startNextRound(&game, 0);
-    } else {
+    } else if (flags & TURN_HAPPENED_FLAG) {
       game.turn_of = (game.turn_of + 1) & 1;
     }
   } else if (flags & DATA_CORRUPTED_FLAG || flags & DATA_NOT_INIT_FLAG) {
@@ -291,7 +292,8 @@ int main(int argc, char *argv[]) {
     while (getchar() != '\n');
     game.was_initialized = 0;
     startGame(&game, 0);
-  } else if (flags & ONLY_PRINT_HAND) {
+  }
+  if (flags & ONLY_PRINT_HAND) {
     printf("Here is your HAND again:\n");
     printCardGroup(getActivePlayerHand(&game), FALSE);
   } else if (flags & ONLY_PRINT_MARKET) {

@@ -42,7 +42,7 @@ INCLUDES := -I$(SRC_DIR) -Iinclude # Include directories
 DEBUG_FLAGS := -DDEBUG -g3 -O0
 
 RELEASE_FLAGS := -O3 -march=native #Remove architecture for the general binaries
-SHARED_LIB_FLAGS_OBJ := $(RELEASE_FLAGS) -DLIBRARY #-DDEBUG
+SHARED_LIB_FLAGS_OBJ := $(RELEASE_FLAGS) $(SHARED_LIB_FLAGS) -DLIBRARY #-DDEBUG
 
 RELEASE_FLAGS += -DCLEAR_SCREEN #Remove architecture for the general binaries
 
