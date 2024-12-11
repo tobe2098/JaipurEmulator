@@ -68,49 +68,49 @@ typedef struct GameData {
 } GameData;  // Possibly 8 byte aligned
 // #pragma pack(pop)
 
-void initDeck(GameData *game);
-void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]);
-void setSeed(GameData *game);
-void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]);
+void initDeck(GameData *restrict game);
+void initDeckCustom(GameData *restrict game, int *restrict cards_used);
+void setSeed(GameData *restrict game);
+void setSeedCustom(GameData *restrict game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int *restrict cards_used);
 
-void initGameData(GameData *game, unsigned int seed);
-int  initRoundGameData(GameData *game, int seed);
-void startRound(GameData *game);
-void startGame(GameData *game, unsigned int seed);
-void startNextRound(GameData *game, int seed);
+void initGameData(GameData *restrict game, unsigned int seed);
+int  initRoundGameData(GameData *restrict game, unsigned int seed);
+void startRound(GameData *restrict game);
+void startGame(GameData *restrict game, unsigned int seed);
+void startNextRound(GameData *restrict game, unsigned int seed);
 
-int checkDataIntegrity(GameData *game);
-int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]);
+int checkDataIntegrity(GameData *restrict game);
+int checkStateIntegrity(GameData *restrict state, int *restrict used_cards);
 
-int computeFinishedGoods(GameData *game);
-int sumOfCardsGroup(int group[CARD_GROUP_SIZE], int not_camels_bool);
+int computeFinishedGoods(GameData *restrict game);
+int sumOfCardsGroup(int *restrict group, int not_camels_bool);
 // int getCardTypeIndex(int group[CARD_GROUP_SIZE],int card_index_input);
 
 // Expecting DATA_IS_OKAY
-int processAction(GameData *game, int argc, char *argv[]);
-int drawCardsFromDeck(int group[CARD_GROUP_SIZE], GameData *game, int cards);
-int updateMarket(GameData *game);
-int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char card);
-int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
-int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_idx, char *market_idx, int hand_idx_len,
+int processAction(GameData *restrict game, int argc, char *restrict argv[]);
+int drawCardsFromDeck(int group[CARD_GROUP_SIZE], GameData *restrict game, int cards);
+int updateMarket(GameData *restrict game);
+int takeCardFromMarket(int *restrict market, int *restrict player_hand, char card);
+int cardSale(GameData *restrict game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards);
+int cardExchange(int *restrict market, int *restrict player_hand, char *restrict hand_idx, char *restrict market_idx, int hand_idx_len,
                  int market_goods_positions_len);
 
 // Also have to be in the Julia lib interface
-int  isGameOver(PlayerScore *playerA, PlayerScore *playerB);
-int  isRoundOver(GameData *game);
-int  endingChecks(GameData *game, int flags);
-int  compRoundWinningPlayer(GameData *game);
-void giveRewards(GameData *game, int flags);
+int  isGameOver(PlayerScore *restrict playerA, PlayerScore *restrict playerB);
+int  isRoundOver(GameData *restrict game);
+int  endingChecks(GameData *restrict game, int flags);
+int  compRoundWinningPlayer(GameData *restrict game);
+void giveRewards(GameData *restrict game, int flags);
 
 // int getMemoryForGames(int number_games);
 
-GameData *initLibGameDataCustom(GameData *game_state, unsigned int seed);
+GameData *initLibGameDataCustom(GameData *restrict game_state, unsigned int seed);
 GameData *initLibGameDataScratch(unsigned int seed);
-GameData *cloneLibGameData(GameData *game_state_src);
-GameData *freeLibGameData(GameData *game_data);
-int       processLibAction(GameData *game, int argc, char *argv[], int flags);
+GameData *cloneLibGameData(GameData *restrict game_state_src);
+GameData *freeLibGameData(GameData *restrict game_data);
+int       processLibAction(GameData *restrict game, int argc, char *restrict argv[], int flags);
 
-void setGameDataLib(GameData *game_data);
-void initGameDataFromState(GameData *game_data_out, unsigned int seed, int used_cards[CARD_GROUP_SIZE]);
+void setGameDataLib(GameData *restrict game_data);
+void initGameDataFromState(GameData *restrict game_data_out, unsigned int seed, int *restrict used_cards);
 
 #endif

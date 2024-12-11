@@ -1,6 +1,6 @@
 #include "prints.h"
 
-void printGoodsTokenArray(char name, const int *array, int size, int cutoff) {
+void printGoodsTokenArray(char name, const int *restrict array, int size, int cutoff) {
   printf("<Goods> Remaining [%c] tokens:  \t", name);
   for (int i = 0; i < size; i++) {
     if (i < cutoff) {
@@ -43,7 +43,7 @@ void printWinner(int player) {
   }
 }
 
-void printCardGroup(int *card_group, int bool_camel) {
+void printCardGroup(int *restrict card_group, int bool_camel) {
   char line_array[5][8][9];
   int  card_counter = 0;
   // char line1[8][11];

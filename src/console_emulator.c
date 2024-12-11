@@ -1,5 +1,5 @@
 #include "console_emulator.h"
-void roundOverPrint(GameData *game) {
+void roundOverPrint(GameData *restrict game) {
   printf("With a score of %i against %i...\n", game->playerA.points, game->playerB.points);
   if (game->playerA.points == game->playerB.points) {
     printf("And a number of bonus tokens of %i against %i...\n", game->playerA.no_bonus_tokens, game->playerB.no_bonus_tokens);
@@ -9,7 +9,7 @@ void roundOverPrint(GameData *game) {
   }
   printNewRoundMessage(((game->turn_of + 1) & 1));
 }
-void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB) {
+void gameOverPrint(PlayerScore *restrict playerA, PlayerScore *restrict playerB) {
   printf("With a score of %i against %i...\n", playerA->points, playerB->points);
   if (playerA->points == playerB->points) {
     printf("And a number of bonus tokens of %i against %i...\n", playerA->no_bonus_tokens, playerB->no_bonus_tokens);
@@ -23,7 +23,7 @@ void gameOverPrint(PlayerScore *playerA, PlayerScore *playerB) {
     printWinningTrophy(PLAYER_B_NUM);
   }
 }
-int loadGameData(GameData *game) {
+int loadGameData(GameData *restrict game) {
   char save_file[MAX_PATH];
   find_data_path(save_file);
   FILE *file = fopen(save_file, "rb");
@@ -98,7 +98,7 @@ int loadGameData(GameData *game) {
   }
   return checkDataIntegrity(game) | DATA_WAS_INIT;
 }
-void saveGameData(const GameData *game) {
+void saveGameData(const GameData *restrict game) {
   char save_file[MAX_PATH];
   find_data_path(save_file);
   FILE *file = fopen(save_file, "wb");
@@ -133,7 +133,7 @@ void saveGameData(const GameData *game) {
   fclose(file);
 }
 
-void dataPrint(const GameData *game) {
+void dataPrint(const GameData *restrict game) {
   printf("{\n");
   printf("  \"init\": %i,\n", game->was_initialized);
   printf("  \"seed\": %i,\n", game->seed);
@@ -157,7 +157,7 @@ void dataPrint(const GameData *game) {
   printf("}\n");
 }
 
-int *getActivePlayerHand(GameData *game) {
+int *getActivePlayerHand(GameData *restrict game) {
   if (game->turn_of == PLAYER_A_NUM) {
     return game->hand_plA;
   } else {
@@ -165,7 +165,7 @@ int *getActivePlayerHand(GameData *game) {
   }
 }
 
-void gameStatePrint(GameData *game) {
+void gameStatePrint(GameData *restrict game) {
 #ifdef DEBUG
   printf("Seed: %u", game->seed);
 #endif

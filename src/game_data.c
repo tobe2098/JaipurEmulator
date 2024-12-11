@@ -1,5 +1,5 @@
 #include "game_data.h"
-void initDeck(GameData *game) {
+void initDeck(GameData *restrict game) {
   int idx = 0;
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
     for (int card_no = 0; card_no < cards_starting_deck_lookup_table[(int)card_type]; card_no++) {
@@ -7,7 +7,7 @@ void initDeck(GameData *game) {
     }
   }
 }
-void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]) {
+void initDeckCustom(GameData *restrict game, int *restrict cards_used) {
   int arr_ptr = 0;
 
   for (int card_type = 0; card_type < CARD_GROUP_SIZE; card_type++) {
@@ -27,7 +27,7 @@ void initDeckCustom(GameData *game, int cards_used[CARD_GROUP_SIZE]) {
   }
 }
 
-void setSeed(GameData *game) {
+void setSeed(GameData *restrict game) {
   if (!game->seed) {
     game->seed = (unsigned int)time(NULL);
   }
@@ -56,7 +56,7 @@ void setSeed(GameData *game) {
 #endif
 }
 
-void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int cards_used[CARD_GROUP_SIZE]) {
+void setSeedCustom(GameData *restrict game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY], int *restrict cards_used) {
   if (!game->seed) {
     game->seed = (unsigned int)time(NULL);
   }
@@ -96,7 +96,7 @@ void setSeedCustom(GameData *game, int bonus_tokens_used[BONUS_TOKENS_DATA_ARRAY
 #endif
 }
 
-void initGameData(GameData *game, unsigned int seed) {
+void initGameData(GameData *restrict game, unsigned int seed) {
   if (game->was_initialized == DATA_WAS_INIT) {
     return;
   }
@@ -107,7 +107,7 @@ void initGameData(GameData *game, unsigned int seed) {
   game->turn_of         = (rand() & 1);
   game->was_initialized = DATA_WAS_INIT;
 }
-int initRoundGameData(GameData *game, int seed) {
+int initRoundGameData(GameData *restrict game, unsigned int seed) {
   if (game->was_initialized != DATA_WAS_INIT) {
     return DATA_NOT_INIT_FLAG;
   }
@@ -123,14 +123,14 @@ int initRoundGameData(GameData *game, int seed) {
   game->market[camels] = STARTING_MARKET_CAMELS;  // It is assumed these cards are drawn already in initDeck
   return DATA_OKAY_FLAG;
 }
-void startRound(GameData *game) {
+void startRound(GameData *restrict game) {
   // DEAL CARDS TO MARKET
   drawCardsFromDeck(game->market, game, CARDS_IN_MARKET - STARTING_MARKET_CAMELS);
   // DEAL CARDS TO PLAYERS
   drawCardsFromDeck(game->hand_plA, game, INITIAL_HAND_SIZE);
   drawCardsFromDeck(game->hand_plB, game, INITIAL_HAND_SIZE);
 }
-void startGame(GameData *game, unsigned int seed) {
+void startGame(GameData *restrict game, unsigned int seed) {
   game->was_initialized = 0;
   // printWelcomeMessage();
   initGameData(game, seed);
@@ -138,13 +138,13 @@ void startGame(GameData *game, unsigned int seed) {
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
 
-void startNextRound(GameData *game, int seed) {
+void startNextRound(GameData *restrict game, unsigned int seed) {
   initRoundGameData(game, seed);
   startRound(game);
   // printf("<Turn> %s starts this round <Turn>\n", getPlayerName(game->turn_of));
 }
 
-int checkDataIntegrity(GameData *game) {
+int checkDataIntegrity(GameData *restrict game) {
   // Only to run in case of data loading, review after finishing data loading/saving
   // Probably should check that points and tokens are coherent.
   // Probably should check that seals are coherent.
@@ -228,7 +228,7 @@ int checkDataIntegrity(GameData *game) {
   }
   return DATA_OKAY_FLAG;
 }
-int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
+int checkStateIntegrity(GameData *restrict state, int *restrict used_cards) {
   // Probably should check that points and tokens are coherent.
   int total_tokens = 0, total_btokens = 0;
   // Points are left undone for now
@@ -298,7 +298,7 @@ int checkStateIntegrity(GameData *state, int used_cards[CARD_GROUP_SIZE]) {
   }
   return DATA_OKAY_FLAG;
 }
-int computeFinishedGoods(GameData *game) {
+int computeFinishedGoods(GameData *restrict game) {
   int finished_counter = 0;
   for (int card_type = 0; card_type < GOOD_TYPES; card_type++) {
     finished_counter += (game->good_tk_ptrs[(int)card_type] >= no_cards_lookup_table[(int)card_type] - 1);
@@ -306,7 +306,7 @@ int computeFinishedGoods(GameData *game) {
   }
   return finished_counter;
 }
-int sumOfCardsGroup(int group[CARD_GROUP_SIZE], int not_camels_bool) {
+int sumOfCardsGroup(int *restrict group, int not_camels_bool) {
   int sum = 0;
   for (int i = 0; i < CARD_GROUP_SIZE; i++) {
     if (i == camels && not_camels_bool) {
@@ -337,7 +337,7 @@ int sumOfCardsGroup(int group[CARD_GROUP_SIZE], int not_camels_bool) {
 //   return card_type_index;
 // }
 
-int processAction(GameData *game, int argc, char *argv[]) {
+int processAction(GameData *restrict game, int argc, char *restrict argv[]) {
   // Expecting DATA_IS_OKAY
   //  In this function, return 0 is no turn action happened, return 1 is a turn action happened, OTHER NUMBERS ARE ERROR CODES.
   //   Go over the code logic (init, init when corrupt, starting a new game, loading, etc)
@@ -454,7 +454,7 @@ int processAction(GameData *game, int argc, char *argv[]) {
   return flags;
 }
 
-int drawCardsFromDeck(int card_group[CARD_GROUP_SIZE], GameData *game, int cards) {
+int drawCardsFromDeck(int card_group[CARD_GROUP_SIZE], GameData *restrict game, int cards) {
   for (; cards && game->deck_ptr < DECK_SIZE; cards--) {
     char card = game->deck[game->deck_ptr++];
     card_group[(int)char_to_enum_lookup_table[(int)card]]++;
@@ -466,12 +466,12 @@ int drawCardsFromDeck(int card_group[CARD_GROUP_SIZE], GameData *game, int cards
   }
 }
 
-int updateMarket(GameData *game) {
+int updateMarket(GameData *restrict game) {
   int total = sumOfCardsGroup(game->market, FALSE);
   return drawCardsFromDeck(game->market, game, CARDS_IN_MARKET - total);
 }
 
-int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char card) {
+int takeCardFromMarket(int *restrict market, int *restrict player_hand, char card) {
   int market_cards = sumOfCardsGroup(market, FALSE);
   if (market_cards != CARDS_IN_MARKET) {
     if (market_cards > CARDS_IN_MARKET) {
@@ -497,7 +497,7 @@ int takeCardFromMarket(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_S
   return TURN_HAPPENED_FLAG;
 }
 
-int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards) {
+int cardSale(GameData *restrict game, PlayerScore *player_score, int player_hand[CARD_GROUP_SIZE], char card_type, int no_cards) {
   int card_index = (int)char_to_enum_lookup_table[(int)card_type];
   if (player_hand[card_index] < no_cards) {
     return TOO_FEW_C_HAND_FLAG | ONLY_PRINT_HAND;
@@ -532,7 +532,7 @@ int cardSale(GameData *game, PlayerScore *player_score, int player_hand[CARD_GRO
   return TURN_HAPPENED_FLAG;
 }
 
-int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], char *hand_cards, char *market_idx, int hand_cards_len,
+int cardExchange(int *restrict market, int *restrict player_hand, char *restrict hand_cards, char *restrict market_idx, int hand_cards_len,
                  int market_goods_len) {
   // Read args
   int cards_from_hand[CARD_GROUP_SIZE] = { 0 };
@@ -577,15 +577,15 @@ int cardExchange(int market[CARD_GROUP_SIZE], int player_hand[CARD_GROUP_SIZE], 
   return TURN_HAPPENED_FLAG;
 }
 
-int isGameOver(PlayerScore *playerA, PlayerScore *playerB) {
+int isGameOver(PlayerScore *restrict playerA, PlayerScore *restrict playerB) {
   return playerA->seals == SEALS_TO_WIN || playerB->seals == SEALS_TO_WIN;
 }
 
-int isRoundOver(GameData *game) {
+int isRoundOver(GameData *restrict game) {
   return computeFinishedGoods(game) == FINISHED_GOODS_LIMIT;  // || game->deck_ptr == DECK_SIZE;//Only on drawing
 }
 
-int endingChecks(GameData *game, int flags) {
+int endingChecks(GameData *restrict game, int flags) {
   if (isRoundOver(game) || flags & ROUND_OVER) {
     flags |= compRoundWinningPlayer(game);
     if (flags & DRAW_FLAG) {
@@ -606,7 +606,7 @@ int endingChecks(GameData *game, int flags) {
   return 0;
 }
 
-int compRoundWinningPlayer(GameData *game) {
+int compRoundWinningPlayer(GameData *restrict game) {
   PlayerScore *playerA = &(game->playerA), *playerB = &(game->playerB);
   if (game->hand_plA[camels] > game->hand_plB[camels]) {
     playerA->points += CAMEL_TOKEN_VAL;
@@ -645,7 +645,7 @@ int compRoundWinningPlayer(GameData *game) {
   // printf("ERROR: IT WAS A DRAW! CONGRATULATIONS! THIS IS NORMALLY IMPOSSIBLE\n");
 }
 
-void giveRewards(GameData *game, int flags) {
+void giveRewards(GameData *restrict game, int flags) {
   if (flags & PLAYER_A_WINS) {
     game->turn_of = PLAYER_B_NUM;
     game->playerA.seals++;
@@ -674,7 +674,7 @@ void giveRewards(GameData *game, int flags) {
 //   return initMemoryPool(arena, (number_games)*block_size + sizeof(void *));
 // }
 
-GameData *initLibGameDataCustom(GameData *game_state, unsigned int seed) {
+GameData *initLibGameDataCustom(GameData *restrict game_state, unsigned int seed) {
   // Options are null state or default state? And then the custom one, but how to distinguish?
   //  ANOTHER VERSION ACCEPTING A STATE AS AN INPUT I SUPPOSE FOR INITIALIZATION;
   // Be very clear on how to use this (create struct to set the game state)
@@ -713,7 +713,7 @@ GameData *initLibGameDataScratch(unsigned int seed) {
   return game_data;
 }
 
-GameData *cloneLibGameData(GameData *game_data_src) {
+GameData *cloneLibGameData(GameData *restrict game_data_src) {
   if (game_data_src == NULL) {
     return NULL;
   }
@@ -725,7 +725,7 @@ GameData *cloneLibGameData(GameData *game_data_src) {
   return game_data_out;
 }
 
-GameData *freeLibGameData(GameData *game_data) {
+GameData *freeLibGameData(GameData *restrict game_data) {
   if (game_data == NULL) {
     return NULL;
   }
@@ -733,7 +733,7 @@ GameData *freeLibGameData(GameData *game_data) {
   return NULL;
 }
 
-int processLibAction(GameData *game, int argc, char *argv[], int flags) {
+int processLibAction(GameData *restrict game, int argc, char *restrict argv[], int flags) {
   int error_print = flags & ERROR_PRINTING_FLAG;
   // int round_end   = flags & ROUND_OVER;
   flags = checkDataIntegrity(game);  // Flags are reset after input is accepted
@@ -758,7 +758,7 @@ int processLibAction(GameData *game, int argc, char *argv[], int flags) {
   return flags;
 }
 
-void setGameDataLib(GameData *game_data) {
+void setGameDataLib(GameData *restrict game_data) {
   for (int c_type = 0; c_type < GOOD_TYPES; c_type++) {
     game_data->good_tks[c_type] = good_tokens[c_type].size - game_data->good_tk_ptrs[c_type];
   }
@@ -768,7 +768,7 @@ void setGameDataLib(GameData *game_data) {
   game_data->cards_in_deck = DECK_SIZE - game_data->deck_ptr;
 }
 
-void initGameDataFromState(GameData *game_data, unsigned int seed, int used_cards[CARD_GROUP_SIZE]) {
+void initGameDataFromState(GameData *restrict game_data, unsigned int seed, int *restrict used_cards) {
   game_data->seed            = seed;
   game_data->was_initialized = DATA_WAS_INIT;
 

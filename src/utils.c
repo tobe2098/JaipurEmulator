@@ -1,6 +1,6 @@
 #include "utils.h"
 
-void randomizeArrayInt(int arr[], int start, int size) {
+void randomizeArrayInt(int *restrict arr, int start, int size) {
   // Function to shuffle an array of integers using Fisher-Yates algorithm, from a starting index to an ending index.
   // Starting index is included in the shuffling, the ending index is not (equivalent to size).
   for (int i = size - 1; i > start; i--) {
@@ -11,7 +11,7 @@ void randomizeArrayInt(int arr[], int start, int size) {
   }
 }
 
-void randomizeArrayChar(char arr[], int start, int size) {
+void randomizeArrayChar(char *restrict arr, int start, int size) {
   // Function to shuffle an array of chars using Fisher-Yates algorithm, from a starting index to an ending index.
   // Starting index is included in the shuffling, the ending index is not (equivalent to size).
   for (int i = size - 1; i > start; i--) {
@@ -22,7 +22,7 @@ void randomizeArrayChar(char arr[], int start, int size) {
   }
 }
 
-void randomize_void_array(void *arr, int arr_size, int type_size) {
+void randomize_void_array(void *restrict arr, int arr_size, int type_size) {
   // Function to shuffle an array of chars using Fisher-Yates algorithm, from a starting index to an ending index.
   // Starting index is included in the shuffling, the ending index is not (equivalent to size).
   char temp[type_size];
@@ -34,7 +34,7 @@ void randomize_void_array(void *arr, int arr_size, int type_size) {
   }
 }
 
-void find_data_path(char *data_path) {
+void find_data_path(char *restrict data_path) {
   char exe_path[MAX_PATH - strlen("\\..\\data\\jaipur_game_state.json")];
   int  size = sizeof(exe_path);
   // Function to get the executable path based on the operating system
