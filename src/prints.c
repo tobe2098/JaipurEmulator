@@ -124,7 +124,7 @@ void printWinningTrophy(int player) {
   printWinner(player);
 }
 
-void printWelcomeMessage() {
+void printWelcomeMessage(void) {
   printf(":::+++;;;;;:.....:++++;+:;:..::::::::::...........:::;X:::::;::\n");
   printf("::;+;+;;::;:.....:;+++;+:;;:.:;:;:.:..............::.:$++;x+:::\n");
   printf("+;++;;;::::....;;;;;;;;;;;;;;;;;;::::................+$+;;;x:..\n");
@@ -149,7 +149,7 @@ void printWelcomeMessage() {
   printf("╚══════╝  ╚════╝ ╚═╝  ╚═╝╚═╝ ╚═╝      ╚═════╝ ╚═╝  ╚═╝ ╚══════╝\n");
 }
 
-void printVersion() {
+void printVersion(void) {
   printf("Jaipur Game Emulator %s\n", PROJECT_VER);
   printf("Built for %s\n", OS_NAME);
   printf("%s\n", LICENSE_VERSION);
@@ -203,7 +203,7 @@ void printNewRoundMessage(int player) {
   // printf("██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗███████╗   ██║   ██╗      \n");
   // printf("╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝      \n");
 }
-void printHelp() {
+void printHelp(void) {
   // Finish after everything else is done
   printf("Usage: ./program [options]\n");
   printf("Options:\n");
@@ -225,7 +225,7 @@ void printHelp() {
          SILVER_CHAR, SPICE_CHAR, CLOTH_CHAR, LEATHER_CHAR, CAMEL_CHAR);
 }
 
-void printRules() {
+void printRules(void) {
   printf("\nNotes:\n");
   printf("- Goods cards are non-camel cards.\n");
   printf("- A player cannot have more than 7 goods cards in hand.\n");

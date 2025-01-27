@@ -7,15 +7,15 @@
 
 #include <stdio.h>
 
-void printGoodsTokenArray(char name, const int* array, int size, int cutoff);
+void printGoodsTokenArray(char name, const int* restrict array, int size, int cutoff);
 void printWinningTrophy(int player);
-void printWelcomeMessage();
-void printVersion();
+void printWelcomeMessage(void);
+void printVersion(void);
 void printNewRoundMessage(int player);
 void printWinner(int player);
-void printHelp();
-void printRules();
+void printHelp(void);
+void printRules(void);
 
-void printCardGroup(int* card_group, int bool_camel);
+void printCardGroup(int* restrict card_group, int bool_camel);
 
 #endif
